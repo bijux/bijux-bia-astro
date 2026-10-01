@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BIA report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "why",
+    "what",
+    "how",
+    "preserved",
+    "risk",
+    "limitations",
+    "rollback",
+    "schema_version",
+    "record_kind",
+    "report_id",
+    "title",
+    "author",
+    "prepared_at_utc",
+    "parent_sha",
+    "candidate_sha256",
+    "fingerprint_algorithm",
+    "where",
+    "remote_status",
+    "checks"
+  ],
+  "properties": {
+    "why": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "what": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "how": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "preserved": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "risk": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "limitations": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "rollback": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "record_kind": {
+      "enum": [
+        "illustrative",
+        "commit"
+      ]
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 100
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 90
+    },
+    "prepared_at_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "parent_sha": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "candidate_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fingerprint_algorithm": {
+      "const": "bia-git-candidate-sha256-v1"
+    },
+    "where": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 140
+      }
+    },
+    "remote_status": {
+      "const": "NOT_RUN"
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gate",
+          "command",
+          "result",
+          "duration_seconds",
+          "exit_code",
+          "evidence_ref",
+          "required"
+        ],
+        "properties": {
+          "gate": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "BLOCKED",
+              "NOT_RUN",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "duration_seconds": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "exit_code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 255
+          },
+          "evidence_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "record_kind": {
+            "const": "commit"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "parent_sha": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+          },
+          "candidate_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "parent_sha": {
+            "type": "null"
+          },
+          "candidate_sha256": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

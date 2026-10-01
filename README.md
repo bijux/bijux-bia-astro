@@ -1,5 +1,13 @@
 # BIA Astro prototype implementation
 
+This repository, **bijux-bia-astro**, is Bijux's proposal fork of
+[BioImage-Archive/BIA-astro](https://github.com/BioImage-Archive/BIA-astro).
+It preserves the BioImage Archive application identity and public interfaces.
+Changes are prepared for team review before proposing focused pull requests upstream.
+
+See [contributing](CONTRIBUTING.md) for the fork workflow and
+[engineering change reports](reports/README.md) for commit evidence.
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:

@@ -22,3 +22,8 @@ pnpm-debug.log*
 .aider*
 
 .netlify
+
+# local validation outputs
+/artifacts/
+__pycache__/
+*.pyc
