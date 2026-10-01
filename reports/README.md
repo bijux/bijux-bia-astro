@@ -40,6 +40,8 @@ Keep commands and outcomes literal. `PASS`, `FAIL`, `BLOCKED`, `NOT_RUN`, and `N
 
 Rebasing changes parent-bound identity and requires regenerated reports and relevant validation. Agree the upstream integration strategy before rebasing or squashing reviewed history. Keep fork reporting machinery separate from application proposals so maintainers can review the useful change without adopting this convention.
 
+[The retained-history integration protocol](../docs/engineering/integration.md) validates authored reports with their original tools and treats only exact, independently checked GitHub merge nodes as generated integrations. It verifies both parents, PR provenance and the automatic integration tree; unreported conflict resolutions fail admission.
+
 For an explicitly authorized amendment of an unpublished commit, pass `--amend` to the candidate command. This uses the existing commit's parent. Export the corrected staged payload separately, run fresh relevant checks, and regenerate the triplet before `git commit --amend`. Normal candidates use the current HEAD as their parent. Never silently rewrite shared history.
 
 PDF reproducibility is verified within the recorded toolchain; cross-platform byte identity is unproven. TeX runs without shell escape, which is not a complete sandbox. Compile untrusted contributions in an isolated environment without secrets. Do not include private data, credentials, or unsupported scientific glyphs in reports.
