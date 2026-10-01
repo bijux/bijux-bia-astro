@@ -1,3 +1,3 @@
-.PHONY: check test report-test
-check test report-test:
+.PHONY: check test report-test verification-test
+check test report-test verification-test:
 	$(NPM) run $@

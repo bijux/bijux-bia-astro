@@ -37,3 +37,13 @@ make report RECORD=artifacts/change-record.json OUT=artifacts/report-preview
 ```
 
 `make clean` deletes only generated `dist/`, `.astro/` and `.netlify/` directories after confirming that none contains tracked files or is a symlink. It preserves `artifacts/`, source, dependencies, environment files and arbitrary user files. Every target propagates its child's failure. Browser, link, deployment and admission commands will be documented only when their implementations are available.
+
+## Testing staged bytes
+
+Export the exact staged tree, preserving unstaged edits:
+
+```sh
+npm run candidate -- --report-id 20261001-193813-engineering-change-reporting --out artifacts/staged-review
+```
+
+Use a newly allocated canonical report ID for a real change and a fresh output directory. Export rejects conflicts, submodules, case collisions and symlinks that escape the snapshot. It preserves staged additions, deletions, renames, executable modes and internal symlinks. `artifacts/staged-review/candidate/` contains the staged files and local Git ancestry; `frozen.json` binds the parent and tree. Run checks inside that snapshot. Unstaged passing code cannot replace staged failing code. `make verification-test` exercises these boundaries; it does not run application journeys.
