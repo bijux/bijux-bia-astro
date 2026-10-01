@@ -79,6 +79,13 @@ def runtime_scope(snapshot):
     return False
 
 
+def application_requirements(snapshot):
+    names = ["Locked setup", "Netlify setup", "Node build", "Netlify compile"]
+    if "fixture-test" in json.loads((snapshot / "package.json").read_text())["scripts"]:
+        names.append("Fixture boundary")
+    return names
+
+
 def execute(repo, output):
     repo, output, snapshot, frozen = frozen_candidate(repo, output)
     if (output / "results.json").exists():
@@ -108,13 +115,18 @@ def execute(repo, output):
             (netlify / "artifacts/tmp").mkdir(parents=True)
             netsetup = run_gate("Netlify setup", ["npm", "run", "setup"], netlify, output / "gates", netenv, timeout=180)
             results.append(netsetup)
-            if netsetup["result"] == "PASS":
+            fixtures = "Fixture boundary" in application_requirements(snapshot)
+            if fixtures and netsetup["result"] == "PASS":
+                results.append(run_gate("Fixture boundary", ["npm", "run", "fixture-test"], snapshot, output / "gates", environment, timeout=120))
+            if netsetup["result"] == "PASS" and (not fixtures or results[-1]["result"] == "PASS"):
                 nodeenv = {key: value for key, value in environment.items() if key not in {"NETLIFY", "NETLIFY_DEV", "AWS_LAMBDA_FUNCTION_NAME"}}
                 netenv.update(NETLIFY="true")
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-                    futures = [pool.submit(run_gate, "Node build", ["npm", "run", "build"], snapshot, output / "gates", nodeenv, 900), pool.submit(run_gate, "Netlify compile", ["npm", "run", "astro", "--", "build"], netlify, output / "gates", netenv, 900)]
+                    nodecommand = ["npm", "run", "fixture-build", "--", "node"] if fixtures else ["npm", "run", "build"]
+                    netcommand = ["npm", "run", "fixture-build", "--", "netlify"] if fixtures else ["npm", "run", "astro", "--", "build"]
+                    futures = [pool.submit(run_gate, "Node build", nodecommand, snapshot, output / "gates", nodeenv, 900), pool.submit(run_gate, "Netlify compile", netcommand, netlify, output / "gates", netenv, 900)]
                     results.extend(future.result() for future in futures)
-    required = list(TOOLS) + (["Locked setup", "Netlify setup", "Node build", "Netlify compile"] if application else [])
+    required = list(TOOLS) + (application_requirements(snapshot) if application else [])
     passed = False
     try:
         require_pass(results, required)
@@ -130,7 +142,7 @@ def execute(repo, output):
 def checked_results(repo, output):
     repo, output, snapshot, frozen = frozen_candidate(repo, output)
     receipt = json.loads((output / "results.json").read_text())
-    required = list(TOOLS) + (["Locked setup", "Netlify setup", "Node build", "Netlify compile"] if runtime_scope(snapshot) else [])
+    required = list(TOOLS) + (application_requirements(snapshot) if runtime_scope(snapshot) else [])
     if receipt["required"] != required or receipt["result"] != "PASS" or any(receipt[key] != frozen[key] for key in ("parent_sha", "candidate_sha256", "report_id")):
         raise ValueError("Receipt is failed, stale or has incorrect requirements.")
     require_pass(receipt["results"], required)
@@ -143,7 +155,8 @@ def summaries(repo, output, receipt):
         if result["gate"] in TOOLS:
             rows.append({"gate": result["gate"], "command": " ".join(result["command"]), "result": "PASS", "duration_seconds": result["duration_seconds"], "exit_code": 0, "evidence_ref": str((output / "results.json").relative_to(repo)), "required": True})
     if receipt["runtime_scope"]:
-        rows.append({"gate": "Application", "command": "npm run setup; isolated Node npm run build and NETLIFY=true npm run astro -- build", "result": "PASS", "duration_seconds": sum(result["duration_seconds"] for result in receipt["results"] if result["gate"] not in TOOLS), "exit_code": 0, "evidence_ref": str((output / "results.json").relative_to(repo)), "required": True})
+        command = "npm run setup; npm run fixture-test; isolated npm run fixture-build -- node|netlify" if "Fixture boundary" in receipt["required"] else "npm run setup; isolated Node npm run build and NETLIFY=true npm run astro -- build"
+        rows.append({"gate": "Application", "command": command, "result": "PASS", "duration_seconds": sum(result["duration_seconds"] for result in receipt["results"] if result["gate"] not in TOOLS), "exit_code": 0, "evidence_ref": str((output / "results.json").relative_to(repo)), "required": True})
     return rows
 
 
