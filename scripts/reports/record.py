@@ -6,7 +6,8 @@ import math
 import re
 from pathlib import Path
 
-from .candidate import ALGORITHM, REPORT_ID
+from .candidate import ALGORITHM
+from .identity import validate_id
 
 FIELDS = {
     "schema_version", "record_kind", "report_id", "title", "author",
@@ -36,8 +37,7 @@ def validate(data, require_commit=False):
         raise ValueError("Invalid record kind.")
     if require_commit and data["record_kind"] != "commit":
         raise ValueError("Illustrative records are not commit evidence.")
-    if not isinstance(data["report_id"], str) or not 3 <= len(data["report_id"]) <= 100 or not REPORT_ID.fullmatch(data["report_id"]):
-        raise ValueError("Invalid report ID.")
+    validate_id(data["report_id"], data["prepared_at_utc"])
     for key, limit in (("title", 100), ("author", 90), ("prepared_at_utc", 20)):
         text(data[key], key, limit)
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", data["prepared_at_utc"]):

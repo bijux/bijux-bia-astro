@@ -29,11 +29,11 @@ class RenderTests(unittest.TestCase):
             renderer.build(self.d, b)
             self.assertEqual(ra['pages'], 1)
             for ext in ('tex', 'pdf'):
-                self.assertEqual((a / f'illustrative-engineering-change.{ext}').read_bytes(), (b / f'illustrative-engineering-change.{ext}').read_bytes())
+                self.assertEqual((a / f'20261001-000000-illustrative-engineering-change.{ext}').read_bytes(), (b / f'20261001-000000-illustrative-engineering-change.{ext}').read_bytes())
 
     def test_no_overwrite(self):
         with tempfile.TemporaryDirectory() as t:
-            p = Path(t) / 'illustrative-engineering-change.pdf'
+            p = Path(t) / '20261001-000000-illustrative-engineering-change.pdf'
             p.write_bytes(b'preserve')
             with self.assertRaises(ValueError):
                 renderer.build(self.d, Path(t))

@@ -71,8 +71,8 @@
     },
     "report_id": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
-      "minLength": 3,
+      "pattern": "^[0-9]{8}-[0-9]{6}-[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "minLength": 19,
       "maxLength": 100
     },
     "title": {

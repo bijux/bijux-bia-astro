@@ -8,7 +8,7 @@ The fork retains GitHub's parent relationship and the complete upstream history.
 
 [The observed baseline](baseline.md) records successful locked installation, Astro checking, both adapter builds, and three built HTTP checks. It also records inherited advisories and the limits of those checks. These are measured outcomes, not a claim that every user journey works.
 
-The first authored change adds [contributor guidance](../../CONTRIBUTING.md) and [engineering change reports](../../reports/README.md). Each report gives a problem, scope, rationale, preserved behavior, actual checks, risks, and rollback, tied to its parent and payload fingerprint. Inspect [the real report-tools PDF](../../reports/commits/engineering-change-reporting-2026-10-01.pdf) and find its commit through the `Report-ID` trailer.
+The first authored change adds [contributor guidance](../../CONTRIBUTING.md) and [engineering change reports](../../reports/README.md). Each report gives a problem, scope, rationale, preserved behavior, actual checks, risks, and rollback, tied to its parent and payload fingerprint. Inspect [the real report-tools PDF](../../reports/commits/20261001-193813-engineering-change-reporting.pdf) and find its commit through the `Report-ID` trailer.
 
 ## Suggested presentation
 

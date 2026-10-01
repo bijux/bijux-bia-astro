@@ -1,0 +1,69 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}UTC report identities and preserved archives}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Report ID} & 20261001-\allowbreak{}205129-\allowbreak{}utc-\allowbreak{}report-\allowbreak{}archives \\
+\textbf{Prepared UTC} & 2026-10-01 20:51:29 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize 1e5066a6cec226ed871093684629312ebfcc4bbb}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize aaf9adda78d4655d379c2ea381fdb31449dc24b0f38cd3210a8ab933df5c0759}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Sort engineering evidence by actual UTC preparation time without changing the identities or bytes of historical reports.}
+\block{WHAT / change scope}{Require timestamped report IDs, calendar and preparation agreement. Rename three existing triplets and add explicit validated legacy lookup.}
+\block{HOW / implementation rationale}{Bind new IDs to preparation UTC. Preserve archive bytes and original trailers; verify their hashes, original trees and parent-bound fingerprints. A corrected wrong-commit test retains its failed run.}
+\block{WHERE / affected paths}{scripts/\allowbreak{}reports/\allowbreak{}\par tests/\allowbreak{}reports/\allowbreak{}\par reports/\allowbreak{}templates/\allowbreak{}\par reports/\allowbreak{}legacy-archive.json\par reports/\allowbreak{}commits/\allowbreak{}\par reports/\allowbreak{}README.md; docs/\allowbreak{}engineering/\allowbreak{}team-review.md}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{All nine legacy artifacts retain original bytes, records, preparation times and trailers. Application, dependencies, adapters, deployment and existing CI inputs are unchanged.}
+\block{RISK / what could go wrong}{Historical records require original tools for reproduction. Archive lookup depends on available original ancestry. It cannot authorize a new legacy-ID candidate.}
+\block{LIMITATIONS / what is not proved}{57 report tests passed on the exported index. No application behavior, viewer decoding, remote CI or deployment claim. Prior known audit advisories remain.}
+\block{ROLLBACK / restore and verify}{Revert this coherent change with a new report. Restore original archive paths and tools together; retain authored historical commits and their evidence.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Report tools & python3 -B -m unittest discover -s tests/reports -v & PASS & 5.17 s & artifacts/\allowbreak{}admission/\allowbreak{}report-archive-calendar/\allowbreak{}report-tests.json \\
+Preservation & git diff --cached --exit-code HEAD -- src public package.json package-lock.json astro.config.mjs netlify.toml tsconfig.json Dockerfile helm-chart .github .dockerignore & PASS & 0.01 s & artifacts/\allowbreak{}admission/\allowbreak{}report-archive-calendar/\allowbreak{}preservation.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

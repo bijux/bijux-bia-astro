@@ -3,12 +3,12 @@
 import argparse
 import hashlib
 import json
-import re
 import subprocess
 from pathlib import Path
 
+from .identity import REPORT_ID, legacy_archives, validate_id
+
 ALGORITHM = "bia-git-candidate-sha256-v1"
-REPORT_ID = re.compile(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*\Z")
 
 
 def git(repo, *arguments):
@@ -23,9 +23,13 @@ def git(repo, *arguments):
 
 
 def fingerprint(repo, report_id, revision="INDEX", amend=False):
-    if not isinstance(report_id, str) or not 3 <= len(report_id) <= 100 or not REPORT_ID.fullmatch(report_id):
-        raise ValueError("Invalid report ID.")
     repo = Path(repo).resolve(strict=True)
+    legacy = legacy_archives().get(report_id) if isinstance(report_id, str) else None
+    if legacy:
+        if revision == "INDEX" or amend:
+            raise ValueError("Legacy IDs identify archived commits only.")
+    else:
+        validate_id(report_id)
     object_format = git(repo, "rev-parse", "--show-object-format").decode().strip()
     if object_format not in ("sha1", "sha256"):
         raise ValueError("Unsupported Git object format.")
@@ -45,6 +49,8 @@ def fingerprint(repo, report_id, revision="INDEX", amend=False):
         commit = git(
             repo, "rev-parse", "--verify", "--end-of-options", revision + "^{commit}"
         ).decode().strip()
+        if legacy and commit != legacy["commit_sha"]:
+            raise ValueError("Legacy identity belongs to another historical commit.")
         lineage = git(repo, "rev-list", "--parents", "-n", "1", commit).decode().split()
         if len(lineage) != 2:
             raise ValueError("Root and merge commits need a separate report protocol.")

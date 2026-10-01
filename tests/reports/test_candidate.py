@@ -12,7 +12,7 @@ class CandidateTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='bia-isolated-git-')
         self.repo = Path(self.tmp.name)
-        self.rid = 'search-navigation-2026-10-01'
+        self.rid = '20261001-000000-search-navigation'
         self.git('init', '-q')
         self.git('config', 'user.name', 'Isolated Tool Test')
         self.git('config', 'user.email', 'test@example.invalid')
@@ -59,7 +59,7 @@ class CandidateTests(unittest.TestCase):
 
     def test_old_report_included(self):
         b = self.digest()
-        self.file('reports/commits/viewer-link-preservation-2026-09-30.json', 'changed')
+        self.file('reports/commits/20260930-000000-viewer-link-preservation.json', 'changed')
         self.git('add', '.')
         self.assertNotEqual(b, self.digest())
 

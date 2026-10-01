@@ -41,6 +41,7 @@ def render_tex(data):
         PARENT="NOT ASSIGNED (illustration)" if illustration else data["parent_sha"],
         DIGEST="NOT ASSIGNED (illustration)" if illustration else data["candidate_sha256"],
         WHERE=r"\par ".join(path_text(path) for path in data["where"]),
+        REPORT_ID=path_text(data["report_id"]).replace("-", r"-\allowbreak{}"),
         FOOTER="Illustration only. No repository change or application validation is asserted." if illustration else "Engineering change summary and actual local verification.",
     )
     rows = []
