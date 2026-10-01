@@ -6,10 +6,11 @@
 
 Inspect the current branch, remotes, and working tree before editing. Preserve other contributors' changes. Start a purpose-named topic branch from the confirmed upstream base, inspect current upstream pull requests for overlap, and record the exact base commit. Keep each commit coherent and independently reviewable.
 
-Use the checked-in npm lockfile for application setup:
+Use the [declared developer toolchain](docs/engineering/development.md) and the checked-in npm lockfile for application setup:
 
 ```sh
-npm ci
+node scripts/development/bootstrap.mjs doctor
+node scripts/development/bootstrap.mjs install
 npm run astro -- check
 ```
 

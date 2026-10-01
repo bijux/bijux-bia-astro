@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Guarded developer toolchain and locked setup}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Prepared UTC} & 2026-10-01 20:06:31 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize 092781e5a35c5259ceb8ac919f435be799476070}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize 46850a7e6b6847c6be434356cf8e44c1762ac988cdd4e772c72acede8f4a4d04}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Give contributors reproducible development inputs and reject setup mismatches before installation, while retaining the existing application and deployment interfaces.}
+\block{WHAT / change scope}{Declare developer Node 24.21.0 and bundled npm 11.19.0. Add explicit doctor/install commands, seven focused tests and setup documentation. Installation delegates to npm ci.}
+\block{HOW / implementation rationale}{Validate an isolated staged snapshot with the declared runtime. Replay both adapter builds, exercise real lock/version rejection, and check three built Node HTTP pages. All 491 locked Node engine constraints accept this version.}
+\block{WHERE / affected paths}{configs/\allowbreak{}development/\allowbreak{}toolchain.json\par scripts/\allowbreak{}development/\allowbreak{}bootstrap.mjs\par tests/\allowbreak{}development/\allowbreak{}bootstrap.test.mjs\par docs/\allowbreak{}engineering/\allowbreak{}development.md\par CONTRIBUTING.md; docs/\allowbreak{}README.md}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{Application source, public assets, package manifest/lock, adapters, container startup, chart interfaces and CI remain byte-identical to the original application baseline. No automatic platform runtime override.}
+\block{RISK / what could go wrong}{An exact developer pin needs deliberate maintenance. macOS build success does not prove every platform or native dependency path. Install scripts and live-service build inputs still need review.}
+\block{LIMITATIONS / what is not proved}{macOS arm64 only. No Linux, Windows, remote CI or deployment claim. npm warned about seven packages needing install-script approval. Inherited audit advisories remain. Report toolchain unchanged.}
+\block{ROLLBACK / restore and verify}{Revert the development declaration, bootstrap, tests and related guidance in a new reported commit. Existing npm entry points and deployment settings retain their original behavior.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Locked setup & node scripts/development/bootstrap.mjs install & PASS & 11.38 s & artifacts/\allowbreak{}admission/\allowbreak{}development/\allowbreak{}locked-install.log \\
+Bootstrap tests & node --test tests/development/bootstrap.test.mjs & PASS & 1.67 s & artifacts/\allowbreak{}admission/\allowbreak{}development/\allowbreak{}bootstrap-tests.log \\
+Node build & npm run build & PASS & 253.87 s & artifacts/\allowbreak{}admission/\allowbreak{}development/\allowbreak{}node-build.log \\
+Netlify compile & npm run astro -- build & PASS & 302.38 s & artifacts/\allowbreak{}admission/\allowbreak{}development/\allowbreak{}netlify-build.log \\
+Setup rejection & python3 -B artifacts/admission/development/check\_rejections.py & PASS & 0.96 s & artifacts/\allowbreak{}admission/\allowbreak{}development/\allowbreak{}rejection-check.json \\
+Docs and source & python3 -B artifacts/admission/architecture/check\_documentation.py artifacts/admission/development/candidate & PASS & 4.74 s & artifacts/\allowbreak{}admission/\allowbreak{}development/\allowbreak{}documentation-check.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}
