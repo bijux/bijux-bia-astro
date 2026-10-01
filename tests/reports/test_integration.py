@@ -103,13 +103,13 @@ class IntegrationTests(unittest.TestCase):
 
     def test_claimed_pass_cannot_override_live_actions_failure(self):
         self.checks['runs'][0]['run_id']=123
-        run={'event':'push','path':'.github/workflows/bootstrap_admission.yaml','head_sha':self.head,'status':'completed','conclusion':'failure','html_url':self.checks['runs'][0]['url']}
+        run={'event':'push','path':'.github/workflows/reported_integration.yaml','head_sha':self.head,'status':'completed','conclusion':'failure','html_url':self.checks['runs'][0]['url']}
         with patch('scripts.reports.integration.fetch_json',return_value=run),self.assertRaisesRegex(ValueError,'Live Actions'):
             verify_live_checks(self.repo,'example/frontend',self.checks)
 
     def test_missing_terminal_job_cannot_claim_successful_live_run(self):
         self.checks['runs'][0]['run_id']=123
-        run={'event':'push','path':'.github/workflows/bootstrap_admission.yaml','head_sha':self.head,'status':'completed','conclusion':'success','html_url':self.checks['runs'][0]['url']}
-        jobs={'total_count':1,'jobs':[{'name':'Bootstrap verification','status':'completed','conclusion':'success'}]}
-        with patch('scripts.reports.integration.fetch_json',side_effect=[run,jobs]),self.assertRaisesRegex(ValueError,'bootstrap job'):
+        run={'event':'push','path':'.github/workflows/reported_integration.yaml','head_sha':self.head,'status':'completed','conclusion':'success','html_url':self.checks['runs'][0]['url']}
+        jobs={'total_count':1,'jobs':[{'name':'Reported verification','status':'completed','conclusion':'success'}]}
+        with patch('scripts.reports.integration.fetch_json',side_effect=[run,jobs]),self.assertRaisesRegex(ValueError,'reported verification job'):
             verify_live_checks(self.repo,'example/frontend',self.checks)

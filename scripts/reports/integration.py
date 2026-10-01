@@ -82,13 +82,13 @@ def verify_live_checks(repo, repository, checks):
             raise ValueError("An actual Actions run identity is required.")
         run = fetch_json(repository, f"actions/runs/{run_id}")
         expected_event = "push" if row["candidate"] == "head" else "pull_request"
-        if run["event"] != expected_event or run["path"] != ".github/workflows/bootstrap_admission.yaml" or run["head_sha"] != checks["head_sha"] or run["status"] != "completed" or run["conclusion"] != "success" or run["html_url"] != row["url"]:
+        if run["event"] != expected_event or run["path"] != ".github/workflows/reported_integration.yaml" or run["head_sha"] != checks["head_sha"] or run["status"] != "completed" or run["conclusion"] != "success" or run["html_url"] != row["url"]:
             raise ValueError("Live Actions result differs from the claimed candidate/run.")
         jobs = fetch_json(repository, f"actions/runs/{run_id}/jobs?per_page=100")
-        if jobs["total_count"] != 2 or {job["name"] for job in jobs["jobs"]} != {"Bootstrap verification", "Bootstrap result"} or any(job["status"] != "completed" or job["conclusion"] != "success" for job in jobs["jobs"]):
-            raise ValueError("A bootstrap job is missing, failed, skipped or pending.")
+        if jobs["total_count"] != 2 or {job["name"] for job in jobs["jobs"]} != {"Reported verification", "Reported result"} or any(job["status"] != "completed" or job["conclusion"] != "success" for job in jobs["jobs"]):
+            raise ValueError("A reported verification job is missing, failed, skipped or pending.")
         with tempfile.TemporaryDirectory(dir=scratch) as directory:
-            subprocess.run(["gh", "run", "download", str(run_id), "--repo", repository, "--name", f"bootstrap-identity-{row['sha']}", "--dir", directory], capture_output=True, check=True, timeout=60)
+            subprocess.run(["gh", "run", "download", str(run_id), "--repo", repository, "--name", f"checked-identity-{row['sha']}", "--dir", directory], capture_output=True, check=True, timeout=60)
             receipt = json.loads((Path(directory) / "candidate.json").read_text())
             sha = commit(repo, row["sha"])
             parents = git(repo, "rev-list", "--parents", "-n", "1", sha).decode().split()[1:]

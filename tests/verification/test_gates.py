@@ -1,5 +1,6 @@
 """Failure, timeout and missing-process controls for evidence collection."""
 
+import json
 import sys
 import tempfile
 import unittest
@@ -25,6 +26,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(result["exit_code"], 7)
         with self.assertRaises(ValueError):
             require_pass([result], ["negative"])
+        self.assertEqual(json.loads((self.output / "negative.json").read_text()), result)
 
     def test_completed_child_has_observed_identity_timing_and_log(self):
         result = run_gate("control", [sys.executable, "-c", "print('known-good')"], self.output, self.output)
@@ -41,6 +43,7 @@ class GateTests(unittest.TestCase):
     def test_timeout_terminates_and_never_passes(self):
         result = run_gate("timeout", [sys.executable, "-c", "import time; time.sleep(30)"], self.output, self.output, timeout=0.1)
         self.assertTrue(result["timed_out"])
+        self.assertEqual(json.loads((self.output / "timeout.json").read_text()), result)
         with self.assertRaises(ValueError):
             require_pass([result], ["timeout"])
 

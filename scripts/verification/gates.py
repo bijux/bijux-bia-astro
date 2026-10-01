@@ -1,6 +1,7 @@
 """Collect bounded process outcomes; unexecuted work never passes."""
 
 import datetime as dt
+import json
 import os
 import signal
 import subprocess
@@ -12,6 +13,9 @@ def run_gate(name, command, cwd, output, environment=None, timeout=120):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     log = output / f"{name}.log"
+    receipt = output / f"{name}.json"
+    if receipt.exists() or receipt.is_symlink():
+        raise FileExistsError("Completed process evidence already exists.")
     started = dt.datetime.now(dt.timezone.utc).isoformat()
     clock = time.monotonic()
     timed_out = False
@@ -33,13 +37,16 @@ def run_gate(name, command, cwd, output, environment=None, timeout=120):
         except OSError:
             stream.write(b"Required executable could not be started.\n")
             code, result = None, "BLOCKED"
-    return {
+    observed = {
         "gate": name, "command": command, "started_at_utc": started,
         "finished_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "duration_seconds": round(time.monotonic() - clock, 3),
         "exit_code": code, "result": result, "timed_out": timed_out,
         "log": log.name,
     }
+    with receipt.open("x") as stream:
+        stream.write(json.dumps(observed, indent=2) + "\n")
+    return observed
 
 
 def require_pass(results, names):

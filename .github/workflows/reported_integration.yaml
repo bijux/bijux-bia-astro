@@ -1,0 +1,85 @@
+name: Reported integration checks
+
+on:
+  push:
+    branches: ['feat/**', 'fix/**', 'docs/**', 'chore/**', 'test/**']
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reported-${{ github.repository }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  npm_config_cache: ${{ github.workspace }}/artifacts/npm-cache
+  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/artifacts/playwright-browsers
+  TMPDIR: ${{ github.workspace }}/artifacts/tmp
+
+jobs:
+  verification:
+    name: Reported verification
+    if: github.repository == 'bijux/bijux-bia-astro'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Allocate repository-owned run outputs
+        run: mkdir -p artifacts/tmp artifacts/provisioning
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24.21.0'
+      - name: Provision exact npm and report tools
+        run: |
+          npm install --global npm@11.19.0 > artifacts/provisioning/npm.log 2>&1
+          sudo apt-get update 2>&1 | tee artifacts/provisioning/apt-update.log
+          sudo apt-get install --yes --no-install-recommends texlive-latex-extra lmodern poppler-utils 2>&1 | tee artifacts/provisioning/report-tools.log
+      - name: Guard locked setup and provision the pinned browser
+        run: |
+          npm run setup
+          npm exec -- playwright install --with-deps chromium > artifacts/provisioning/browser.log 2>&1
+      - name: Execute original epochs and actual candidate
+        env:
+          AUTHORED_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: python3 -B -m scripts.verification.reported_candidate --authored-head "$AUTHORED_HEAD" --out artifacts/reported-verification
+      - name: Preserve actual checkout identity
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: checked-identity-${{ github.sha }}
+          path: artifacts/reported-verification/candidate.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Preserve completed results and bounded logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reported-evidence-${{ github.sha }}
+          path: |
+            artifacts/reported-verification/results.json
+            artifacts/reported-verification/reports/history.json
+            artifacts/reported-verification/**/render.log
+            artifacts/reported-verification/**/gates/*.log
+            artifacts/reported-verification/**/gates/*.json
+            artifacts/provisioning/*.log
+            artifacts/fixture-build/
+          if-no-files-found: error
+          retention-days: 90
+
+  result:
+    name: Reported result
+    if: always() && github.repository == 'bijux/bijux-bia-astro'
+    needs: verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require the independently executed verification
+        env:
+          VERIFICATION_RESULT: ${{ needs.verification.result }}
+        run: test "$VERIFICATION_RESULT" = success

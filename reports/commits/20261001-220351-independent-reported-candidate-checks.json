@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-220351-independent-reported-candidate-checks",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T22:03:51Z",
+  "parent_sha": "6436aa4fd8a7d55168c6085c529ccf86142cefff",
+  "candidate_sha256": "d3802958ff0e17e11e2e7ca4b96a938629f06b34547495cf1fe7f81628c5946e",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Toolchain",
+      "command": "npm run doctor",
+      "result": "PASS",
+      "duration_seconds": 0.34,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-220351-independent-reported-candidate-checks/results.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.64,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-220351-independent-reported-candidate-checks/results.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 10.872,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-220351-independent-reported-candidate-checks/results.json",
+      "required": true
+    },
+    {
+      "gate": "Staged controls",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 12.588,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-220351-independent-reported-candidate-checks/results.json",
+      "required": true
+    },
+    {
+      "gate": "Index hygiene",
+      "command": "git diff --cached --check",
+      "result": "PASS",
+      "duration_seconds": 0.02,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-220351-independent-reported-candidate-checks/results.json",
+      "required": true
+    },
+    {
+      "gate": "Application",
+      "command": "npm run setup; npm run fixture-test; isolated npm run fixture-build -- node|netlify",
+      "result": "PASS",
+      "duration_seconds": 39.818,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-220351-independent-reported-candidate-checks/results.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Independent reported candidate verification",
+  "why": "Fork merges need independent execution tied to the actual head and integration checkout.",
+  "what": "Add read-only fork checks, original-epoch replay and checkout receipts. Preserve upstream preview checks under their upstream repository identity.",
+  "how": "Pin tools/actions; replay introduced controls at original trees. Build both adapters in clean independent snapshots and persist every completed process outcome. Query live jobs and their Git identities.",
+  "where": [
+    ".github/workflows/",
+    "scripts/verification/; scripts/reports/integration.py",
+    "tests/reports/; tests/verification/",
+    "docs/engineering/integration.md"
+  ],
+  "preserved": "Inherited application bytes, runtime commands and 986 locked packages retain their identity. Fork preview jobs are explicitly not applicable; no deployment is performed.",
+  "risk": "Changed application inputs require an extended verified gate contract. Recorded success cannot override missing or failed live jobs.",
+  "limitations": "116 tests, both builds and actionlint 1.7.12 pass. Mutation probes reject polluted adapter inputs and altered pages, commands and locks. An unpublished failed replay is retained; committed replay, Actions and review follow authoring.",
+  "rollback": "Revert workflow and candidate/identity tools together in a reported change. Retain upstream checks and evidence; stop promotion until replacement checks pass."
+}
