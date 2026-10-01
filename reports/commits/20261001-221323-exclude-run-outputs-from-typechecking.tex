@@ -1,0 +1,73 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Exclude run products from project typechecking}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Report ID} & 20261001-\allowbreak{}221323-\allowbreak{}exclude-\allowbreak{}run-\allowbreak{}outputs-\allowbreak{}from-\allowbreak{}typechecking \\
+\textbf{Prepared UTC} & 2026-10-01 22:13:23 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize cdc32674a13e23eb51a44577f594fb21c1389d72}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize 3620932edf88aa4fc00d20972397d2ae27a1c7456925e96f48444342dab92f5a}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Saved inspection source under artifacts broke ordinary root Astro checks.}
+\block{WHAT / change scope}{Exclude only run artifacts, retain inherited dist exclusion and guard this exact typecheck configuration delta.}
+\block{HOW / implementation rationale}{Run original root check and both builds. Invalid application source must fail while artifact/dist probes stay excluded.}
+\block{WHERE / affected paths}{tsconfig.json; scripts/\allowbreak{}verification/\allowbreak{}\par tests/\allowbreak{}verification/\allowbreak{}\par docs/\allowbreak{}engineering/\allowbreak{}}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{Published source, assets, commands, compiler options, adapters and inherited locks retain their identity. Application syntax remains checked.}
+\block{RISK / what could go wrong}{Broader exclusions could hide defects; the guard rejects compiler changes and application-source exclusions.}
+\block{LIMITATIONS / what is not proved}{118 tests and both builds pass. Root check passes in 7.11 seconds; invalid source returns exit 1. Pre-fix failure is retained. Committed-history replay and remote checks follow authoring.}
+\block{ROLLBACK / restore and verify}{Revert exclusion and guard/docs together in a reported change; preserve evidence and isolate checks until a verified replacement.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Toolchain & npm run doctor & PASS & 0.40 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-221323-exclude-run-outputs-from-typechecking/\allowbreak{}results.json \\
+Developer tests & npm test & PASS & 1.62 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-221323-exclude-run-outputs-from-typechecking/\allowbreak{}results.json \\
+Report tools & npm run report-test & PASS & 10.49 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-221323-exclude-run-outputs-from-typechecking/\allowbreak{}results.json \\
+Staged controls & npm run verification-test & PASS & 15.00 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-221323-exclude-run-outputs-from-typechecking/\allowbreak{}results.json \\
+Index hygiene & git diff --cached --check & PASS & 0.02 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-221323-exclude-run-outputs-from-typechecking/\allowbreak{}results.json \\
+Application & npm run setup; npm run fixture-test; isolated npm run fixture-build -- node|netlify & PASS & 38.39 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-221323-exclude-run-outputs-from-typechecking/\allowbreak{}results.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

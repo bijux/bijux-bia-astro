@@ -35,7 +35,15 @@ def preserved_application(repo, sha):
     additions = set(after_lock) - set(before_lock)
     if any(not after_lock[name].get("dev") for name in additions):
         raise ValueError("New runtime lock entries cannot reuse inherited builds.")
-    return {"commit_sha": sha, "application": "UNCHANGED", "inherited_lock_entries": len(before_lock) - 1, "new_development_entries": sorted(additions)}
+    original_config = git(repo, "show", f"{ADOPTION}:tsconfig.json")
+    candidate_config = git(repo, "show", f"{sha}:tsconfig.json")
+    configuration = "UNCHANGED"
+    if candidate_config != original_config:
+        expected = dict(json.loads(original_config), exclude=["${configDir}/dist", "${configDir}/artifacts"])
+        if json.loads(candidate_config) != expected or not git(repo, "ls-tree", sha, "--", "tsconfig.json").startswith(b"100644 blob "):
+            raise ValueError("Typecheck configuration changed outside the exact run-output exclusion.")
+        configuration = "RUN_OUTPUT_EXCLUSION_ONLY"
+    return {"commit_sha": sha, "application": "UNCHANGED", "typecheck_configuration": configuration, "inherited_lock_entries": len(before_lock) - 1, "new_development_entries": sorted(additions)}
 
 
 def snapshot(repo, sha, destination):

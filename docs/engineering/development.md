@@ -31,6 +31,8 @@ Npm owns command behavior; the Makefile delegates to the same commands. `make` o
 
 `make dev`, `make build`, `make preview` and `make check` call the existing Astro interfaces. The production build retains its type check and root robots/redirect copies. `npm run local` and `npm run prod` retain their original behavior. `make test` exercises the developer commands; `make report-test` runs the report suite and fails on empty collection. These tests do not establish application browser or viewer correctness.
 
+Typechecking excludes saved source probes and validation snapshots under `artifacts/`, while retaining Astro's inherited `dist` exclusion. Application source remains checked: invalid source outside those run-output directories still fails the original check command. Keep generated run products under `artifacts/` rather than beside application files. Independent adapter builds also use separate clean snapshots, so a retained inspection file cannot become a build input.
+
 ```sh
 make report-check RECORD=artifacts/change-record.json
 make report RECORD=artifacts/change-record.json OUT=artifacts/report-preview

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-221323-exclude-run-outputs-from-typechecking",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T22:13:23Z",
+  "parent_sha": "cdc32674a13e23eb51a44577f594fb21c1389d72",
+  "candidate_sha256": "3620932edf88aa4fc00d20972397d2ae27a1c7456925e96f48444342dab92f5a",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Toolchain",
+      "command": "npm run doctor",
+      "result": "PASS",
+      "duration_seconds": 0.403,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-221323-exclude-run-outputs-from-typechecking/results.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.619,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-221323-exclude-run-outputs-from-typechecking/results.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 10.491,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-221323-exclude-run-outputs-from-typechecking/results.json",
+      "required": true
+    },
+    {
+      "gate": "Staged controls",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 14.996,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-221323-exclude-run-outputs-from-typechecking/results.json",
+      "required": true
+    },
+    {
+      "gate": "Index hygiene",
+      "command": "git diff --cached --check",
+      "result": "PASS",
+      "duration_seconds": 0.02,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-221323-exclude-run-outputs-from-typechecking/results.json",
+      "required": true
+    },
+    {
+      "gate": "Application",
+      "command": "npm run setup; npm run fixture-test; isolated npm run fixture-build -- node|netlify",
+      "result": "PASS",
+      "duration_seconds": 38.387,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-221323-exclude-run-outputs-from-typechecking/results.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Exclude run products from project typechecking",
+  "why": "Saved inspection source under artifacts broke ordinary root Astro checks.",
+  "what": "Exclude only run artifacts, retain inherited dist exclusion and guard this exact typecheck configuration delta.",
+  "how": "Run original root check and both builds. Invalid application source must fail while artifact/dist probes stay excluded.",
+  "where": [
+    "tsconfig.json; scripts/verification/",
+    "tests/verification/",
+    "docs/engineering/"
+  ],
+  "preserved": "Published source, assets, commands, compiler options, adapters and inherited locks retain their identity. Application syntax remains checked.",
+  "risk": "Broader exclusions could hide defects; the guard rejects compiler changes and application-source exclusions.",
+  "limitations": "118 tests and both builds pass. Root check passes in 7.11 seconds; invalid source returns exit 1. Pre-fix failure is retained. Committed-history replay and remote checks follow authoring.",
+  "rollback": "Revert exclusion and guard/docs together in a reported change; preserve evidence and isolate checks until a verified replacement."
+}

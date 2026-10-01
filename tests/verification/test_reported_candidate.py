@@ -63,3 +63,14 @@ class ReportedCandidateTests(unittest.TestCase):
         p=self.repo/'package-lock.json';data=json.loads(p.read_text());data['packages']['node_modules/synthetic-runtime']={'version':'1.0.0'}
         sha=self.changed('package-lock.json',json.dumps(data))
         with self.assertRaisesRegex(ValueError,'New runtime lock entries'):preserved_application(self.repo,sha)
+
+    def test_only_run_outputs_may_be_added_to_typecheck_exclusions(self):
+        data=json.loads((self.repo/'tsconfig.json').read_text())
+        data['exclude']=['${configDir}/dist','${configDir}/artifacts']
+        sha=self.changed('tsconfig.json',json.dumps(data))
+        self.assertEqual(preserved_application(self.repo,sha)['typecheck_configuration'],'RUN_OUTPUT_EXCLUSION_ONLY')
+
+    def test_application_source_exclusion_cannot_weaken_typechecking(self):
+        data=json.loads((self.repo/'tsconfig.json').read_text());data['exclude']=['src']
+        sha=self.changed('tsconfig.json',json.dumps(data))
+        with self.assertRaisesRegex(ValueError,'Typecheck configuration changed'):preserved_application(self.repo,sha)
