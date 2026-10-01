@@ -32,7 +32,7 @@ The Python validator is authoritative for structure. [The JSON schema](templates
 5. Stage the triplet. Recompute the fingerprint and confirm it matches the tested payload. Independently check the record's parent and fingerprint, the triplet, and the selected check results before committing.
 6. Add exactly one trailer, such as `Report-ID: 20261001-193813-engineering-change-reporting`. Find the resulting commit with `git log --all --format='%h %s%n%(trailers:key=Report-ID,valueonly)'`.
 
-The current tools calculate fingerprints and validate/render records. They do not install hooks, export candidates automatically, execute application gates, enforce report history, or configure GitHub protection. Those controls need separate tested changes. A JSON `PASS` is a claim supported by evidence, not a substitute for independent CI.
+The current tools calculate fingerprints and validate/render records. They do not install hooks, enforce report history, or configure GitHub protection. The admission commands below export candidates and execute local gates. Those controls need separate tested changes. A JSON `PASS` is a claim supported by evidence, not a substitute for independent CI.
 
 ## Evidence and integration
 
@@ -55,3 +55,28 @@ python3 -B -m scripts.reports.archive engineering-change-reporting-2026-10-01
 ```
 
 Lookup checks the original commit tree and compares all archived bytes. Legacy IDs are accepted by fingerprinting only at their mapped historical commit, never for a fresh index or amendment. Validate and reproduce historical records with their original commit's tools and templates; today's authoring schema deliberately requires canonical IDs. Do not rewrite historical JSON or regenerate historical PDFs to give them new identities. A generated report-to-containing-commit index belongs under `artifacts/`.
+
+## Frozen local admission
+
+Stage the coherent payload, then allocate its actual preparation time and freeze its index:
+
+```sh
+npm run report-new -- --purpose descriptive-purpose
+npm run admit -- run --out artifacts/admission/<returned-report-id>
+```
+
+Select the declared Node/npm versions before running. Admission runs doctor, developer tests, report tests, staged controls and index whitespace checks. Application source, published content, lock/dependency, configuration and unknown changes additionally run guarded installs and isolated Node/Netlify builds. This adoption set does not yet establish browser interactions, actual viewer decoding or platform deployment. The detailed receipt lists every required process, command, timing, outcome, configuration and input identity. Independent gates use at most two workers; missing, failed or timed-out work fails the receipt.
+
+Provide a public description JSON containing exactly `title`, `why`, `what`, `how`, `where`, `preserved`, `risk`, `limitations` and `rollback`. Commands and results come from the completed receipt, not the description:
+
+```sh
+npm run admit -- finalize --out artifacts/admission/<returned-report-id> --description artifacts/change-description.json
+```
+
+Review the one-page PDF, stage only its generated triplet and check freshness:
+
+```sh
+npm run admit -- check --out artifacts/admission/<returned-report-id> --message artifacts/commit-message.txt
+```
+
+The message file needs exactly one matching `Report-ID` trailer. Check compares the current index and parent with the frozen inputs, every required result, and all three staged bytes with their canonical reproduced artifacts. It rejects empty test collection, a changed payload, a modified snapshot, missing/tampered artifacts and duplicate trailers. No command commits or stages automatically. Preserve failed attempts and allocate another real preparation identity for a corrected candidate. Local receipts support hooks; they do not substitute for independent remote execution or required review.

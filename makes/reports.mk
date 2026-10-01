@@ -5,3 +5,10 @@ report:
 report-check:
 	@test -n "$(RECORD)" || { printf '%s\n' 'Usage: make report-check RECORD=record.json'; exit 2; }
 	$(NPM) run report-check -- "$(RECORD)" --require-commit
+
+.PHONY: admit report-new
+admit:
+	$(NPM) run admit -- $(COMMAND) $(ARGS)
+report-new:
+	@test -n "$(PURPOSE)" || { printf '%s\n' 'Usage: make report-new PURPOSE=descriptive-purpose'; exit 2; }
+	$(NPM) run report-new -- --purpose "$(PURPOSE)"

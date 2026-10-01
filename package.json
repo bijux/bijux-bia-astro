@@ -19,7 +19,9 @@
     "report-check": "python3 -B -m scripts.reports validate",
     "setup": "node scripts/development/bootstrap.mjs install",
     "candidate": "python3 -B -m scripts.verification.staged",
-    "verification-test": "python3 -B -m scripts.verification.tests"
+    "verification-test": "python3 -B -m scripts.verification.tests",
+    "admit": "python3 -B -m scripts.verification.admission",
+    "report-new": "python3 -B -m scripts.verification.admission prepare"
   },
   "dependencies": {
     "@astrojs/check": "^0.2.1",
