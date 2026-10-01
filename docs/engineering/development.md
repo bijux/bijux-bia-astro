@@ -24,3 +24,16 @@ node --test tests/development/bootstrap.test.mjs
 ```
 
 The suite covers diagnostic side effects, missing tools, version mismatches, malformed declarations, and child failure propagation. It does not establish browser behavior or deployment readiness.
+
+## Command entry points
+
+Npm owns command behavior; the Makefile delegates to the same commands. `make` or `make help` prints help without inspecting services or installing anything. `make doctor` checks the declared developer versions without printing configuration values; it fails on a mismatch. Select the declared distribution on PATH explicitly before running `make install` (guarded `npm ci`).
+
+`make dev`, `make build`, `make preview` and `make check` call the existing Astro interfaces. The production build retains its type check and root robots/redirect copies. `npm run local` and `npm run prod` retain their original behavior. `make test` exercises the developer commands; `make report-test` runs the report suite and fails on empty collection. These tests do not establish application browser or viewer correctness.
+
+```sh
+make report-check RECORD=artifacts/change-record.json
+make report RECORD=artifacts/change-record.json OUT=artifacts/report-preview
+```
+
+`make clean` deletes only generated `dist/`, `.astro/` and `.netlify/` directories after confirming that none contains tracked files or is a symlink. It preserves `artifacts/`, source, dependencies, environment files and arbitrary user files. Every target propagates its child's failure. Browser, link, deployment and admission commands will be documented only when their implementations are available.

@@ -9,7 +9,15 @@
     "preview": "astro preview",
     "astro": "astro",
     "prod": "NODE_ENV=production PORT=8080 HOST=0.0.0.0 node dist/bioimage-archive/server/entry.mjs",
-    "local": "astro check && astro build && astro preview"
+    "local": "astro check && astro build && astro preview",
+    "doctor": "node scripts/development/bootstrap.mjs doctor",
+    "clean": "node scripts/development/clean.mjs",
+    "check": "astro check",
+    "test": "node --test tests/development/*.test.mjs",
+    "report-test": "python3 -B -m scripts.reports.tests",
+    "report": "python3 -B -m scripts.reports build",
+    "report-check": "python3 -B -m scripts.reports validate",
+    "setup": "node scripts/development/bootstrap.mjs install"
   },
   "dependencies": {
     "@astrojs/check": "^0.2.1",
