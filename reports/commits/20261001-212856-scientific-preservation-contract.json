@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-212856-scientific-preservation-contract",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T21:28:56Z",
+  "parent_sha": "2ff391d6e490a572e501223f7cee454daa1a98b9",
+  "candidate_sha256": "3da5eb828abc0ca95517faad5c83191a76db696b24dd9349198b2aa06befab34",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Toolchain",
+      "command": "npm run doctor",
+      "result": "PASS",
+      "duration_seconds": 0.451,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212856-scientific-preservation-contract/results.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.792,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212856-scientific-preservation-contract/results.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 5.787,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212856-scientific-preservation-contract/results.json",
+      "required": true
+    },
+    {
+      "gate": "Staged controls",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 6.985,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212856-scientific-preservation-contract/results.json",
+      "required": true
+    },
+    {
+      "gate": "Index hygiene",
+      "command": "git diff --cached --check",
+      "result": "PASS",
+      "duration_seconds": 0.01,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212856-scientific-preservation-contract/results.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Exact scientific preservation expectations",
+  "why": "Identifiers, counts, units, relationships and attribution need source-derived expectations before application behavior changes.",
+  "what": "Document exact synthetic Study/Image values, field selection, viewer and download boundaries, review roles, planned assertions and inherited missing-record behavior.",
+  "how": "Trace unchanged consumers and run their actual formatting bodies with only Astro import seams replaced. Observe absent and malformed routes through the real built Node server. Verify documentation links.",
+  "where": [
+    "docs/reference/scientific-preservation.md",
+    "docs/reference/routes-and-configuration.md",
+    "docs/architecture.md"
+  ],
+  "preserved": "Application source, data, assets, APIs, route defaults and deployment retain their bytes. Synthetic values are explicitly invented; review roles are responsibilities to confirm.",
+  "risk": "Missing Study totals can collapse to zero; absent Images currently return 500. These inherited defects are characterized for separate fixes rather than approved as scientific behavior.",
+  "limitations": "90 tooling tests pass. Source checks confirm exact units and relationships. Node observations: absent Study 404, absent Images 500, malformed URI 400. Complete browser journeys, viewer decoding, galleries and Netlify runtime remain unverified.",
+  "rollback": "Revert the documentation change in a reported commit; retain original application and observed characterization evidence."
+}

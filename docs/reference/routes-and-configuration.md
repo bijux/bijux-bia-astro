@@ -29,6 +29,8 @@ The static Study route gets its generated accession IDs from the API. The standa
 
 The unknown values above are test inputs, not asserted API contracts. Determine missing-record behavior from the API and current application before specifying a desired status or error screen.
 
+The subsequent [synthetic preservation characterization](scientific-preservation.md#missing-and-malformed-behavior) records an ungenerated Study's 404, absent Image UUIDs' inherited 500 defect and malformed URI encoding's 400 from the actual built Node server. It also supplies the deterministic Study/Image identifiers used for future semantic journeys. Netlify runtime and remaining gallery/Unicode cases are still unverified.
+
 ## Legacy redirects
 
 [astro.config.mjs](../../astro.config.mjs) declares these 21 redirects. Destination existence and hosted response behavior need their own tests; several targets are not represented by a page file in this source inventory.
