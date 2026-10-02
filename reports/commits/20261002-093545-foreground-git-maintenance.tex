@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Bound Git maintenance during disposable verification}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Report ID} & 20261002-\allowbreak{}093545-\allowbreak{}foreground-\allowbreak{}git-\allowbreak{}maintenance \\
+\textbf{Prepared UTC} & 2026-10-02 09:35:45 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize 11fc8091ced66d3b2440f7daf9650f9e08b2470c}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize 7f3dbde1f455726aef995f3e8e5dcbceaef6b09501dc20b48e6d9464738de440}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{The branch-head check failed while cleaning a temporary Git fixture; the integration check passed. Detached maintenance can outlive the checked Git command.}
+\block{WHAT / change scope}{Run automatic maintenance and garbage collection without detaching in epoch and adapter processes.}
+\block{HOW / implementation rationale}{Append command-scoped Git configuration while preserving inherited entries; reject invalid counts. Keep original historical tests and reports.}
+\block{WHERE / affected paths}{scripts/\allowbreak{}verification/\allowbreak{}reported\_candidate.py\par tests/\allowbreak{}verification/\allowbreak{}test\_reported\_candidate.py\par docs/\allowbreak{}engineering/\allowbreak{}integration.md}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{Original application, scientific content, runtime commands, locked dependencies and required checks.}
+\block{RISK / what could go wrong}{Foreground maintenance can increase a gate duration; existing timeouts remain enforced.}
+\block{LIMITATIONS / what is not proved}{The exact Linux cleanup race was not reproduced locally. A forced automatic repack completed with all traced child exits. Independent corrected head and integration CI remain unrun at authoring.}
+\block{ROLLBACK / restore and verify}{Use an admitted reported revert of the environment helper, tests and documentation; retain original failure and process evidence.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Toolchain & npm run doctor & PASS & 0.29 s & artifacts/\allowbreak{}admission/\allowbreak{}20261002-093545-foreground-git-maintenance/\allowbreak{}results.json \\
+Developer tests & npm test & PASS & 1.57 s & artifacts/\allowbreak{}admission/\allowbreak{}20261002-093545-foreground-git-maintenance/\allowbreak{}results.json \\
+Report tools & npm run report-test & PASS & 10.76 s & artifacts/\allowbreak{}admission/\allowbreak{}20261002-093545-foreground-git-maintenance/\allowbreak{}results.json \\
+Staged controls & npm run verification-test & PASS & 15.24 s & artifacts/\allowbreak{}admission/\allowbreak{}20261002-093545-foreground-git-maintenance/\allowbreak{}results.json \\
+Index hygiene & git diff --cached --check & PASS & 0.02 s & artifacts/\allowbreak{}admission/\allowbreak{}20261002-093545-foreground-git-maintenance/\allowbreak{}results.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

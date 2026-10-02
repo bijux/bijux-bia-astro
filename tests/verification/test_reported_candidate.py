@@ -1,12 +1,13 @@
 """Real disposable Git changes prove inherited application build reuse fails closed."""
 
 import json
+import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.verification.reported_candidate import ADOPTION, adapter_snapshots, preserved_application
+from scripts.verification.reported_candidate import ADOPTION, adapter_snapshots, foreground_git_environment, preserved_application
 
 ROOT=Path(__file__).resolve().parents[2]
 
@@ -31,6 +32,28 @@ class ReportedCandidateTests(unittest.TestCase):
 
     def test_actual_baseline_is_exact_unchanged_input(self):
         self.assertEqual(preserved_application(self.repo,ADOPTION)['application'],'UNCHANGED')
+
+    def test_disposable_git_children_use_foreground_maintenance(self):
+        inherited=dict(os.environ, GIT_CONFIG_COUNT='2', GIT_CONFIG_KEY_0='maintenance.autoDetach', GIT_CONFIG_VALUE_0='true', GIT_CONFIG_KEY_1='alias.retained-fixture', GIT_CONFIG_VALUE_1='status')
+        environment=foreground_git_environment(inherited)
+        self.assertEqual(inherited['GIT_CONFIG_COUNT'],'2')
+        self.assertEqual(environment['GIT_CONFIG_COUNT'],'4')
+        for key in ('maintenance.autoDetach','gc.autoDetach'):
+            observed=subprocess.run(['git','-C',str(self.repo),'config','--bool','--get',key],env=environment,capture_output=True,text=True,check=True).stdout.strip()
+            self.assertEqual(observed,'false')
+        observed=subprocess.run(['git','-C',str(self.repo),'config','--get','alias.retained-fixture'],env=environment,capture_output=True,text=True,check=True).stdout.strip()
+        self.assertEqual(observed,'status')
+
+    def test_invalid_inherited_git_configuration_count_is_rejected(self):
+        for count in ('-1','invalid'):
+            with self.subTest(count=count), self.assertRaises(ValueError):
+                foreground_git_environment({'GIT_CONFIG_COUNT':count})
+
+    def test_foreground_maintenance_setting_is_not_written_to_repository(self):
+        environment=foreground_git_environment(os.environ)
+        subprocess.run(['git','-C',str(self.repo),'config','--bool','--get','gc.autoDetach'],env=environment,check=True,capture_output=True)
+        observed=subprocess.run(['git','-C',str(self.repo),'config','--local','--get','gc.autoDetach'],capture_output=True)
+        self.assertEqual(observed.returncode,1)
 
     def test_retained_artifact_source_cannot_enter_either_adapter_build(self):
         artifacts=self.repo/'artifacts';artifacts.mkdir()

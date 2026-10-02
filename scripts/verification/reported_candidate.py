@@ -18,6 +18,20 @@ APPLICATION_PATHS = ("src", "public", "astro.config.mjs", "Dockerfile", "helm-ch
 ORIGINAL_COMMANDS = ("dev", "start", "build", "preview", "local", "prod")
 
 
+def foreground_git_environment(environment):
+    """Keep automatic Git maintenance within each disposable process lifetime."""
+    result = dict(environment)
+    count = int(result.get("GIT_CONFIG_COUNT", "0"))
+    if count < 0:
+        raise ValueError("Inherited Git configuration count must be nonnegative.")
+    for key in ("maintenance.autoDetach", "gc.autoDetach"):
+        result[f"GIT_CONFIG_KEY_{count}"] = key
+        result[f"GIT_CONFIG_VALUE_{count}"] = "false"
+        count += 1
+    result["GIT_CONFIG_COUNT"] = str(count)
+    return result
+
+
 def preserved_application(repo, sha):
     """This initial gate reuses builds only for byte-identical inherited application inputs."""
     sha = commit(repo, sha)
@@ -86,7 +100,7 @@ def execute(repo, head, output):
             raise ValueError("Checkout is not the expected automatic integration of the authored head.")
     output.mkdir(parents=True)
     history = verify(repo, ADOPTION, head, output / "reports")
-    environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", npm_config_update_notifier="false")
+    environment = foreground_git_environment(dict(os.environ, PYTHONDONTWRITEBYTECODE="1", npm_config_update_notifier="false"))
     epochs = []
     for row in history["authored_commits"]:
         sha = row["commit_sha"]

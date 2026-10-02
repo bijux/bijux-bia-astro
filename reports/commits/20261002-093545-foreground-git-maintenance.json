@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261002-093545-foreground-git-maintenance",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-02T09:35:45Z",
+  "parent_sha": "11fc8091ced66d3b2440f7daf9650f9e08b2470c",
+  "candidate_sha256": "7f3dbde1f455726aef995f3e8e5dcbceaef6b09501dc20b48e6d9464738de440",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Toolchain",
+      "command": "npm run doctor",
+      "result": "PASS",
+      "duration_seconds": 0.288,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261002-093545-foreground-git-maintenance/results.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.575,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261002-093545-foreground-git-maintenance/results.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 10.756,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261002-093545-foreground-git-maintenance/results.json",
+      "required": true
+    },
+    {
+      "gate": "Staged controls",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 15.241,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261002-093545-foreground-git-maintenance/results.json",
+      "required": true
+    },
+    {
+      "gate": "Index hygiene",
+      "command": "git diff --cached --check",
+      "result": "PASS",
+      "duration_seconds": 0.021,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261002-093545-foreground-git-maintenance/results.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Bound Git maintenance during disposable verification",
+  "why": "The branch-head check failed while cleaning a temporary Git fixture; the integration check passed. Detached maintenance can outlive the checked Git command.",
+  "what": "Run automatic maintenance and garbage collection without detaching in epoch and adapter processes.",
+  "how": "Append command-scoped Git configuration while preserving inherited entries; reject invalid counts. Keep original historical tests and reports.",
+  "where": [
+    "scripts/verification/reported_candidate.py",
+    "tests/verification/test_reported_candidate.py",
+    "docs/engineering/integration.md"
+  ],
+  "preserved": "Original application, scientific content, runtime commands, locked dependencies and required checks.",
+  "risk": "Foreground maintenance can increase a gate duration; existing timeouts remain enforced.",
+  "limitations": "The exact Linux cleanup race was not reproduced locally. A forced automatic repack completed with all traced child exits. Independent corrected head and integration CI remain unrun at authoring.",
+  "rollback": "Use an admitted reported revert of the environment helper, tests and documentation; retain original failure and process evidence."
+}
