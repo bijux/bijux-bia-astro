@@ -1,0 +1,68 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Traceable engineering change reports}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Prepared UTC} & 2026-10-01 19:38:13 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize 808857d90a142ab0dc10c873ec44a2e24a344a76}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize 64794a1fa3b57c97fb042b6a76851de7d5dcb3ef395ce37d09104a3a047ac8d3}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Make fork proposals easy to review through evidence tied to each authored change, while preserving upstream ownership and application behavior.}
+\block{WHAT / change scope}{Add fork contributor guidance, JSON validation, staged-payload fingerprints, escaped one-page PDF generation, report templates and focused regression tests.}
+\block{HOW / implementation rationale}{Separate payload identity, validation and rendering. Test the exported staged payload, bind the record to its actual parent, and render escaped change descriptions into a readable one-page PDF.}
+\block{WHERE / affected paths}{scripts/\allowbreak{}reports/\allowbreak{}\par tests/\allowbreak{}reports/\allowbreak{}\par reports/\allowbreak{}templates/\allowbreak{}\par reports/\allowbreak{}README.md\par README.md; CONTRIBUTING.md\par .gitignore}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{All application source, public assets, dependencies, Node/Netlify configuration, chart interfaces and existing CI are byte-identical to the parent.}
+\block{RISK / what could go wrong}{Reports are fork-local evidence. Structure alone cannot prove claims. The inherited Docker context still includes developer files. No deployment change is included.}
+\block{LIMITATIONS / what is not proved}{No remote CI, browser interaction or viewer decoding claim. Baseline npm audit reports 41 advisories, including two critical. No repository license declared. TeX Live 2024; Poppler 26.09.0.}
+\block{ROLLBACK / restore and verify}{Revert this coherent change with a new reported commit. Recheck application inputs against the parent and rerun relevant checks.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Report tests & python3 -B -m unittest discover -s tests/reports -v & PASS & 5.05 s & artifacts/\allowbreak{}admission/\allowbreak{}public-report/\allowbreak{}report-tests.log \\
+Preservation & git diff --cached --exit-code 'HEAD\textasciicircum{}' -- src public 'package*.json' '*.mjs' '*.toml' tsconfig.json Dockerfile helm-chart .github .dockerignore .vscode & PASS & 0.01 s & artifacts/\allowbreak{}admission/\allowbreak{}public-report/\allowbreak{}preservation.log \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

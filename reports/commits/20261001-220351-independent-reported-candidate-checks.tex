@@ -1,0 +1,73 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Independent reported candidate verification}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Report ID} & 20261001-\allowbreak{}220351-\allowbreak{}independent-\allowbreak{}reported-\allowbreak{}candidate-\allowbreak{}checks \\
+\textbf{Prepared UTC} & 2026-10-01 22:03:51 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize 6436aa4fd8a7d55168c6085c529ccf86142cefff}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize d3802958ff0e17e11e2e7ca4b96a938629f06b34547495cf1fe7f81628c5946e}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Fork merges need independent execution tied to the actual head and integration checkout.}
+\block{WHAT / change scope}{Add read-only fork checks, original-epoch replay and checkout receipts. Preserve upstream preview checks under their upstream repository identity.}
+\block{HOW / implementation rationale}{Pin tools/actions; replay introduced controls at original trees. Build both adapters in clean independent snapshots and persist every completed process outcome. Query live jobs and their Git identities.}
+\block{WHERE / affected paths}{.github/\allowbreak{}workflows/\allowbreak{}\par scripts/\allowbreak{}verification/\allowbreak{}; scripts/\allowbreak{}reports/\allowbreak{}integration.py\par tests/\allowbreak{}reports/\allowbreak{}; tests/\allowbreak{}verification/\allowbreak{}\par docs/\allowbreak{}engineering/\allowbreak{}integration.md}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{Inherited application bytes, runtime commands and 986 locked packages retain their identity. Fork preview jobs are explicitly not applicable; no deployment is performed.}
+\block{RISK / what could go wrong}{Changed application inputs require an extended verified gate contract. Recorded success cannot override missing or failed live jobs.}
+\block{LIMITATIONS / what is not proved}{116 tests, both builds and actionlint 1.7.12 pass. Mutation probes reject polluted adapter inputs and altered pages, commands and locks. An unpublished failed replay is retained; committed replay, Actions and review follow authoring.}
+\block{ROLLBACK / restore and verify}{Revert workflow and candidate/identity tools together in a reported change. Retain upstream checks and evidence; stop promotion until replacement checks pass.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Toolchain & npm run doctor & PASS & 0.34 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-220351-independent-reported-candidate-checks/\allowbreak{}results.json \\
+Developer tests & npm test & PASS & 1.64 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-220351-independent-reported-candidate-checks/\allowbreak{}results.json \\
+Report tools & npm run report-test & PASS & 10.87 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-220351-independent-reported-candidate-checks/\allowbreak{}results.json \\
+Staged controls & npm run verification-test & PASS & 12.59 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-220351-independent-reported-candidate-checks/\allowbreak{}results.json \\
+Index hygiene & git diff --cached --check & PASS & 0.02 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-220351-independent-reported-candidate-checks/\allowbreak{}results.json \\
+Application & npm run setup; npm run fixture-test; isolated npm run fixture-build -- node|netlify & PASS & 39.82 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-220351-independent-reported-candidate-checks/\allowbreak{}results.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

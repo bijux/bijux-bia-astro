@@ -1,0 +1,67 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Frontend architecture and observed baseline}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Prepared UTC} & 2026-10-01 19:49:08 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize 18043685a2e3d8048e1b7005fe98f02b0d0f0ea5}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize c8137b6511b6edd3e17a2661bde49413682442e065a97415c5977c9d93b95cb5}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Give reviewers an accurate map of the existing frontend, preservation boundaries and measured results before proposing behavior or deployment changes.}
+\block{WHAT / change scope}{Document build/server/browser boundaries, all 45 source pages and 21 configured redirects, public configuration, observed baseline results and a concise team presentation.}
+\block{HOW / implementation rationale}{Trace checked-out source, link each boundary to its implementation, compare the exported staged payload with the immutable application baseline, and distinguish measured results from unverified behavior.}
+\block{WHERE / affected paths}{docs/\allowbreak{}architecture.md\par docs/\allowbreak{}reference/\allowbreak{}routes-and-configuration.md\par docs/\allowbreak{}engineering/\allowbreak{}baseline.md\par docs/\allowbreak{}engineering/\allowbreak{}team-review.md\par docs/\allowbreak{}README.md; README.md}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{Application source, public assets, dependencies, adapters, chart interfaces and existing CI remain byte-identical to the recorded upstream application baseline.}
+\block{RISK / what could go wrong}{A source inventory is not runtime coverage. Several configured redirect targets have no matching page file. Documentation records this observation without prescribing a behavior repair.}
+\block{LIMITATIONS / what is not proved}{No new browser, viewer, platform or remote CI result. Baseline live-service build results are historical observations. Inherited advisories and maintainer licensing questions remain unresolved.}
+\block{ROLLBACK / restore and verify}{Revert this documentation change in a new reported commit. Contributor and report tools remain usable; application inputs are unaffected.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Docs and source & python3 -B artifacts/admission/architecture/check\_documentation.py artifacts/admission/architecture/candidate & PASS & 4.46 s & artifacts/\allowbreak{}admission/\allowbreak{}architecture/\allowbreak{}documentation-check.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

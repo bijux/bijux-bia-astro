@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-205927-staged-payload-export",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T20:59:27Z",
+  "parent_sha": "5e73a19f9b910d8bad0f19c8f1f5e56f266e134b",
+  "candidate_sha256": "fbddaceaadcaa0691d20212f4c34ff6bce0b4a37f00469bf27295dfaf08da855",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Staged execution",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 1.792,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/staged-payload-export/verification-tests.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 6.093,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/staged-payload-export/report-tests.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.307,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/staged-payload-export/command-tests.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Exact staged payload execution",
+  "why": "Contributor validation must run the bytes being committed while preserving unstaged changes.",
+  "what": "Export the complete index into an isolated local Git snapshot under artifacts. Reject unsafe paths, conflicts, unsupported objects and output collisions.",
+  "how": "Bind the parent and complete tree, validate entries before writing, preserve modes and internal symlinks, and check identity after export. Prove a passing worktree cannot hide staged exit-seven code.",
+  "where": [
+    "scripts/verification/",
+    "tests/verification/",
+    "package.json; Makefile; makes/verification.mk",
+    "docs/engineering/development.md"
+  ],
+  "preserved": "No stash, reset or checkout in the contributor worktree. Original npm application interfaces and production inputs remain unchanged. Only exact current report paths are excluded from identity.",
+  "risk": "Snapshots use local Git object sharing and must retain the source object store during checks. Case-colliding paths and escaping symlinks fail rather than execute an ambiguous candidate.",
+  "limitations": "Six staged-export probes, 13 developer tests and 57 report tests passed on the frozen index with Node 24.21.0/npm 11.19.0. Export does not itself execute application gates or admit a commit.",
+  "rollback": "Revert export tools, tests and aliases together in a reported change. Existing manual staged inspection and application commands remain available."
+}

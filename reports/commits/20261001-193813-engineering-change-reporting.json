@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "engineering-change-reporting-2026-10-01",
+  "title": "Traceable engineering change reports",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T19:38:13Z",
+  "parent_sha": "808857d90a142ab0dc10c873ec44a2e24a344a76",
+  "candidate_sha256": "64794a1fa3b57c97fb042b6a76851de7d5dcb3ef395ce37d09104a3a047ac8d3",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "why": "Make fork proposals easy to review through evidence tied to each authored change, while preserving upstream ownership and application behavior.",
+  "what": "Add fork contributor guidance, JSON validation, staged-payload fingerprints, escaped one-page PDF generation, report templates and focused regression tests.",
+  "how": "Separate payload identity, validation and rendering. Test the exported staged payload, bind the record to its actual parent, and render escaped change descriptions into a readable one-page PDF.",
+  "where": [
+    "scripts/reports/",
+    "tests/reports/",
+    "reports/templates/",
+    "reports/README.md",
+    "README.md; CONTRIBUTING.md",
+    ".gitignore"
+  ],
+  "preserved": "All application source, public assets, dependencies, Node/Netlify configuration, chart interfaces and existing CI are byte-identical to the parent.",
+  "risk": "Reports are fork-local evidence. Structure alone cannot prove claims. The inherited Docker context still includes developer files. No deployment change is included.",
+  "limitations": "No remote CI, browser interaction or viewer decoding claim. Baseline npm audit reports 41 advisories, including two critical. No repository license declared. TeX Live 2024; Poppler 26.09.0.",
+  "rollback": "Revert this coherent change with a new reported commit. Recheck application inputs against the parent and rerun relevant checks.",
+  "checks": [
+    {
+      "gate": "Report tests",
+      "command": "python3 -B -m unittest discover -s tests/reports -v",
+      "result": "PASS",
+      "duration_seconds": 5.05,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/public-report/report-tests.log",
+      "required": true
+    },
+    {
+      "gate": "Preservation",
+      "command": "git diff --cached --exit-code 'HEAD^' -- src public 'package*.json' '*.mjs' '*.toml' tsconfig.json Dockerfile helm-chart .github .dockerignore .vscode",
+      "result": "PASS",
+      "duration_seconds": 0.007,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/public-report/preservation.log",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN"
+}

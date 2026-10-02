@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-205605-developer-command-interface",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T20:56:05Z",
+  "parent_sha": "6cbc47fcec75e960ce0362e86c1b76085c18fb0c",
+  "candidate_sha256": "9c07f780f6ee7fa1be6b2110fd25a86d59fd0c229dc9a3283390111c63ff1a63",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.954,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/developer-command-interface/command-tests.json",
+      "required": true
+    },
+    {
+      "gate": "Report tests",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 6.456,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/developer-command-interface/report-tests.json",
+      "required": true
+    },
+    {
+      "gate": "Toolchain",
+      "command": "make doctor",
+      "result": "PASS",
+      "duration_seconds": 0.341,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/developer-command-interface/doctor.json",
+      "required": true
+    },
+    {
+      "gate": "Locked setup",
+      "command": "npm run setup",
+      "result": "PASS",
+      "duration_seconds": 12.798,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/developer-command-interface/locked-setup.json",
+      "required": true
+    },
+    {
+      "gate": "Preservation",
+      "command": "git diff --cached --exit-code HEAD -- src public package-lock.json astro.config.mjs netlify.toml tsconfig.json Dockerfile helm-chart .github .dockerignore",
+      "result": "PASS",
+      "duration_seconds": 0.017,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/developer-command-interface/preservation.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Discoverable developer command interface",
+  "why": "Give contributors consistent commands and safe cleanup without duplicating application behavior or silently provisioning tools.",
+  "what": "Add thin Make targets and npm aliases, guarded setup, output-only cleanup and command failure tests. Report tests reject empty collection.",
+  "how": "Make delegates to npm. Keep setup outside npm lifecycle names. Test exit-seven propagation, nonmutating help, cleanup boundaries and original application scripts on an exported index.",
+  "where": [
+    "Makefile; makes/",
+    "package.json",
+    "scripts/development/",
+    "scripts/reports/tests.py",
+    "tests/development/",
+    "docs/engineering/development.md"
+  ],
+  "preserved": "Original dev/start/build/preview/local/prod scripts, application bytes, lock, adapters, assets, deployment and inherited CI are unchanged. Clean preserves user files and artifacts.",
+  "risk": "Make and Python are explicit prerequisites. Cleanup assumes untracked allowlisted build directories are generated outputs; tracked paths and symlinks are rejected.",
+  "limitations": "13 developer tests, 57 report tests and clean locked setup passed with Node 24.21.0/npm 11.19.0 on macOS arm64. No new browser, deployment or remote CI result; audit debt remains.",
+  "rollback": "Revert wrappers, new command scripts and their guide together in a reported commit. Existing application npm interfaces continue to work."
+}

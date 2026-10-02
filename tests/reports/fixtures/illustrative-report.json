@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "record_kind": "illustrative",
+  "report_id": "20261001-000000-illustrative-engineering-change",
+  "title": "Illustrative engineering change record",
+  "author": "Report tool test fixture",
+  "prepared_at_utc": "2026-10-01T00:00:00Z",
+  "parent_sha": null,
+  "candidate_sha256": null,
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "why": "Show the proposed one-page change record before adoption. A real first commit must establish a verified baseline rather than claim that repository cleanup has already succeeded.",
+  "what": "Proposed bootstrap: a structured report, escaped LaTeX, compact PDF and minimal tool tests. This example is not a patch, repository commit or application validation.",
+  "how": "Validate the staged payload first. Bind its evidence to a stable Report-ID, parent commit and candidate digest. Add the report triplet to that same commit; CI verifies independently.",
+  "where": [
+    "reports/commits/<Report-ID>.json / .tex / .pdf",
+    "reports/templates/ and minimal scripts/tests"
+  ],
+  "preserved": "No application source, public route, API, viewer behavior, deployment setting or organizational identity has been changed by this planning example.",
+  "risk": "A report can look credible while describing unrun checks. Structural validation must be backed by actual execution and exact source-identity checks.",
+  "limitations": "Current immutable HEAD, full workflows, application builds, browser behavior and deployment were not verified here. No repository commit or fork has been created.",
+  "rollback": "Do not install this illustrative record as commit evidence. For a real change, revert its bounded payload in a new tested commit with its own new report.",
+  "checks": [
+    {
+      "gate": "Application",
+      "command": "Actual repository build and preservation suite",
+      "result": "NOT_RUN",
+      "duration_seconds": null,
+      "exit_code": null,
+      "evidence_ref": "No application run",
+      "required": false
+    },
+    {
+      "gate": "Integration",
+      "command": "Real viewer and deployment checks",
+      "result": "NOT_RUN",
+      "duration_seconds": null,
+      "exit_code": null,
+      "evidence_ref": "No integration run",
+      "required": false
+    },
+    {
+      "gate": "Commit",
+      "command": "Parent, staged payload and trailer admission",
+      "result": "NOT_RUN",
+      "duration_seconds": null,
+      "exit_code": null,
+      "evidence_ref": "No commit exists",
+      "required": false
+    }
+  ],
+  "remote_status": "NOT_RUN"
+}

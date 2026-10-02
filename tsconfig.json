@@ -2,5 +2,6 @@
   "extends": "astro/tsconfigs/base",
   "compilerOptions": {
     "allowJs": true
-  }
+  },
+  "exclude": ["${configDir}/dist", "${configDir}/artifacts"]
 }

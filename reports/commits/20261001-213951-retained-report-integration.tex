@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=16mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor,tabularx,array,booktabs,microtype}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{173C4E}
+\definecolor{muted}{HTML}{50616A}
+\definecolor{line}{HTML}{C6D0D4}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.13}
+\pagestyle{empty}
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=15
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\block}[2]{\vspace{5pt}{\bfseries\color{ink}#1}\par\vspace{1pt}#2\par}
+\begin{document}
+{\sffamily\small\color{muted}BIA-astro\hfill ENGINEERING CHANGE RECORD}\par
+\vspace{4pt}
+{\sffamily\fontsize{19}{22}\selectfont\bfseries\color{ink}Retained reports and exact generated integration nodes}\par
+\vspace{3pt}
+{\sffamily\small\bfseries LOCAL EVIDENCE / REMOTE CI NOT YET RUN}\par
+\vspace{5pt}
+{\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\textbf{Report ID} & 20261001-\allowbreak{}213951-\allowbreak{}retained-\allowbreak{}report-\allowbreak{}integration \\
+\textbf{Prepared UTC} & 2026-10-01 21:39:51 \\
+\textbf{Author / role} & Bijan Mousavi \\
+\end{tabularx}\par
+\textbf{Parent commit:} {\ttfamily\footnotesize faacc53c68df080eaae92ded981d8fdb6a02f4fd}\par
+\textbf{Candidate SHA-256:} {\ttfamily\footnotesize 688e5069af9827b54939380a3a322bd1d37025cb17e62f81d08f0dc38f9523dd}\par
+{\footnotesize\color{muted}Fingerprint excludes only this report's JSON/TEX/PDF; it is not the final commit SHA.}\par
+}
+{\color{line}\hrule height 0.6pt}
+\vspace{3pt}
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{WHY / problem and value}{Parent-bound report evidence must survive fork PR merges without silently admitting unreported merge changes.}
+\block{WHAT / change scope}{Add original-tree report/history reproduction and a narrow GitHub integration validator for checked parents, PR provenance, expected merge trees and live Actions identities.}
+\block{HOW / implementation rationale}{Reject wrong parents, missing or stale reports, unreported merge changes, conflicting trees, foreign PRs and failed/pending/skipped checks. Reproduce historical reports with each original renderer.}
+\block{WHERE / affected paths}{scripts/\allowbreak{}reports/\allowbreak{}history.py; integration.py\par tests/\allowbreak{}reports/\allowbreak{}test\_history.py; test\_integration.py\par docs/\allowbreak{}engineering/\allowbreak{}integration.md\par reports/\allowbreak{}README.md}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}\small
+\block{PRESERVED / existing contracts}{Original authored commits, parent/payload bindings and archived triplet bytes remain intact. Generated merge nodes get external check/provenance evidence; authored resolutions still require normal reports.}
+\block{RISK / what could go wrong}{Historical contributor tools/TeX must run in disposable secret-free environments. Local check indexes are not trusted as live outcomes; the integration CLI queries Actions and downloads checkout identities.}
+\block{LIMITATIONS / what is not proved}{105 tooling tests pass. All nine prior reports reproduce byte-identically with their original tools in this environment. Synthetic merge probes are unit controls, not actual GitHub merges or approval. Bootstrap workflow execution and first permanent merge remain pending.}
+\block{ROLLBACK / restore and verify}{Revert integration tools and documentation together in a reported commit. Retain authored evidence and require a verified replacement protocol before further merge operations.}
+\end{minipage}\par
+\vspace{9pt}
+{\sffamily\small\bfseries\color{ink}VALIDATION / actual local evidence}\par
+{\footnotesize
+\begin{tabularx}{\linewidth}{@{}p{18mm}Yp{23mm}p{15mm}p{28mm}@{}}
+\toprule
+\textbf{Gate} & \textbf{Command / check} & \textbf{Outcome} & \textbf{Duration} & \textbf{Evidence} \\
+\midrule
+Toolchain & npm run doctor & PASS & 0.40 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-213951-retained-report-integration/\allowbreak{}results.json \\
+Developer tests & npm test & PASS & 1.79 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-213951-retained-report-integration/\allowbreak{}results.json \\
+Report tools & npm run report-test & PASS & 10.41 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-213951-retained-report-integration/\allowbreak{}results.json \\
+Staged controls & npm run verification-test & PASS & 6.82 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-213951-retained-report-integration/\allowbreak{}results.json \\
+Index hygiene & git diff --cached --check & PASS & 0.01 s & artifacts/\allowbreak{}admission/\allowbreak{}20261001-213951-retained-report-integration/\allowbreak{}results.json \\
+\bottomrule
+\end{tabularx}}\par
+\vspace{5pt}
+{\footnotesize\color{muted}\textbf{Remote validation at authoring:} NOT\_RUN. Later CI belongs to the immutable commit's check records, not a follow-up report commit.}\par
+\vfill
+{\color{line}\hrule height 0.6pt}
+\vspace{4pt}
+{\sffamily\footnotesize\color{muted}Engineering change summary and actual local verification.\hfill 1 / 1}
+\end{document}

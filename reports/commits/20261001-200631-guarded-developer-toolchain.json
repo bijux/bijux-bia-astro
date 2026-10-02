@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "guarded-developer-toolchain-2026-10-01",
+  "title": "Guarded developer toolchain and locked setup",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T20:06:31Z",
+  "parent_sha": "092781e5a35c5259ceb8ac919f435be799476070",
+  "candidate_sha256": "46850a7e6b6847c6be434356cf8e44c1762ac988cdd4e772c72acede8f4a4d04",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "why": "Give contributors reproducible development inputs and reject setup mismatches before installation, while retaining the existing application and deployment interfaces.",
+  "what": "Declare developer Node 24.21.0 and bundled npm 11.19.0. Add explicit doctor/install commands, seven focused tests and setup documentation. Installation delegates to npm ci.",
+  "how": "Validate an isolated staged snapshot with the declared runtime. Replay both adapter builds, exercise real lock/version rejection, and check three built Node HTTP pages. All 491 locked Node engine constraints accept this version.",
+  "where": [
+    "configs/development/toolchain.json",
+    "scripts/development/bootstrap.mjs",
+    "tests/development/bootstrap.test.mjs",
+    "docs/engineering/development.md",
+    "CONTRIBUTING.md; docs/README.md"
+  ],
+  "preserved": "Application source, public assets, package manifest/lock, adapters, container startup, chart interfaces and CI remain byte-identical to the original application baseline. No automatic platform runtime override.",
+  "risk": "An exact developer pin needs deliberate maintenance. macOS build success does not prove every platform or native dependency path. Install scripts and live-service build inputs still need review.",
+  "limitations": "macOS arm64 only. No Linux, Windows, remote CI or deployment claim. npm warned about seven packages needing install-script approval. Inherited audit advisories remain. Report toolchain unchanged.",
+  "rollback": "Revert the development declaration, bootstrap, tests and related guidance in a new reported commit. Existing npm entry points and deployment settings retain their original behavior.",
+  "checks": [
+    {
+      "gate": "Locked setup",
+      "command": "node scripts/development/bootstrap.mjs install",
+      "result": "PASS",
+      "duration_seconds": 11.382,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/development/locked-install.log",
+      "required": true
+    },
+    {
+      "gate": "Bootstrap tests",
+      "command": "node --test tests/development/bootstrap.test.mjs",
+      "result": "PASS",
+      "duration_seconds": 1.669,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/development/bootstrap-tests.log",
+      "required": true
+    },
+    {
+      "gate": "Node build",
+      "command": "npm run build",
+      "result": "PASS",
+      "duration_seconds": 253.868,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/development/node-build.log",
+      "required": true
+    },
+    {
+      "gate": "Netlify compile",
+      "command": "npm run astro -- build",
+      "result": "PASS",
+      "duration_seconds": 302.379,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/development/netlify-build.log",
+      "required": true
+    },
+    {
+      "gate": "Setup rejection",
+      "command": "python3 -B artifacts/admission/development/check_rejections.py",
+      "result": "PASS",
+      "duration_seconds": 0.962,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/development/rejection-check.json",
+      "required": true
+    },
+    {
+      "gate": "Docs and source",
+      "command": "python3 -B artifacts/admission/architecture/check_documentation.py artifacts/admission/development/candidate",
+      "result": "PASS",
+      "duration_seconds": 4.739,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/development/documentation-check.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN"
+}

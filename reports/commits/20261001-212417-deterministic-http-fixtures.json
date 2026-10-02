@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-212417-deterministic-http-fixtures",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T21:24:17Z",
+  "parent_sha": "08149682754bfcd9530e1875f7e90c9e86dc95af",
+  "candidate_sha256": "f66fc879dc46e25c52d0347c0e1ee1d83327b4991ecb59321c72e69035d8991a",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Toolchain",
+      "command": "npm run doctor",
+      "result": "PASS",
+      "duration_seconds": 0.456,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212417-deterministic-http-fixtures/results.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.739,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212417-deterministic-http-fixtures/results.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 6.307,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212417-deterministic-http-fixtures/results.json",
+      "required": true
+    },
+    {
+      "gate": "Staged controls",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 7.623,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212417-deterministic-http-fixtures/results.json",
+      "required": true
+    },
+    {
+      "gate": "Index hygiene",
+      "command": "git diff --cached --check",
+      "result": "PASS",
+      "duration_seconds": 0.019,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212417-deterministic-http-fixtures/results.json",
+      "required": true
+    },
+    {
+      "gate": "Application",
+      "command": "npm run setup; npm run fixture-test; isolated npm run fixture-build -- node|netlify",
+      "result": "PASS",
+      "duration_seconds": 40.091,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-212417-deterministic-http-fixtures/results.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Deterministic HTTP boundaries for offline validation",
+  "why": "Build-time, server and browser requests need lawful bounded data and must not fall back to remote services during ordinary validation.",
+  "what": "Add synthetic source-derived records, a loopback HTTP service, explicit Node/browser egress guards and isolated adapter build wrappers with a built Node runtime probe.",
+  "how": "Five actual HTTP/Chromium tests cover response cases and undeclared destinations. Both original adapter commands build against separate services; the real built entrypoint queries fixture APIs. Test telemetry is explicitly disabled.",
+  "where": [
+    "tests/fixtures/",
+    "scripts/verification/fixture-build.mjs; fixture-runtime.mjs",
+    "scripts/verification/admission.py",
+    "package.json; package-lock.json"
+  ],
+  "preserved": "Application source, public defaults, existing commands, routes, assets, viewer and deployment interfaces retain their original bytes. Playwright is exact-pinned development tooling; unrelated locked packages remain intact.",
+  "risk": "Synthetic consumer shapes do not establish live API compatibility. Node interception is test wiring, not an operating-system sandbox. Inherited dependency advisories remain unresolved.",
+  "limitations": "95 tests pass; Node and Netlify compile offline. Built Study and dynamic Image return synthetic titles. Browser boundary probes establish egress handling, not full UI journeys, real viewer decoding or hosted Netlify behavior. Telemetry-blocked failure evidence is retained.",
+  "rollback": "Revert fixture tools, admission wiring and browser development dependency together in a reported commit; retain earlier reports and failed run evidence."
+}

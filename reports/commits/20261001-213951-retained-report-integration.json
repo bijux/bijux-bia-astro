@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-213951-retained-report-integration",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T21:39:51Z",
+  "parent_sha": "faacc53c68df080eaae92ded981d8fdb6a02f4fd",
+  "candidate_sha256": "688e5069af9827b54939380a3a322bd1d37025cb17e62f81d08f0dc38f9523dd",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "checks": [
+    {
+      "gate": "Toolchain",
+      "command": "npm run doctor",
+      "result": "PASS",
+      "duration_seconds": 0.397,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-213951-retained-report-integration/results.json",
+      "required": true
+    },
+    {
+      "gate": "Developer tests",
+      "command": "npm test",
+      "result": "PASS",
+      "duration_seconds": 1.79,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-213951-retained-report-integration/results.json",
+      "required": true
+    },
+    {
+      "gate": "Report tools",
+      "command": "npm run report-test",
+      "result": "PASS",
+      "duration_seconds": 10.411,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-213951-retained-report-integration/results.json",
+      "required": true
+    },
+    {
+      "gate": "Staged controls",
+      "command": "npm run verification-test",
+      "result": "PASS",
+      "duration_seconds": 6.817,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-213951-retained-report-integration/results.json",
+      "required": true
+    },
+    {
+      "gate": "Index hygiene",
+      "command": "git diff --cached --check",
+      "result": "PASS",
+      "duration_seconds": 0.011,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/20261001-213951-retained-report-integration/results.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN",
+  "title": "Retained reports and exact generated integration nodes",
+  "why": "Parent-bound report evidence must survive fork PR merges without silently admitting unreported merge changes.",
+  "what": "Add original-tree report/history reproduction and a narrow GitHub integration validator for checked parents, PR provenance, expected merge trees and live Actions identities.",
+  "how": "Reject wrong parents, missing or stale reports, unreported merge changes, conflicting trees, foreign PRs and failed/pending/skipped checks. Reproduce historical reports with each original renderer.",
+  "where": [
+    "scripts/reports/history.py; integration.py",
+    "tests/reports/test_history.py; test_integration.py",
+    "docs/engineering/integration.md",
+    "reports/README.md"
+  ],
+  "preserved": "Original authored commits, parent/payload bindings and archived triplet bytes remain intact. Generated merge nodes get external check/provenance evidence; authored resolutions still require normal reports.",
+  "risk": "Historical contributor tools/TeX must run in disposable secret-free environments. Local check indexes are not trusted as live outcomes; the integration CLI queries Actions and downloads checkout identities.",
+  "limitations": "105 tooling tests pass. All nine prior reports reproduce byte-identically with their original tools in this environment. Synthetic merge probes are unit controls, not actual GitHub merges or approval. Bootstrap workflow execution and first permanent merge remain pending.",
+  "rollback": "Revert integration tools and documentation together in a reported commit. Retain authored evidence and require a verified replacement protocol before further merge operations."
+}

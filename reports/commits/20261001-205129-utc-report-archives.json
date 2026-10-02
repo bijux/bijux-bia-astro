@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "record_kind": "commit",
+  "report_id": "20261001-205129-utc-report-archives",
+  "title": "UTC report identities and preserved archives",
+  "author": "Bijan Mousavi",
+  "prepared_at_utc": "2026-10-01T20:51:29Z",
+  "parent_sha": "1e5066a6cec226ed871093684629312ebfcc4bbb",
+  "candidate_sha256": "aaf9adda78d4655d379c2ea381fdb31449dc24b0f38cd3210a8ab933df5c0759",
+  "fingerprint_algorithm": "bia-git-candidate-sha256-v1",
+  "why": "Sort engineering evidence by actual UTC preparation time without changing the identities or bytes of historical reports.",
+  "what": "Require timestamped report IDs, calendar and preparation agreement. Rename three existing triplets and add explicit validated legacy lookup.",
+  "how": "Bind new IDs to preparation UTC. Preserve archive bytes and original trailers; verify their hashes, original trees and parent-bound fingerprints. A corrected wrong-commit test retains its failed run.",
+  "where": [
+    "scripts/reports/",
+    "tests/reports/",
+    "reports/templates/",
+    "reports/legacy-archive.json",
+    "reports/commits/",
+    "reports/README.md; docs/engineering/team-review.md"
+  ],
+  "preserved": "All nine legacy artifacts retain original bytes, records, preparation times and trailers. Application, dependencies, adapters, deployment and existing CI inputs are unchanged.",
+  "risk": "Historical records require original tools for reproduction. Archive lookup depends on available original ancestry. It cannot authorize a new legacy-ID candidate.",
+  "limitations": "57 report tests passed on the exported index. No application behavior, viewer decoding, remote CI or deployment claim. Prior known audit advisories remain.",
+  "rollback": "Revert this coherent change with a new report. Restore original archive paths and tools together; retain authored historical commits and their evidence.",
+  "checks": [
+    {
+      "gate": "Report tools",
+      "command": "python3 -B -m unittest discover -s tests/reports -v",
+      "result": "PASS",
+      "duration_seconds": 5.165,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/report-archive-calendar/report-tests.json",
+      "required": true
+    },
+    {
+      "gate": "Preservation",
+      "command": "git diff --cached --exit-code HEAD -- src public package.json package-lock.json astro.config.mjs netlify.toml tsconfig.json Dockerfile helm-chart .github .dockerignore",
+      "result": "PASS",
+      "duration_seconds": 0.011,
+      "exit_code": 0,
+      "evidence_ref": "artifacts/admission/report-archive-calendar/preservation.json",
+      "required": true
+    }
+  ],
+  "remote_status": "NOT_RUN"
+}

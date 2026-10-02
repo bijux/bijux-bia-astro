@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "archives": [
+    {
+      "report_id": "engineering-change-reporting-2026-10-01",
+      "archive_stem": "20261001-193813-engineering-change-reporting",
+      "commit_sha": "18043685a2e3d8048e1b7005fe98f02b0d0f0ea5",
+      "sha256": {
+        "json": "8d39792bf356d5581be5c3653e7bb767b4f364007840c2967ea7cbad9b01a242",
+        "tex": "cd529b2a9739a33a152d17326bc556bc17e45d65c4b25f9fe0b894af58c1bc56",
+        "pdf": "016cfcd1a85e2b17fd87cd161aba27ca0293016ac1f4ddf3b34f11f7581b3a36"
+      }
+    },
+    {
+      "report_id": "frontend-architecture-and-baseline-2026-10-01",
+      "archive_stem": "20261001-194908-frontend-architecture-and-baseline",
+      "commit_sha": "092781e5a35c5259ceb8ac919f435be799476070",
+      "sha256": {
+        "json": "a1e2c6658cbe119477fa0dca37f048b153194cf2dfa97ebba4321d9126417e2d",
+        "tex": "41331bb212eda685f5c33de59fa078659188885dc7946f8b06164e0ce079d4d2",
+        "pdf": "6688d3fbbeccf548e875c9ece6fe8469c0151ec55aea69e33f416aa98fd7c810"
+      }
+    },
+    {
+      "report_id": "guarded-developer-toolchain-2026-10-01",
+      "archive_stem": "20261001-200631-guarded-developer-toolchain",
+      "commit_sha": "1e5066a6cec226ed871093684629312ebfcc4bbb",
+      "sha256": {
+        "json": "604ddf8037fddd9364c2dce2fbe514bde35550469d81413076f13993cd6d5943",
+        "tex": "1e044aa4792fa2f160f6011b0733e48c1ba6fcebea2a2421ef2294a2d86bc90a",
+        "pdf": "b797d02b4dcddac1a2c5988c83811c77ac684da2250233bab90a993935d0b6e7"
+      }
+    }
+  ]
+}
