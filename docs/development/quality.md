@@ -22,7 +22,7 @@ The root `Makefile` imports `makes/quality.mk`; quality configuration lives in `
 | Command | Checks |
 | --- | --- |
 | `make quality` | Regression tests/Astro probe, normal source check, then strict candidate audit, in order. |
-| `make quality-test` | Formatting, biological-entity metadata and gallery-interaction regressions, plus audit tests and Astro probe. |
+| `make quality-test` | Formatting, biological-entity metadata, gallery interactions and optional browser-control regressions, plus audit tests and Astro probe. |
 | `make quality-check` | Astro check using the scoped, normal source-check configuration. |
 | `make quality-audit` | ESLint/Knip candidate inventory, failing on active findings or incomplete analysis. |
 | `make quality-report` | Same inventory with nonblocking findings; incomplete analysis still fails. |
@@ -40,6 +40,7 @@ Run from the repository root after `npm ci`:
 npm run test:dead-code
 npm run test:metadata
 npm run test:galleries
+npm run test:browser
 npm run audit:dead-code
 npm run audit:dead-code -- --report-only
 ```

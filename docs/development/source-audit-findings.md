@@ -33,6 +33,22 @@ The volume-EM view switch requires access to the initialized table instance. The
 
 Remove local CSS selectors only after checking their owning markup, client scripts and generated/child content. When one selector in a shared rule is unused, retain the other selectors and declarations. Static source searches and browser comparisons cover the reviewed selectors; they do not prove all future render states.
 
+## Optional browser controls and dependency order
+
+The viewable-image component renders either a table or an explanatory message. Its processed browser script is still included when the table is absent, so initialization must check for the table before reading its dataset or registering table handlers. When the table exists, the same API requests, image destinations, pagination and state handlers remain active.
+
+The general image page renders the OME-Zarr copy button only when an interactive representation is available. Its script must likewise check for the button before reading its label or attaching the clipboard handler. The normal copy behavior and label restoration remain unchanged.
+
+The Base, EMPIAR and Projects layouts load jQuery before their dependent DataTables 2.1.8 CDN script. Both use [`is:inline`](https://docs.astro.build/en/guides/client-side-scripts/#unprocessed-scripts) to preserve ordinary blocking script tags instead of Astro's module-import processing. Source order alone does not establish execution order for processed scripts. This corrects the previously reproduced `jQuery is not defined` error without changing library versions. Network availability and the volume-EM page's additional legacy CDN scripts remain separate integration concerns.
+
+`npm run test:browser` exercises the actual scripts with absent/present elements, a table API response, clipboard behavior and layout script order. These tests run through `make quality-test`; compiled-browser checks complement the controlled script tests.
+
+## Unreachable components and ineffective styles
+
+Remove `AnnotationFilesTable`, `DatasetFilesTable`, `ImageTableRow`, `ModelFieldInfoTable`, `Article`, `SourceImage` and `MarkdownLayout` after checking the complete tracked repository for consumers, configured graph entries, Markdown layouts and dynamic imports. `Article` had only `ModelFieldInfoTable` as a caller, and both were unreachable. `SourceImage` appeared only in a commented proposal; the source-image linking TODO remains without referencing a removed component. No active route or content layout used these files. Public assets and live file-table components remain.
+
+CaseStudy's `img :global(img)` required an image inside another image, while its `svg` selector had no rendered consumer. Remove these ineffective selectors rather than inventing a new image styling requirement. Compiled case-study image styles are compared before and after the removal.
+
 ## Contracts retained during review
 
 | Observation | Why the code remains |
@@ -44,9 +60,13 @@ Remove local CSS selectors only after checking their owning markup, client scrip
 | Collapsed image-metadata selector | Browser code toggles the `data-collapsed` attribute to control the metadata view. |
 | Volume-EM `copyURI` | Child-card inline handlers call the browser-global function. |
 | jQuery and DataTables type dependencies | Runtime table integrations and automatically loaded ambient browser types need a separate dependency review. |
-| Case-study image styles | The selector appears ineffective, but its intended relationship to Astro's Image output needs a separate styling correction. |
 | Announcement collection loading | The result is unused by active markup, but the awaited content operation remains; deciding to retire the feature is separate work. |
-| Unreachable components/layout and their local findings | An import-graph candidate is reviewed as a whole-file decision, including runtime and dynamic references, rather than partially rewriting unused components. |
 | `buildDatasetFileSummary` | Its only study-page call is currently commented out. Removing the unused import exposes the helper as a new candidate; retiring that feature and its related XML helpers is a separate decision. |
 
 The dependency lockfile, audit rules, runtime entry-point configuration and CI policy are unchanged by these application corrections. Remaining candidates stay visible. A completed configured scan is narrower than complete runtime coverage; `make quality` can still fail because candidates remain, while report-only mode succeeds when analysis itself completes.
+
+## Build and browser comparison limits
+
+The unchanged home-news and case-study components iterate unsorted content collections. Independent before/after builds produced the same entries in different positions. Retain the ordered snapshot differences and compare content identities and case-study image styles separately; do not attribute collection ordering to selector or component removal. Home-news date ordering belongs to BIOIM-266. No additional collection-ordering policy is introduced here.
+
+DOM references justify preserving child/dynamic style intent, but do not establish that every scoped selector applies in every browser state. Compiled before/after checks cover file-view switching, image-table pagination, spatialomics dataset selection and file-copy URI/label behavior with real API responses and a stubbed clipboard writer. External viewers, network failures and the additional legacy volume-EM CDN integration remain outside this verification.
