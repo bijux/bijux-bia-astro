@@ -96,3 +96,19 @@ test('an image copy button copies its supplied URI and restores its label', asyn
     timers[0].callback();
     assert.equal(button.innerText, 'Copy OME-Zarr URI');
 });
+
+for (const name of ['BaseLayout', 'EMPIARLayout', 'ProjectsLayout']) {
+    test(`${name} loads blocking jQuery before dependent DataTables`, async () => {
+        const source = await readFile(new URL(`../../src/layouts/${name}.astro`, import.meta.url), 'utf8');
+        const { ast } = await parse(source);
+        const scripts = findScripts(ast);
+        const src = node => node.attributes.find(attribute => attribute.name === 'src')?.value;
+        const jquery = scripts.findIndex(node => src(node)?.includes('code.jquery.com'));
+        const datatables = scripts.findIndex(node => src(node)?.includes('cdn.datatables.net'));
+        assert(jquery >= 0 && datatables > jquery);
+        for (const script of [scripts[jquery], scripts[datatables]]) {
+            assert(script.attributes.some(attribute => attribute.name === 'is:inline'));
+            assert(!script.attributes.some(attribute => ['async', 'defer', 'type'].includes(attribute.name)));
+        }
+    });
+}
