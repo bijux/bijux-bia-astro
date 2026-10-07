@@ -138,7 +138,7 @@ export function getLicenceLogo(licenceURL){
     if (isCreativeCommons){
       var logoURL = "http://mirrors.creativecommons.org/presskit/buttons/88x31/svg/";
       if (licenceURL.includes("publicdomain/zero")){
-        return logoURL+= "cc-zero.svg"
+        return logoURL + "cc-zero.svg"
       }
       const licenceImage = licenceURL.split("licenses")[1].split("/")[1]
       logoURL += `${licenceImage}.svg`;
