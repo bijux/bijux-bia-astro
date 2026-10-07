@@ -12,6 +12,7 @@ quality:
 quality-test:
 	npm test
 	npm run test:metadata
+	npm run test:galleries
 	npm run test:dead-code
 
 quality-check:
