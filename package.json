@@ -13,6 +13,7 @@
     "test": "node --test tests/formatting/*.test.mjs",
     "test:metadata": "node --test tests/metadata/*.test.mjs",
     "test:galleries": "node --test tests/galleries/*.test.mjs",
+    "test:browser": "node --test tests/browser/*.test.mjs",
     "audit:dead-code": "node scripts/dead-code/audit.mjs",
     "audit:dead-code:knip": "knip --config configs/quality/knip.json --reporter json",
     "test:dead-code": "node --test scripts/dead-code/*.test.mjs && node scripts/dead-code/verify-tools.mjs",
