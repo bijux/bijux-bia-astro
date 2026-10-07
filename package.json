@@ -11,6 +11,7 @@
     "prod": "NODE_ENV=production PORT=8080 HOST=0.0.0.0 node dist/bioimage-archive/server/entry.mjs",
     "local": "astro check && astro build && astro preview",
     "test": "node --test tests/formatting/*.test.mjs",
+    "test:metadata": "node --test tests/metadata/*.test.mjs",
     "audit:dead-code": "node scripts/dead-code/audit.mjs",
     "audit:dead-code:knip": "knip --config configs/quality/knip.json --reporter json",
     "test:dead-code": "node --test scripts/dead-code/*.test.mjs && node scripts/dead-code/verify-tools.mjs",
