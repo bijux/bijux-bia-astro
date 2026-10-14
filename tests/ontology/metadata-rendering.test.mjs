@@ -33,6 +33,10 @@ before(async () => {
     }
     await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
     await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
+    // Include shared rendering and request dependencies used by the real components.
+    for (const relative of ["src/security", "src/components/formatting"]) {
+        await cp(path.join(repository, relative), path.join(root, relative), { recursive: true });
+    }
     await writeFile(path.join(root, "astro.config.mjs"), `
 import { defineConfig, envField } from 'astro/config';
 export default defineConfig({
@@ -88,7 +92,9 @@ test("the reference study offers an FBBI search without claiming that its term e
     assert.equal((sections.study.match(/>FBbi:00000639 \(search OLS\)<\/a>/g) ?? []).length, 2);
     assert.doesNotMatch(sections.study, /\/entities\/|\/classes\/|href="https:\/\/purl\.obolibrary\.org/);
     assert.match(sections.study, /<i>Mus musculus<\/i> \(Mouse\)/);
-    assert.match(sections.study, /href="https:\/\/www\.ncbi\.nlm\.nih\.gov\/Taxonomy\/Browser\/wwwtax\.cgi\?id=NCBI:txid10090"/);
+    const taxonomyLink = sections.study.match(/href="(https:\/\/www\.ncbi\.nlm\.nih\.gov\/Taxonomy\/Browser\/wwwtax\.cgi\?[^" ]+)"/);
+    assert.ok(taxonomyLink);
+    assert.equal(new URL(taxonomyLink[1]).searchParams.toString(), "id=NCBI%3Atxid10090");
 });
 
 test("image acquisition metadata accepts the observed obo namespace alias", () => {

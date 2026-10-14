@@ -1,4 +1,5 @@
 ---
+import HighlightedFields from "../HighlightedFields.astro";
 const { result, resultType, highlight } = Astro.props;
 import imageFallback from "../../assets/bioimage-archive/image_fallback.png"
 import { getHighlightTextString, getStudyImage, getThumbnail, formatPhysicalDimensions, formatPixelDimensions } from "../SharedJSFunctions.js";
@@ -37,7 +38,7 @@ const showSizeBar = hasPhysical || hasPixel;
             <div class="tooltip">
                 <span class="tooltiptext">
                     <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
-                    <HighlightedText text={highlightedTextString} />
+                    <HighlightedFields highlights={highlight} />
                 </span>
             </div>
         )}

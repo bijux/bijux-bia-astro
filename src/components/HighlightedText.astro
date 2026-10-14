@@ -14,7 +14,7 @@ for (const p of parts) {
 
 <span>
   {segments.map((s) =>
-    s.hit ? <mark><Fragment set:html={s.text} /></mark> : <span><Fragment set:html={s.text} /></span>
+    s.hit ? <mark>{s.text}</mark> : <span>{s.text}</span>
   )}
 </span>
 

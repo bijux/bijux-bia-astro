@@ -1,0 +1,10 @@
+---
+import HighlightedText from "./HighlightedText.astro";
+const { highlights = {} } = Astro.props;
+const excluded = ["title", "organism_classification.common_name", "organism_classification.scientific_name", "imaging_method", "imaging_method.keyword", "annotation_type.keyword", "accession_id"];
+const fields = Object.entries(highlights).filter(([key]) => !excluded.includes(key));
+---
+{fields.map(([key, value], index) => <Fragment>
+    {index > 0 && <br />}
+    <span class="highlight"><b>{key.replace(/.*\./g, "").replace(/_/g, " ")}: </b><i><HighlightedText text={String(value)} /></i></span>
+</Fragment>)}

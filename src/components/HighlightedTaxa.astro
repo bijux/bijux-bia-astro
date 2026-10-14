@@ -1,0 +1,18 @@
+---
+import HighlightedText from "./HighlightedText.astro";
+import { applyHighlight } from "./SharedJSFunctions.js";
+const { record, query } = Astro.props;
+const highlight = value => query && value ? applyHighlight(value, query) : value;
+const taxa = [];
+for (const taxon of record?.organism_classification ?? []) {
+    if (!taxon || typeof taxon !== "object") continue;
+    if (!taxa.some(existing => existing.common_name === taxon.common_name || existing.scientific_name === taxon.scientific_name)) taxa.push(taxon);
+}
+---
+{taxa.map((taxon, index) => <Fragment>
+    {index > 0 && ", "}
+    {taxon.scientific_name && <i><HighlightedText text={highlight(taxon.scientific_name)} /></i>}
+    {taxon.scientific_name && taxon.common_name && " ("}
+    {taxon.common_name && <HighlightedText text={highlight(taxon.common_name)} />}
+    {taxon.scientific_name && taxon.common_name && ")"}
+</Fragment>)}

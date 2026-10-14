@@ -1,4 +1,5 @@
 ---
+import { escapeHtml } from "../../security/html.mjs";
 import modelMetadata from "../../data/ai-dataset-benchmarking/model-metadata.json"
 import { getStudyFromApiByAccession } from "../SharedJSFunctions";
 
@@ -22,7 +23,7 @@ export async function getDatasetUUIDNameMap(tableRows) {
 const datasetUUIDNameMap = await getDatasetUUIDNameMap(tableRows)
 
 export function formatSingleParameter(acc, key_value) {
-    return `${acc}${key_value[0]}: ${key_value[1]}<br/>`
+    return `${acc}${escapeHtml(key_value[0])}: ${escapeHtml(key_value[1])}<br/>`
 }
 
 export function formatRowAnalysisParameters(analysisParameters) {

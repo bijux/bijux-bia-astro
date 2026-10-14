@@ -1,10 +1,11 @@
 ---
+import { navigationURL, resourceURL } from "../security/urls.mjs";
 const { file_list_urls, ftp_path, globus_link } = Astro.props;
 let table_view: string | undefined;
 let tree_view: string | undefined;
 if (file_list_urls) {
-  table_view = file_list_urls.table_view;
-  tree_view = file_list_urls.tree_view;
+  table_view = resourceURL(file_list_urls.table_view) ?? undefined;
+  tree_view = resourceURL(file_list_urls.tree_view) ?? undefined;
 } 
 ---
 {table_view && tree_view && (
@@ -21,8 +22,8 @@ if (file_list_urls) {
                 <a class="vf-button vf-button--primary vf-button--sm" href="/bioimage-archive/help/explore-file-list">Help</a>
             </div>
             <div style="display:flex">
-                <a class="vf-link" href={ftp_path} target="_blank"><button class="vf-button vf-button--primary vf-button--sm">Browse HTTP</button></a>
-                <a class="vf-link" href={globus_link} target="_blank"><button class="vf-button vf-button--primary vf-button--sm">Browse Globus</button></a>
+                <a class="vf-link" href={navigationURL(ftp_path) ?? undefined} target="_blank"><button class="vf-button vf-button--primary vf-button--sm">Browse HTTP</button></a>
+                <a class="vf-link" href={navigationURL(globus_link) ?? undefined} target="_blank"><button class="vf-button vf-button--primary vf-button--sm">Browse Globus</button></a>
             </div>
         </div>
     </section>

@@ -1,4 +1,5 @@
 ---
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
 const { image } = Astro.props;
 const displaySrc = image.static_display_src || image.thumbnail_src;
 const accessionID = image.submitted_in_study_accession;
@@ -18,7 +19,7 @@ const rawDataLink = accessionID.startsWith("S-BIAD")
         </p>
     </div>
     <div class="image-container">
-        <img src={ displaySrc } alt="" class="vf-card__image" loading="lazy" style="aspect-ratio: 1/1;">
+        <img src={resourceURL(displaySrc) ?? undefined} alt="" class="vf-card__image" loading="lazy" style="aspect-ratio: 1/1;">
         <div class="study-link">
             <a target="_blank" href={"/bioimage-archive/study/" + image.submitted_in_study_accession}>{ image.submitted_in_study_accession }</a>
         </div>
@@ -58,7 +59,7 @@ const rawDataLink = accessionID.startsWith("S-BIAD")
     </div>
     <div class="vf-card__content | vf-stack vf-stack--400">
         <div class="button-container">
-            <button><a target="_blank" href={ image.view_link }>View</a></button>
+            <button><a target="_blank" href={navigationURL(image.view_link) ?? undefined}>View</a></button>
             <button><a target="_blank" href={"/bioimage-archive/image/" + image.uuid}>Experiment metadata</a></button>
             <button onclick="copyURI(this)" data-uri={image.ome_zarr_image_uri}>Copy OME-Zarr URI</button>
             <button><a target="_blank" href={rawDataLink}>Raw data</a></button>

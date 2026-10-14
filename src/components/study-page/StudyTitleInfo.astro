@@ -1,10 +1,12 @@
 ---
+import { escapeHtml } from "../../security/html.mjs";
+import { navigationURL } from "../../security/urls.mjs";
 import orcidImage from "../../assets/bioimage-archive/orcid.svg";
 import empiarLogo from "../../assets/bioimage-archive/EMPIAR_logo.png";
 
 const { study_info: studyInfo, pdbLinks, emdbLinks } = Astro.props;
 
-const doiURI = studyInfo?.doi || "";
+const doiURI = navigationURL(studyInfo?.doi) || "";
 const doiText = doiURI.replace("https://doi.org/", "").toUpperCase()
 const authors = "author" in studyInfo ? studyInfo.author : [{ display_name: "" }];
 
@@ -33,7 +35,7 @@ uniqueAffiliations.forEach((affil, index) => {
 });
 
 function authorFormat(author) {
-    let authorString = author.display_name;
+    let authorString = escapeHtml(author.display_name);
     
     // Create a Set to get unique affiliations for the current author
     const uniqueAuthorAffiliations = new Set();

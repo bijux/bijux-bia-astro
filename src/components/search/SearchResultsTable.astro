@@ -1,4 +1,5 @@
 ---
+import HighlightedTaxa from "../HighlightedTaxa.astro";
 const { results, resultType, query, cardImageOverride } = Astro.props;
 import { highlightOrganism,  getStudyImage, getThumbnail, formatPhysicalDimensions, formatPixelDimensions, getSimpleAttributeValue, highlightLinks, applyHighlight, formatHighlightedList } from "../SharedJSFunctions.js";
 import  HighlightedText  from "../HighlightedText.astro";
@@ -62,7 +63,7 @@ function highlightImageFormat(image, query){
                         <td>{item._source.release_date}</td>
                         <td><HighlightedText text={item.highlight?.title?.[0] ?? item._source.title}/></td>
                         <td><HighlightedText text={formatHighlightedList(item._source?.imaging_method, query, {sort: false})} /></td>
-                        <td><HighlightedText text={highlightOrganism(item._source, query)} /></td>
+                        <td><HighlightedTaxa record={item._source} query={query} /></td>
                         <td><HighlightedText text={formatHighlightedList(item._source?.annotation_type?.map((at: string) => at.replace("_", " ")), query, {sort: false})} /></td>
                     </tr>
                 ): (
@@ -72,7 +73,7 @@ function highlightImageFormat(image, query){
                                 <img src={getThumbnail(item._source)} alt="" style="width: 100px; height: 100px; object-fit: cover;" loading="lazy"/>
                             </a>
                         </td>
-                        <td><HighlightedText text={highlightOrganism(item._source, query)} /></td>
+                        <td><HighlightedTaxa record={item._source} query={query} /></td>
                         <td><HighlightedText text={formatHighlightedList(item?._source?.imaging_method || item?._source?.annotation_type?.map((at: string) => at.replace(/_/g, " ")), query, {sort: false})} />{}</td>
                         <td><HighlightedText text={highlightImageFormat(item?._source, query).join(", ")} /></td>
                         <td>{formatPhysicalDimensions(item._source)}</td>
