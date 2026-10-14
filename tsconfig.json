@@ -2,5 +2,6 @@
   "extends": "astro/tsconfigs/base",
   "compilerOptions": {
     "allowJs": true
-  }
+  },
+  "exclude": ["node_modules", "dist", ".netlify", "coverage", "artifacts"]
 }
