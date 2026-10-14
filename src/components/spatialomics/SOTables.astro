@@ -21,17 +21,20 @@ const { datasetUUIDsAndFileStats } = Astro.props;
     </div>
 
     <script>
+      import { escapeHtml } from "../../security/html.mjs";
+      import { fetchJSON, boundedMap } from "../../security/requests.mjs";
 
       document.addEventListener("DOMContentLoaded", function () {
         const dropdown = document.getElementById("sotables_dataset_selector") as HTMLSelectElement; // Get the dropdown element
         const datasetDetails = JSON.parse(dropdown.dataset.datasetUuids); // Ensure datasetUuids is parsed correctly
-        let dataTable;
+        let tableRequest = 0;
 
         // Function to initialize or update the DataTable
         const initializeDataTable = async (datasetUuid, totalFiles) => {
             // set page size parameter of the api url with an upper limit of 1000
-            const pageSize = totalFiles < 1000 ? totalFiles : 1000;
-            const apiUrl = `https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/${datasetUuid}/file_reference?page_size=${pageSize}`;
+            const pageSize = Number.isSafeInteger(totalFiles) && totalFiles > 0 ? Math.min(totalFiles, 1000) : 1;
+            const request = ++tableRequest;
+            const apiUrl = `https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/${encodeURIComponent(datasetUuid)}/file_reference?page_size=${pageSize}`;
             // Destroy the existing DataTable instance if it exists
             if (($.fn.DataTable as any).isDataTable('#sotables_file_references_table')) {
                 $('#sotables_file_references_table').DataTable().destroy();
@@ -39,9 +42,10 @@ const { datasetUUIDsAndFileStats } = Astro.props;
             }
 
             // Fetch data and initialize the DataTable
-            fetch(apiUrl)
-                .then((response) => response.json())
+            fetchJSON(apiUrl)
                 .then((fileData) => {
+                    if (request !== tableRequest) return;
+                    if (!Array.isArray(fileData) || fileData.length > 1000) throw new TypeError("Invalid file response.");
                     const filteredFiles = fileData.filter(file => {
                         const additional_metadata = file.additional_metadata || [];
                         return additional_metadata.some(attr => 
@@ -54,12 +58,12 @@ const { datasetUUIDsAndFileStats } = Astro.props;
                         );
                     });
                     // Initialize the DataTable
-                    dataTable = $('#sotables_file_references_table').DataTable({
+                    $('#sotables_file_references_table').DataTable({
                         data: filteredFiles,
                         columns: [
-                            { data: "uuid", title: "File UUID" },
-                            { data: "file_path", title: "File Name" },
-                            { data: "uri", title: "Actions", render: (data) => `<button class="copy-btn" data-uri="${data}">Copy Url</button>` },
+                            { data: "uuid", title: "File UUID", render: value => escapeHtml(value) },
+                            { data: "file_path", title: "File Name", render: value => escapeHtml(value) },
+                            { data: "uri", title: "Actions", render: (data) => `<button type="button" class="copy-btn bia-button" data-uri="${escapeHtml(data)}">Copy Url</button>` },
                         ],
                         pageLength: 25,
                         searching: true,
@@ -67,7 +71,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
                         processing: true,
                         scrollX: true,
                         columnDefs: [{ type: "natural", targets: 0 }],
-                        createdRow: (row, data) => {
+                        createdRow: (row) => {
                             $(row).find(".copy-btn").on("click", function () {
                                 const link = $(this).data("uri");
                                 navigator.clipboard.writeText(link).then(() => {
@@ -88,9 +92,9 @@ const { datasetUUIDsAndFileStats } = Astro.props;
         // Function to fetch dataset details including Data_Type
         const fetchDatasetDetails = async (datasetUuid) => {
             const pageSize = 1000; // Fetch up to 1000 file references to get the attributes
-            const apiUrl = `https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/${datasetUuid}/file_reference?page_size=${pageSize}`;
-            const response = await fetch(apiUrl);
-            const fileData = await response.json();
+            const apiUrl = `https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/${encodeURIComponent(datasetUuid)}/file_reference?page_size=${pageSize}`;
+            const fileData = await fetchJSON(apiUrl);
+            if (!Array.isArray(fileData) || fileData.length > 1000) throw new TypeError("Invalid file response.");
             const additional_metadata = fileData.flatMap(file => file.additional_metadata || []);
             const dataTypeAttr = additional_metadata.find(attr => 
                 attr.name === 'attributes_from_biostudies.File' && (
@@ -106,23 +110,24 @@ const { datasetUUIDsAndFileStats } = Astro.props;
 
         // Populate the dropdown menu with dataset details
         const filteredDatasets = [];
-        datasetDetails.forEach(([uuid, fileCount, title]) => {
-            fetchDatasetDetails(uuid).then((dataType) => {
-                if (dataType) {
-                    const option = document.createElement("option");
-                    option.value = uuid;
-                    option.text = `${title}`; 
-                    dropdown.appendChild(option);
-                    filteredDatasets.push([uuid, fileCount, title]);
-                }
-                if (filteredDatasets.length === 1) {
-                    dropdown.value = uuid;
-                    initializeDataTable(uuid, fileCount);
-                }
-            }).catch((error) => {
-                console.error(`Error fetching details for dataset ${uuid}:`, error);
-            });
-        });
+        boundedMap(datasetDetails, async ([uuid, fileCount, title]) => {
+            try { return await fetchDatasetDetails(uuid) ? [uuid, fileCount, title] : null; }
+            catch { console.error("Optional transcript file inventory unavailable."); return null; }
+        }).then(results => {
+            for (const dataset of results.filter(Boolean)) {
+                const [uuid, fileCount, title] = dataset;
+                const option = document.createElement("option");
+                option.value = uuid;
+                option.text = String(title);
+                dropdown.appendChild(option);
+                filteredDatasets.push(dataset);
+            }
+            if (filteredDatasets.length) {
+                const [uuid, fileCount] = filteredDatasets[0];
+                dropdown.value = uuid;
+                initializeDataTable(uuid, fileCount);
+            }
+        }).catch(() => { console.error("Transcript inventory could not be loaded."); });
         // Event listener for dropdown menu selection
         dropdown.addEventListener("change", () => {
             const selectedIndex = dropdown.selectedIndex; // Get the selected index
