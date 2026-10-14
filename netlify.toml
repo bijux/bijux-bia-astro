@@ -6,3 +6,12 @@
   base = "/"
   publish = "dist"
   command = "NODE_OPTIONS='--max-old-space-size=4096' npm run astro build"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    "X-Content-Type-Options" = "nosniff"
+    "Referrer-Policy" = "strict-origin-when-cross-origin"
+    "X-Frame-Options" = "SAMEORIGIN"
+    "Content-Security-Policy-Report-Only" = "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.datatables.net https://assets.emblstatic.net https://ebi.emblstatic.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://assets.emblstatic.net https://ebi.emblstatic.net https://cdn.datatables.net; img-src 'self' data: https:; font-src 'self' data: https://assets.emblstatic.net https://ebi.emblstatic.net; connect-src 'self' https:; frame-src 'self' https:"
+    "Permissions-Policy" = "camera=(), microphone=(), geolocation=(), loopback-network=(), local-network-access=()"

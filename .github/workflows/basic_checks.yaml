@@ -4,30 +4,33 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 env:
   site_name: bia-beta-website # remainder added by netlify
 
 jobs:
-  news-tests:
+  tests:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:news
+      - run: npm test
 
   wait-for-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Waiting for 200 from the Netlify Preview
-        uses: jakepartusch/wait-for-netlify-action@v1.4
+        uses: jakepartusch/wait-for-netlify-action@f1e137043864b9ab9034ae3a5adc1c108e3f1a48 # v1.4
         with:
           site_name: ${{ env.site_name }}
           max_timeout: 180
@@ -36,7 +39,7 @@ jobs:
     needs: wait-for-deploy
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/linkchecker/linkchecker:latest
+      image: ghcr.io/linkchecker/linkchecker@sha256:56cdc2cb7b10ef785f643c67707a3ac573c8d70cb11cd17000a1e8a185009ac0
     steps:
       - run: |
           # no-warnings because linkchecker runs as root in container -> warning emitted -> nonzero return code -> job fails
@@ -46,14 +49,3 @@ jobs:
             --ignore-url '.*\/dataset\/?.*' \
             --ignore-url '.*\/sodataset\/?.*' \
             --ignore-url '.*\/aidataset\/?.*'
-
-  fbbi-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run test:fbbi

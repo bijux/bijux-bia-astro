@@ -12,10 +12,12 @@ function isNetlify() {
 }
 
 const adapter = isNetlify() 
-  ? netlify() 
-  : node({ mode: 'standalone' });
+  ? netlify({ imageCDN: false })
+  : node({ mode: 'standalone', experimentalDisableStreaming: true });
 
 export default defineConfig({
+  // Keep image transformation disabled until the framework/Sharp advisory migration is verified.
+  image: { service: { entrypoint: 'astro/assets/services/noop' } },
   //output: 'server',
   //integrations: [mdx(), preact()]
   integrations: [mdx()],
