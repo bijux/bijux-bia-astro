@@ -1,20 +1,24 @@
+import { fetchJSON, fetchText, boundedMap } from "../security/requests.mjs";
+import { escapeHtml } from "../security/html.mjs";
+import { navigationURL, resourceURL } from "../security/urls.mjs";
 import { PUBLIC_SEARCH_API } from "astro:env/client";
 import imageFallback from "../assets/bioimage-archive/image_fallback.png"
 
 export function getPlaceholderHeroImage(accessionID) {
-    const match = (accessionID.match(/(\d{1,5})$/)) || ['0','1'];
+    const match = (String(accessionID ?? "").match(/(\d{1,5})$/)) || ['0','1'];
     const accessionIDNumber = parseInt(match[1]);
     const imageNumber = (accessionIDNumber % 45) + 1;
     return `/bioimage-archive/default-hero/placeholder_logo_${imageNumber}.png`
 }
 
 export function getStudyImage(study, cardImageOverride) {
-    const studyImage = study?.example_image_uri?.length > 0? study.example_image_uri?.[0]: getPlaceholderHeroImage(study.accession_id);
-
     if (cardImageOverride != null) {
-      return cardImageOverride
+      // Overrides are authored card configuration and may reference a site-owned asset.
+      const override = resourceURL(cardImageOverride) ?? (typeof cardImageOverride === "string" && cardImageOverride.startsWith("/bioimage-archive/") ? navigationURL(cardImageOverride) : null);
+      if (override) return override;
     }
-    return studyImage
+    const example = Array.isArray(study?.example_image_uri) ? study.example_image_uri[0] : study?.example_image_uri;
+    return resourceURL(example) ?? getPlaceholderHeroImage(study?.accession_id);
 }
 
 export function formatListItem(outputString, item, i, list) {
@@ -28,19 +32,16 @@ export function formatListItem(outputString, item, i, list) {
 
 export function taxonRender(taxon) {
     if (taxon["common_name"] && taxon["scientific_name"]){
-        return `<i>${taxon.scientific_name}</i> (${taxon["common_name"]})`
+        return `<i>${escapeHtml(taxon.scientific_name)}</i> (${escapeHtml(taxon["common_name"])})`
     } else if (taxon["common_name"]) {
-        return `${taxon.common_name}`
+        return escapeHtml(taxon.common_name)
     } else if (taxon["scientific_name"]) {
-        return `<i>${taxon.scientific_name}</i>`
+        return `<i>${escapeHtml(taxon.scientific_name)}</i>`
     }
  }
 
 
-export function multilineTextRender(value) {
-    const output = value.toString().trim().replace(/(?:[\r\n|\r|\n]+)/g, "<br/><br/>")
-    return output
-}
+export { multilineTextRender } from "./formatting/plain-text.js";
 
 
 export function formatBytesToHumanSize(sizeBytes) {
@@ -103,53 +104,50 @@ export function getPublicVisualisationURI(uri) {
     }
 
     try {
-        const url = new URL(uri);
+        const approved = resourceURL(uri, { allowLocal: import.meta.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true" });
+        if (!approved) return null;
+        const url = new URL(approved);
         if (url.hostname === "livingobjects-int.ebi.ac.uk") {
             url.hostname = "livingobjects.ebi.ac.uk";
         }
         return url.toString();
     } catch {
-        return uri;
+        return null;
     }
 }
 
 export function buildVizarrViewerURL(uri) {
-    if (!uri) {
+    const approved = resourceURL(uri, { allowLocal: import.meta.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true" });
+    if (!approved) {
         return null;
     }
 
     const url = new URL("https://livingobjects.ebi.ac.uk/bioimaging-01-pub/bia-zarr-test/vizarr/index.html");
-    url.searchParams.set("source", uri);
+    url.searchParams.set("source", approved);
     return url.toString();
 }
 
 export function buildITKViewerURL(uri) {
-    if (!uri) {
+    const approved = resourceURL(uri, { allowLocal: import.meta.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true" });
+    if (!approved) {
         return null;
     }
 
     const url = new URL("https://kitware.github.io/itk-vtk-viewer/app/");
-    url.searchParams.set("fileToLoad", uri);
+    url.searchParams.set("fileToLoad", approved);
     return url.toString();
 }
   
-export function getLicenceLogo(licenceURL){
-    const isCreativeCommons = licenceURL.includes("creativecommons");
-    if (isCreativeCommons){
-      var logoURL = "http://mirrors.creativecommons.org/presskit/buttons/88x31/svg/";
-      if (licenceURL.includes("publicdomain/zero")){
-        return logoURL+= "cc-zero.svg"
-      }
-      const licenceImage = licenceURL.split("licenses")[1].split("/")[1]
-      logoURL += `${licenceImage}.svg`;
-      return logoURL
-    }
-    else{
-      return ""
-    }
-    
+export function getLicenceLogo(licenceURL) {
+    try {
+      const url = new URL(navigationURL(licenceURL));
+      if (!["creativecommons.org", "www.creativecommons.org"].includes(url.hostname)) return "";
+      if (url.pathname.startsWith("/publicdomain/zero/")) return "https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/cc-zero.svg";
+      const code = url.pathname.match(/^\/licenses\/(by(?:-nc)?(?:-sa|-nd)?)\//)?.[1];
+      return code ? `https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/${code}.svg` : "";
+    } catch { return ""; }
+}
 
-}  
 export function getDatasetStatsByUUID(study) {
     return aggregateDatasetStats(study?.dataset || []);
 }
@@ -258,7 +256,7 @@ export function getMetadataValue(mdArray, key, field = null) {
 
 export function getThumbnail(img) {
     const thumbnail_uri = getMetadataValue(img.additional_metadata, "image_thumbnail_uri")?.["256"]?.["uri"] || imageFallback.src;
-    return thumbnail_uri;
+    return resourceURL(thumbnail_uri) ?? navigationURL(imageFallback.src);
 }
 
 export function formatBytes(value, field){
@@ -377,25 +375,19 @@ export function generateParamString(baseURL, query, page, selectedFacets, pageSi
   return isPageURL ? `${url.pathname}${url.search}` : url.toString()
 }
 
-export async function getFromAPI(url){
-    try {
-        const res = await fetch(url);
-        return await res.json();
-    } catch (err) {
-        console.warn(`Failed to fetch ${url}`, err);
-        return null
-    }
+export async function getFromAPI(url) {
+    return fetchJSON(url);
 }
 
 export async function getStudyFromApiByUUID(uuid){
     // This can work with dataset uuid or study uuid.
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/study?query=${uuid}`);
+    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/study?query=${encodeURIComponent(uuid)}`);
     const study = response?.hits?.hits?.[0]?._source; 
     return study
 }
 
 export async function getStudyFromApiByAccession(accessionID){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/study?facet.accession_id=${accessionID}`);
+    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/study?facet.accession_id=${encodeURIComponent(accessionID)}`);
     const study = response?.hits?.hits?.find(
         (hit) => hit._source?.accession_id === accessionID
       )?._source || undefined;
@@ -403,20 +395,20 @@ export async function getStudyFromApiByAccession(accessionID){
 }
 
 export async function getImageFromAPI(uuid){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?query=${uuid}`);
-    const image = response?.hits?.hits?.[0]?._source || null;
+    if (typeof uuid !== "string" || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(uuid)) return null;
+    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?query=${encodeURIComponent(uuid)}`);
+    if (!Array.isArray(response?.hits?.hits)) throw new TypeError("Invalid image response.");
+    const image = response.hits.hits.find(hit => typeof hit?._source?.uuid === "string" && hit._source.uuid.toLowerCase() === uuid.toLowerCase())?._source || null;
     return image
 }
 
 export async function getImagesFromAPI(uuid_list){
-  const image_list = await Promise.all(
-    uuid_list.map((uuid) => getImageFromAPI(uuid))
-  );
+  const image_list = await boundedMap(uuid_list, getImageFromAPI);
   return image_list;
 }
 
 export async function getDownstreamDisplayImages(uuid){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?facet.downstream_of=${uuid}&facet.specimen_track_position=terminal`);
+    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?facet.downstream_of=${encodeURIComponent(uuid)}&facet.specimen_track_position=terminal`);
     const displayImages = response?.hits?.hits?.map(img => img._source) ?? [];
     return displayImages
 }
@@ -434,21 +426,29 @@ export async function studyHasSpecimenTracks(accessionID){
 async function getAllPaginatedHits(urlBuilder, pageSize = 100) {
   const firstPage = await getFromAPI(urlBuilder(1, pageSize));
 
-  if (!firstPage) return [];
+  if (!Array.isArray(firstPage?.hits?.hits)) throw new Error("Catalogue page unavailable or invalid.");
 
   const totalPages = firstPage.pagination?.total_pages ?? 1;
-  const allHits = [...(firstPage.hits?.hits ?? [])];
+  const expectedCount = firstPage.hits.total?.value;
+  if (!Number.isSafeInteger(expectedCount) || expectedCount < 0 || firstPage.hits.total?.relation && firstPage.hits.total.relation !== "eq") throw new Error("Catalogue did not provide an exact result count.");
+  if (!Number.isSafeInteger(totalPages) || totalPages < 0 || totalPages > 10000) throw new RangeError("Invalid catalogue page count.");
+  if (totalPages === 0 && firstPage.hits.hits.length) throw new Error("Inconsistent catalogue page count.");
+  const allHits = [...firstPage.hits.hits];
 
-  const otherPages = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, i) =>
-      getFromAPI(urlBuilder(i + 2, pageSize), { hits: { hits: [] } })
-    )
+  const otherPages = await boundedMap(
+    Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => index + 2),
+    page => getFromAPI(urlBuilder(page, pageSize))
   );
 
   otherPages.forEach((page) => {
-    allHits.push(...(page?.hits?.hits ?? []));
+    if (!Array.isArray(page?.hits?.hits)) throw new Error("Catalogue page unavailable or invalid.");
+    allHits.push(...page.hits.hits);
   });
 
+  const identifiers = allHits.map(hit => hit?._source?.uuid ?? hit?._id);
+  if (allHits.length !== expectedCount || allHits.some(hit => !hit?._source || typeof hit._source !== "object" || Array.isArray(hit._source)) || identifiers.some(value => typeof value !== "string" || !value) || new Set(identifiers).size !== identifiers.length) {
+    throw new Error("Catalogue pages are incomplete, duplicated or changed during retrieval.");
+  }
   return allHits;
 }
 
@@ -470,7 +470,10 @@ export async function getAllStudiesFromAPI() {
     `&pagination.page=${page}`
   );
 
-  return hits.map((hit) => hit._source).filter(Boolean);
+  const studies = hits.map((hit) => hit._source);
+  if (studies.some(study => typeof study.accession_id !== "string" || !/^[a-z\d][a-z\d._-]{0,127}$/i.test(study.accession_id))) throw new Error("Catalogue supplied an invalid study route identifier.");
+  if (new Set(studies.map(study => study.accession_id)).size !== studies.length) throw new Error("Catalogue supplied duplicate study routes.");
+  return studies;
 }
 
 function isImageAnAnnotation(img){
@@ -492,7 +495,7 @@ export async function getAnnotationFromDerivedImages(sourceImageUUID) {
 }
 
 async function getDerivedImagesFromSourceImage(uuid){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?query=${uuid}&includeDerivedImages=true`);
+    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?query=${encodeURIComponent(uuid)}&includeDerivedImages=true`);
     const derivedImages = response?.hits?.hits.map(img => img._source).filter(img => img.uuid !== uuid);
     return derivedImages
 }
@@ -670,20 +673,14 @@ function formatDatasetFileSummary(accessionID, xmlUrl, imageSetSummaries, studyD
 }
 
 export async function buildDatasetFileSummary(accessionID, studyDatasets = []) {
-  const empiarEntryId = accessionID.replace("EMPIAR-", "");
+  const empiarEntryId = encodeURIComponent(accessionID.replace("EMPIAR-", ""));
   const xmlUrl = `${EMPIAR_HEADERS_BASE_URL}/${empiarEntryId}.xml`;
   try {
-    const response = await fetch(xmlUrl);
-    if (!response.ok) {
-      console.warn(`Failed to fetch EMPIAR XML header for ${accessionID}: ${response.status} ${response.statusText}`);
-      return "";
-    }
-
-    const xml = await response.text();
+    const xml = await fetchText(xmlUrl);
     const imageSetSummaries = getImageSetXmlBlocks(xml).map((imageSetXml) => buildXmlImageSetSummary(imageSetXml));
     return formatDatasetFileSummary(accessionID, xmlUrl, imageSetSummaries, studyDatasets);
   } catch (error) {
-    console.warn(`Failed to summarize EMPIAR XML header for ${accessionID}`, error);
+    console.warn(`Optional EMPIAR XML summary unavailable for ${encodeURIComponent(accessionID)}.`);
     return "";
   }
 }
@@ -694,14 +691,6 @@ function asArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 function normalisePDBAccession(accession) {
   return String(accession ?? "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -749,14 +738,14 @@ function buildRelatedEntryPreviewLink({ accession, href, thumbnailURL, type, mea
   const safeAccession = escapeHtml(accession);
   const safeType = escapeHtml(type);
   const measurementHtml = measurement
-    ? `<span class="bia-related-entry-preview__measurement">${escapeHtml(measurement.label)}: ${escapeHtml(measurement.value)} ${measurement.units}</span>`
+    ? `<span class="bia-related-entry-preview__measurement">${escapeHtml(measurement.label)}: ${escapeHtml(measurement.value)} ${escapeHtml(measurement.units)}</span>`
     : "";
 
   return `
     <span class="bia-related-entry">
-      <a class="vf-link bia-related-entry__link" href="${href}" target="_blank" rel="noopener noreferrer">${safeAccession}</a>${measurement?.value ? ` (${measurement.value} ${measurement.units})`: ""}
+      <a class="vf-link bia-related-entry__link" href="${escapeHtml(navigationURL(href) ?? "#")}" target="_blank" rel="noopener noreferrer">${safeAccession}</a>${measurement?.value ? ` (${escapeHtml(measurement.value)} ${escapeHtml(measurement.units)})`: ""}
       <span class="bia-related-entry-preview" role="tooltip">
-        <img src="${thumbnailURL}" alt="Preview image for ${safeAccession}" loading="lazy" />
+        <img src="${escapeHtml(resourceURL(thumbnailURL) ?? "")}" alt="Preview image for ${safeAccession}" loading="lazy" />
         <span class="bia-related-entry-preview__body">
           <span class="bia-related-entry-preview__title">${safeType} ${safeAccession}</span>
           ${measurementHtml}
@@ -854,11 +843,12 @@ export async function buildPDBandEMDBLinks(study){
     })).join(", ")
     : null;
 
-  const emdbEntries = await Promise.all(studyEMDBLinks.map(async ({ accession, href }) => ({
-    accession,
-    href,
-    metadata: await getFromAPI(`https://www.ebi.ac.uk/emdb/api/entry/EMD-${accession}`),
-  })));
+  const emdbEntries = await boundedMap(studyEMDBLinks, async ({ accession, href }) => {
+    let metadata = null;
+    try { metadata = await getFromAPI(`https://www.ebi.ac.uk/emdb/api/entry/EMD-${encodeURIComponent(accession)}`); }
+    catch { console.warn(`Optional EMDB resolution unavailable for EMD-${encodeURIComponent(accession)}.`); }
+    return { accession, href, metadata };
+  });
 
   const emdbLinks = emdbEntries.length > 0
     ? emdbEntries.map(({ accession, href, metadata }) => {
