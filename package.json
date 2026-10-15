@@ -26,7 +26,8 @@
     "test:fbbi": "node --test tests/ontology/*.test.mjs",
     "test:news": "node --test tests/news/*.test.mjs",
     "audit:security": "node scripts/security/audit.mjs",
-    "postinstall": "node scripts/build/artifacts.mjs"
+    "postinstall": "node scripts/build/artifacts.mjs",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers playwright test --config configs/testing/playwright.config.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.10",
@@ -51,8 +52,8 @@
     "eslint-plugin-security": "4.2.0",
     "html-validate": "10.17.0",
     "knip": "5.70.1",
-    "playwright": "1.64.1",
-    "typescript-eslint": "8.48.1"
+    "typescript-eslint": "8.48.1",
+    "@playwright/test": "1.64.1"
   },
   "engines": {
     "node": ">=22.22.0"
