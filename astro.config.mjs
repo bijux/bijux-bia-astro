@@ -1,5 +1,6 @@
 import { defineConfig, envField } from 'astro/config';
 import { prepareArtifacts } from './scripts/build/artifacts.mjs';
+import { publicDefaults } from './scripts/deployment/configuration.mjs';
 
 import mdx from "@astrojs/mdx";
 import yaml from '@rollup/plugin-yaml';
@@ -16,7 +17,7 @@ function isNetlify() {
 }
 
 const publicURL = new URL(process.env.SITE_URL ||
-  (isNetlify() && process.env.DEPLOY_PRIME_URL) || 'https://www.ebi.ac.uk');
+  (isNetlify() && process.env.DEPLOY_PRIME_URL) || publicDefaults.SITE_URL);
 if (!['http:', 'https:'].includes(publicURL.protocol) || publicURL.username || publicURL.password) {
   throw new Error('SITE_URL must be an HTTP(S) URL without credentials.');
 }
@@ -79,28 +80,28 @@ export default defineConfig({
         required: true,
         access: "public",
         context: "client",
-        default: "https://alpha.bioimagearchive.org/search/v1"
+        default: publicDefaults.PUBLIC_SEARCH_API
       }),
       PUBLIC_MONGO_API: envField.string({
         type: "string",
         required: true,
         access: "public",
         context: "client",
-        default: "https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2"
+        default: publicDefaults.PUBLIC_MONGO_API
       }),
       PUBLIC_GTAG: envField.string({
         type: "string",
         required: true,
         access: "public",
         context: "client",
-        default: ""
+        default: publicDefaults.PUBLIC_GTAG
       }),
       PUBLIC_WEBSITE_STATE: envField.string({
         type: "string",
         required: true,
         access: "public",
         context: "client",
-        default: "DEV"
+        default: publicDefaults.PUBLIC_WEBSITE_STATE
       })
     }
   },
