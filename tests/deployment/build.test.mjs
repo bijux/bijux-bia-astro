@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -29,6 +29,8 @@ test('a Node deployment builds once, serves offline, preserves its configuration
     const api = `http://127.0.0.1:${upstream.address().port}`;
     for (const directory of ['src/pages', 'public', 'scripts']) await mkdir(path.join(root, directory), { recursive: true });
     await cp(path.join(repository, 'scripts/deployment'), path.join(root, 'scripts/deployment'), { recursive: true });
+    await cp(path.join(repository, 'scripts/catalogue'), path.join(root, 'scripts/catalogue'), { recursive: true });
+    await cp(path.join(repository, 'package-lock.json'), path.join(root, 'package-lock.json'));
     await cp(path.join(repository, 'scripts/server.mjs'), path.join(root, 'scripts/server.mjs'));
     await cp(path.join(repository, 'src/security'), path.join(root, 'src/security'), { recursive: true });
     await symlink(path.join(repository, 'node_modules'), path.join(root, 'node_modules'), 'dir');
@@ -71,6 +73,16 @@ export async function GET({url}){
     const htmlFile = path.join(root, 'artifacts/dist/bioimage-archive/client/index.html');
     const html = await readFile(htmlFile, 'utf8');
     await new Promise(resolve => upstream.close(resolve));
+    const snapshots = path.join(root, 'artifacts/catalogue/snapshots');
+    const captured = await readdir(snapshots);
+    assert.equal(captured.length, 1);
+    env.CATALOGUE_SNAPSHOT = path.join(snapshots, captured[0]);
+    await build();
+    assert.equal(await readFile(htmlFile, 'utf8'), html);
+    assert.equal(collected, 1);
+    const reports = path.join(root, 'artifacts/catalogue/builds');
+    const builds = await Promise.all((await readdir(reports)).map(async name => JSON.parse(await readFile(path.join(reports, name, 'report.json'), 'utf8'))));
+    assert(builds.some(report => report.mode === 'replay' && report.network === 0));
     // Serving does not require source templates or an Astro configuration.
     const configSource = await readFile(path.join(root, 'astro.config.mjs'));
     const indexSource = await readFile(path.join(root, 'src/pages/index.astro'));
@@ -113,6 +125,10 @@ export async function GET({url}){
     await mkdir(path.join(root, 'src/pages'));
     await writeFile(path.join(root, 'astro.config.mjs'), configSource);
     await writeFile(path.join(root, 'src/pages/index.astro'), indexSource);
+    env.PUBLIC_WEBSITE_STATE = 'DEV';
+    await assert.rejects(build(), error => /Snapshot public configuration differs/.test(error.stdout + error.stderr));
+    delete env.CATALOGUE_SNAPSHOT;
+    env.PUBLIC_WEBSITE_STATE = 'PROD';
     await assert.rejects(build(), error => /fetch failed|ECONNREFUSED/.test(error.stdout + error.stderr));
     await assert.rejects(readFile(manifestFile), { code: 'ENOENT' });
 });

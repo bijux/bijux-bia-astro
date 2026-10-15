@@ -17,7 +17,8 @@
     "src/components/search/search-results.js",
     "src/layouts/HelpLayout.astro",
     "src/layouts/PoliciesLayout.astro",
-    "src/layouts/MarkdownLayoutLeftAlign.astro"
+    "src/layouts/MarkdownLayoutLeftAlign.astro",
+    "scripts/catalogue/preload.mjs"
   ],
   "ignore": [
     "**/node_modules/**",

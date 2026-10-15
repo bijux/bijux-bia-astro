@@ -1,6 +1,7 @@
 import { defineConfig, envField } from 'astro/config';
 import { prepareArtifacts } from './scripts/build/artifacts.mjs';
 import { publicDefaults } from './scripts/deployment/configuration.mjs';
+import { catalogueEnvironment } from './scripts/catalogue/environment.mjs';
 
 import mdx from "@astrojs/mdx";
 import yaml from '@rollup/plugin-yaml';
@@ -41,10 +42,11 @@ export default defineConfig({
   outDir: './artifacts/dist/bioimage-archive',
   cacheDir: './artifacts/astro-cache',
   compressHTML: true,
+  build: { concurrency: Number(process.env.CATALOGUE_RENDER_CONCURRENCY ?? 1) },
 
   vite: {
     cacheDir: './artifacts/vite',
-    plugins: [yaml()]
+    plugins: [yaml(), catalogueEnvironment(publicDefaults, publicURL.origin)]
   },
 
   base: "/bioimage-archive",

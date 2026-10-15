@@ -8,7 +8,7 @@
     "test:markup": "node --test tests/markup/*.test.mjs",
     "quality:markup:check": "astro check --tsconfig configs/quality/tsconfig.markup.json",
     "start": "astro dev",
-    "build": "astro check && astro build && cp public/robots.txt artifacts/dist/robots.txt && cp public/redirect_index.html artifacts/dist/index.html",
+    "build": "node scripts/catalogue/build.mjs",
     "build:deployment": "node scripts/deployment/build.mjs",
     "preview": "astro preview",
     "astro": "astro",
