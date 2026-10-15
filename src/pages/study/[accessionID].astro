@@ -8,7 +8,8 @@ import DatasetInfo from "../../components/DatasetInfo.astro";
 import ViewableImageTable from "../../components/ViewableImageTable.astro";
 import FileListTable from "../../components/FileListTable.astro";
 import Citation from "../../components/Citation.astro";
-import { buildPDBandEMDBLinks, getMetadataValue, multilineTextRender, formatBytesToHumanSize, getFromAPI, getStudyImage, getStudyFromApiByAccession, getAllStudiesFromAPI} from "../../components/SharedJSFunctions.js"
+import { buildPDBandEMDBLinks, getMetadataValue, multilineTextRender, formatBytesToHumanSize, getStudyImage} from "../../components/SharedJSFunctions.js"
+import { getFromAPI, getStudyFromApiByAccession, getAllStudiesFromAPI } from "../../api/client.mjs";
 import { type Study } from "../../components/SharedInterface.astro"
 
 export async function getStaticPaths() {

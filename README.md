@@ -8,6 +8,8 @@ Set `SITE_URL` at build time for a custom public origin; Netlify previews use
 the dependency-directory link. Tests and audit probes execute the installed tools.
 The document layouts share their head/footer and serve pinned jQuery/DataTables
 assets locally, in dependency order. EMBL chrome remains externally maintained.
+Search clients and response contracts live in `src/api/`; HTML formatters consume
+data without making requests. Existing shared-helper exports remain compatible.
 
 ## 🧞 Commands
 

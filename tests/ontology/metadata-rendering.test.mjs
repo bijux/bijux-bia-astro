@@ -29,7 +29,7 @@ before(async () => {
     await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
     await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
     // Include shared rendering and request dependencies used by the real components.
-    for (const relative of ["src/security", "src/components/formatting"]) {
+    for (const relative of ["src/security", "src/api", "src/components/formatting"]) {
         await cp(path.join(repository, relative), path.join(root, relative), { recursive: true });
     }
     await writeFile(path.join(root, "astro.config.mjs"), `
