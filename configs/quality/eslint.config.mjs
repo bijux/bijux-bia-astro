@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 export default [
   {
     ignores: [
-      '**/node_modules/**', '**/.git/**', '**/.astro/**', '**/dist/**',
+      '.astro', '**/node_modules/**', '**/.git/**', '**/.astro/**', '**/dist/**',
       '**/.netlify/**', '**/coverage/**', '**/artifacts/**',
     ],
   },

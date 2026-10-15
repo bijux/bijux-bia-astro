@@ -1,9 +1,9 @@
-// 1. Import utilities from `astro:content`
-import { defineCollection, z } from 'astro:content';
-import { articleDateKey } from '../news/article-order.mjs';
-// 2. Define your collection(s)
-const case_studiesCollection = defineCollection({ 
-    type: 'content',
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
+import { articleDateKey } from './news/article-order.mjs';
+const case_studiesCollection = defineCollection({
+    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/case_studies' }),
     schema: ({ image }) => z.object({
         title: z.string(),
         cover: image(),
@@ -11,8 +11,8 @@ const case_studiesCollection = defineCollection({
       }),
     });
 
-const newsCollection = defineCollection({ 
-    type: 'content',
+const newsCollection = defineCollection({
+    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/news_articles' }),
     schema: ({ image }) => z.object({
         title: z.string(),
         cover: image(),
@@ -25,16 +25,16 @@ const newsCollection = defineCollection({
       }),
     });
 
-const announcementCollection = defineCollection({ 
-    type: 'content',
+const announcementCollection = defineCollection({
+    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/announcements' }),
     schema: ({ }) => z.object({
         title: z.string(),
         className: z.string()
       }),
     });
 
-const contributorCollection = defineCollection({ 
-    type: 'content',
+const contributorCollection = defineCollection({
+    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/contributors' }),
     schema: ({ image }) => z.object({
         name: z.string(),
         affiliation: z.string(),
@@ -44,8 +44,6 @@ const contributorCollection = defineCollection({
         contributorImage: image()
       }),
     });
-// 3. Export a single `collections` object to register your collection(s)
-//    This key should match your collection directory name in "src/content"
 export const collections = {
   case_studies: case_studiesCollection,
   news_articles: newsCollection,

@@ -3,7 +3,6 @@
 // Knip/Astro may evaluate project configuration; optional astro check can generate .astro/ files.
 import { createHash } from 'node:crypto';
 import { closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { eslintFindings, knipFindings, renderFindings, reportExitCode, sortFindings, verifyEslintSourceCoverage } from './report.mjs';
 import { execute as executeCommand } from './execution.mjs';
@@ -27,7 +26,6 @@ const out = path.join(root, evidencePath);
 mkdirSync(out, { recursive: true });
 writeFileSync(path.join(root, 'artifacts', 'dead-codes.log'),
   `BIA-ASTRO DEAD-CODE CANDIDATE AUDIT\nStatus: IN_PROGRESS\nEvidence: ${evidencePath}\n`);
-const require = createRequire(path.join(root, 'package.json'));
 const env = { ...process.env, NO_COLOR: '1', CI: 'true', ASTRO_TELEMETRY_DISABLED: '1' };
 delete env.FORCE_COLOR;
 const stages = [];
@@ -66,9 +64,9 @@ function digest(file) {
   return createHash('sha256').update(inputBytes(inputPath(file), file)).digest('hex');
 }
 function packageInfo(name) {
-  // Resolve local packages, never execute npx or fetch anything.
-  const file = require.resolve(`${name}/package.json`);
-  return { folder: path.dirname(file), data: JSON.parse(readFileSync(file, 'utf8')) };
+  // Read this checkout's manifest even when the package does not export it.
+  const file = inputPath(`node_modules/${name}/package.json`);
+  return { folder: path.dirname(file), data: JSON.parse(inputBytes(file, name).toString('utf8')) };
 }
 const requiredInputs = [
   'package-lock.json', 'configs/quality/eslint.config.mjs', 'configs/quality/knip.json',

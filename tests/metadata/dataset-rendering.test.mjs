@@ -45,7 +45,7 @@ export default defineConfig({
 });
 `);
     const { stdout, stderr } = await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", application],
+        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", application],
         { cwd: repository, timeout: 120000, maxBuffer: 2 * 1024 * 1024,
             env: { ...process.env, BIJUX_METADATA_INVALID: "false" } });
     await writeFile(path.join(application, "build.log"), stdout + stderr);
@@ -272,7 +272,7 @@ test("the shared image presentation keeps its text, initial state and original s
 
 test("malformed groups fail the actual Astro build with the dataset and property identified", async () => {
     await assert.rejects(promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", application],
+        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", application],
         { cwd: repository, timeout: 120000, maxBuffer: 2 * 1024 * 1024,
             env: { ...process.env, BIJUX_METADATA_INVALID: "true" } }), error => {
         assert.match(error.stdout + error.stderr, /Dataset Invalid group dataset: biological_entity must be an array/);

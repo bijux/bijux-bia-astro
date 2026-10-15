@@ -1,5 +1,5 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { sortNewsByDate } from "../news/article-order.mjs";
 const items = sortNewsByDate(await getCollection("news_articles"));
 
@@ -9,7 +9,7 @@ const items = sortNewsByDate(await getCollection("news_articles"));
     <h2 class="vf-section-header vf-section-header__heading">News</h2>
     <div class="vf-news-container__content news-slideshow-container" id="newsSlides">
             {await Promise.all(items.map(async (news) => {
-            const { Content } = await news.render();
+            const { Content } = await render(news);
             return (
                 <article class="vf-summary vf-summary--news news-article fade">
                   <span class="slider"><button onclick="prevNewsSlide()" type="button" class="slider-left-button"></button></span>

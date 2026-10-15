@@ -1,5 +1,5 @@
 ---
-import type { CollectionEntry } from 'astro:content';
+import { render, type CollectionEntry } from 'astro:content';
 interface Props {
   post: CollectionEntry<'case_studies'>;
 }
@@ -7,7 +7,7 @@ interface Props {
 // `post` will match your 'case_studies' collection schema type
 //const { post } = Astro.props;
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 ---
 <Content />
 

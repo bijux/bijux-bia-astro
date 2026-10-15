@@ -5,7 +5,7 @@ import { isImageOptimizer, securityHeaders } from "../src/security/headers.mjs";
 
 // Use the adapter's standalone handler while applying headers to assets, static pages and errors too.
 process.env.ASTRO_NODE_AUTOSTART = "disabled";
-const { handler } = await import("../dist/bioimage-archive/server/entry.mjs");
+const { handler } = await import("../artifacts/dist/bioimage-archive/server/entry.mjs");
 const headers = securityHeaders(process.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true");
 const listener = (request, response) => {
     for (const [name, value] of Object.entries(headers)) response.setHeader(name, value);

@@ -59,7 +59,7 @@ before(async () => {
     await writeFile(path.join(root, "astro.config.mjs"), `
 import { defineConfig, envField } from 'astro/config';
 import node from '@astrojs/node';
-export default defineConfig({ base:'/bioimage-archive',outDir:'./dist/bioimage-archive',cacheDir:'./.astro-cache',vite:{cacheDir:'./.vite-cache'},
+export default defineConfig({ redirects:{'/legacy':'/bioimage-archive/headers'},security:{allowedDomains:[{hostname:'127.0.0.1',protocol:'http'}]},base:'/bioimage-archive',outDir:'./artifacts/dist/bioimage-archive',cacheDir:'./.astro-cache',vite:{cacheDir:'./.vite-cache'},
 adapter:node({mode:'standalone',experimentalDisableStreaming:true}),image:{service:{entrypoint:'astro/assets/services/noop'}},
 env:{schema:{PUBLIC_SEARCH_API:envField.string({access:'public',context:'client',default:${JSON.stringify(api)}}),PUBLIC_GTAG:envField.string({access:'public',context:'client',default:''}),PUBLIC_WEBSITE_STATE:envField.string({access:'public',context:'client',default:'DEV'})}}});
 `);
@@ -68,7 +68,7 @@ env:{schema:{PUBLIC_SEARCH_API:envField.string({access:'public',context:'client'
     await writeFile(path.join(root, "src/pages/redirect.js"), 'export const prerender=false; export function GET({request}) { return Response.redirect(new URL("/bioimage-archive/headers",request.url),302); }');
     await writeFile(path.join(root, "src/pages/catalogue.json.js"), 'import {getAllStudiesFromAPI} from "../components/SharedJSFunctions.js";\nexport const prerender = false;\nexport async function GET(){return Response.json({count:(await getAllStudiesFromAPI()).length});}');
     const env = { ...process.env, PUBLIC_SEARCH_API: api, PUBLIC_GTAG: "", PUBLIC_ALLOW_LOCAL_VIEWERS: "false" };
-    await promisify(execFile)(process.execPath, [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", root], { cwd: root, env, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
+    await promisify(execFile)(process.execPath, [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root], { cwd: root, env, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
     const portServer = createServer(); portServer.listen(0, "127.0.0.1"); await once(portServer, "listening");
     const port = portServer.address().port; await new Promise(resolve => portServer.close(resolve));
     address = `http://127.0.0.1:${port}`;
@@ -123,6 +123,17 @@ test("redirects keep their status and destination when security headers are appl
     assert.equal(response.status, 302);
     assert.equal(response.headers.get("location"), address + "/bioimage-archive/headers");
     assert.equal(response.headers.get("X-Content-Type-Options"), "nosniff");
+    const configured = await fetch(`${address}/bioimage-archive/legacy`, { redirect: 'manual' });
+    assert.equal(configured.status, 301);
+    assert.equal(new URL(configured.headers.get('location'), address).pathname, '/bioimage-archive/headers');
+});
+
+test("unapproved Host and forwarded hosts cannot control redirect destinations", async () => {
+    for (const headers of [{ Host: 'attacker.invalid' }, { 'X-Forwarded-Host': 'attacker.invalid', 'X-Forwarded-Proto': 'https' }]) {
+        const response = await fetch(`${address}/bioimage-archive/redirect`, { redirect: 'manual', headers });
+        assert.equal(response.status, 302);
+        assert.notEqual(new URL(response.headers.get('location')).hostname, 'attacker.invalid');
+    }
 });
 
 test("read-only application routes reject body-bearing methods without contacting the API", async () => {
@@ -171,7 +182,7 @@ test("every image route rejects a missing image before requesting study metadata
 test("a failed prerender cannot be converted into a successful build containing an error page", async () => {
     await writeFile(path.join(root, "src/pages/prerender-error.astro"), '---\nthrow new Error("Controlled prerender failure");\n---\n');
     try {
-        await assert.rejects(promisify(execFile)(process.execPath, [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", root],
+        await assert.rejects(promisify(execFile)(process.execPath, [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root],
             { cwd: root, timeout: 120000, maxBuffer: 2 * 1024 * 1024 }), error => error.code !== 0 && /Controlled prerender failure/.test(error.stderr + error.stdout));
     } finally { await rm(path.join(root, "src/pages/prerender-error.astro")); }
 });

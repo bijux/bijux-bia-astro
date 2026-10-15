@@ -1,12 +1,12 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 const items = await getCollection("announcements");
 ---
 {
     /*
 <section class="vf-u-fullbleed" style="padding: 1% 1%;margin-left: 10%; margin-right: 10%;">
     {await Promise.all(items.map(async (announcement) => {
-        const { Content } = await announcement.render();
+        const { Content } = await render(announcement);
         return (
             <div class={announcement.data.className} style="padding: 1%;">
                 <button aria-label="Close" onclick="remove(this)" style="position: relative;float:right;display:inline-block;top:0px;background: none;border: none;font-size: 20px;font-weight: bold;cursor: pointer;line-height: 1;">×</button>

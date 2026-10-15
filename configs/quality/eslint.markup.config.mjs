@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 import markup from '../../scripts/markup/explicit-closing-tags.mjs';
 
 export default [
-  { ignores: ['**/node_modules/**', '**/.git/**', '.astro/**', 'dist/**', '.netlify/**', 'artifacts/**', 'coverage/**'] },
+  { ignores: ['.astro', '**/node_modules/**', '**/.git/**', '.astro/**', 'dist/**', '.netlify/**', 'artifacts/**', 'coverage/**'] },
   ...astro.configs['flat/base'],
   {
     files: ['**/*.astro'],

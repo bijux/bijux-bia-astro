@@ -70,7 +70,7 @@ const image = ${JSON.stringify(image)};
 <img id="authored-hero" src={getStudyImage(study, '/bioimage-archive/ai-galleries/model-images/loyal-squid_combined.png')} />
 `);
     await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", root],
+        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root],
         { cwd: root, timeout: 120000, maxBuffer: 2 * 1024 * 1024,
             env: { ...process.env, PUBLIC_GTAG: payload, PUBLIC_SEARCH_API: "http://127.0.0.1:1" } });
     for (const layout of layouts) rendered.set(layout, await readFile(path.join(root, "dist", layout, "index.html"), "utf8"));
