@@ -42,7 +42,7 @@ export default defineConfig({
   outDir: './artifacts/dist/bioimage-archive',
   cacheDir: './artifacts/astro-cache',
   compressHTML: true,
-  build: { concurrency: Number(process.env.CATALOGUE_RENDER_CONCURRENCY ?? 1) },
+  build: { concurrency: Number(process.env.CATALOGUE_RENDER_CONCURRENCY ?? 4) },
 
   vite: {
     cacheDir: './artifacts/vite',

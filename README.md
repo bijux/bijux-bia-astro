@@ -41,10 +41,14 @@ CATALOGUE_SNAPSHOT=artifacts/catalogue/snapshots/<capture-id> npm run build
 Replay verifies response hashes and never falls back to live APIs. Identical build
 requests share one result; upstream concurrency is bounded. HTTP error responses
 remain visible in the snapshot index; transport failures prevent publication.
+The default renders four pages concurrently with at most four upstream requests;
+set `CATALOGUE_RENDER_CONCURRENCY=1` for serial rendering (allowed range: 1–8).
 Snapshots stay outside public output and are not shipped in the runtime image.
 This freezes captured inputs, not a transaction across independent upstream APIs.
 The capture uses the default single-process prerenderer; concurrent page rendering
 is supported, while experimental parallel-worker capture is rejected.
+Study pages remain static: replay removes upstream build latency without adding
+runtime catalogue requests or an HTML-cache invalidation policy.
 
 ## Container deployment
 

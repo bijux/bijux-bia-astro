@@ -19,6 +19,9 @@ export function snapshotTransport({ directory, index, concurrency = 4, fetch: up
     if (![timeout, maxBytes].every(value => Number.isSafeInteger(value) && value > 0)) throw new RangeError('Snapshot transport limits must be positive integers.');
     if (!Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 8) throw new RangeError('Snapshot concurrency must be between 1 and 8.');
     const pending = new Map();
+    const completed = new Map();
+    const requested = new Set();
+    const failures = new Map();
     let active = 0;
     const waiting = [];
     const statistics = { calls: 0, deduplicated: 0, network: 0, peakRequests: 0, activeRequests: 0 };
@@ -44,7 +47,9 @@ export function snapshotTransport({ directory, index, concurrency = 4, fetch: up
             } catch (error) { await reader?.cancel().catch(() => {}); throw error; }
             const body = Buffer.concat(chunks, bytes).toString('base64');
             const record = { request: key, status: response.status, headers: [...response.headers].filter(([name]) => !['set-cookie', 'set-cookie2'].includes(name)), body };
-            await writeFile(join(directory, `${digest(key)}.json`), canonical(record), { flag: 'wx' });
+            const serialized = canonical(record);
+            await writeFile(join(directory, `${digest(key)}.json`), serialized, { flag: 'wx' });
+            completed.set(key, digest(serialized));
             return record;
         } finally {
             statistics.activeRequests--;
@@ -54,7 +59,7 @@ export function snapshotTransport({ directory, index, concurrency = 4, fetch: up
     }
     async function replay(key) {
         const id = digest(key);
-        const expected = index.responses[id];
+        const expected = index?.responses[id] ?? completed.get(key);
         if (!expected) throw new Error(`Snapshot has no response for ${key}.`);
         const bytes = await regularFile(join(directory, `${id}.json`));
         if (digest(bytes) !== expected) throw new Error(`Snapshot response hash mismatch: ${id}.`);
@@ -80,11 +85,17 @@ export function snapshotTransport({ directory, index, concurrency = 4, fetch: up
             url.hash = '';
             const key = canonical({ url: url.href, headers: [...request.headers].sort() });
             statistics.calls++;
-            if (pending.has(key)) statistics.deduplicated++;
-            else pending.set(key, (index ? replay(key) : capture(request, key)).catch(error => {
-                errors.push({ request: key, message: 'Request or snapshot input failed.' });
-                throw error;
-            }));
+            if (requested.has(key)) statistics.deduplicated++;
+            requested.add(key);
+            if (!pending.has(key)) {
+                const operation = failures.has(key) ? Promise.reject(failures.get(key)) : index || completed.has(key) ? replay(key) : capture(request, key);
+                pending.set(key, operation.then(record => { pending.delete(key); return record; }, error => {
+                    pending.delete(key);
+                    if (!failures.has(key)) errors.push({ request: key, message: 'Request or snapshot input failed.' });
+                    failures.set(key, error);
+                    throw error;
+                }));
+            }
             // One caller's cancellation must not abort another caller's shared upstream request.
             const result = pending.get(key);
             let abort;

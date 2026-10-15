@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { copyFile, lstat, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { digest, regularFile } from './transport.mjs';
@@ -12,7 +12,7 @@ await mkdir(run, { recursive: true });
 const input = process.env.CATALOGUE_SNAPSHOT;
 const directory = input ? resolve(root, input) : join(root, 'artifacts/catalogue/snapshots', randomUUID());
 if (process.argv.length > 2) throw new Error('Use CATALOGUE_SNAPSHOT=<directory> npm run build to replay a snapshot.');
-const renderConcurrency = Number(process.env.CATALOGUE_RENDER_CONCURRENCY ?? 1);
+const renderConcurrency = Number(process.env.CATALOGUE_RENDER_CONCURRENCY ?? 4);
 if (!Number.isSafeInteger(renderConcurrency) || renderConcurrency < 1 || renderConcurrency > 8) throw new RangeError('Render concurrency must be between 1 and 8.');
 const required = await lstat(join(root, 'src/pages/study/[accessionID].astro')).then(() => true, error => { if (error.code === 'ENOENT') return false; throw error; });
 // Invalidate deployment provenance before any failed validation or rebuild can leave it current.
@@ -36,10 +36,10 @@ await copyFile(join(root, 'public/redirect_index.html'), join(root, 'artifacts/d
 const writers = await Promise.all((await readdir(run)).filter(name => name.startsWith('requests.json.')).map(async name => JSON.parse(await regularFile(join(run, name)))));
 if (!writers.length) throw new Error('Build transport did not report its request coverage.');
 if (!input && writers.filter(writer => writer.calls > 0).length !== 1 && writers.some(writer => writer.calls > 0)) throw new Error('Snapshot capture requires the default single-process prerenderer; concurrent page rendering is supported.');
-const statistics = writers.reduce((total, writer) => ({ calls: total.calls + writer.calls, deduplicated: total.deduplicated + writer.deduplicated, network: total.network + writer.network, activeRequests: total.activeRequests + writer.activeRequests, peakRequests: Math.max(total.peakRequests, writer.peakRequests), errors: [...total.errors, ...writer.errors] }), { calls: 0, deduplicated: 0, network: 0, activeRequests: 0, peakRequests: 0, errors: [] });
+const statistics = writers.reduce((total, writer) => ({ calls: total.calls + writer.calls, deduplicated: total.deduplicated + writer.deduplicated, network: total.network + writer.network, activeRequests: total.activeRequests + writer.activeRequests, peakRequests: Math.max(total.peakRequests, writer.peakRequests), maxRssKb: Math.max(total.maxRssKb, writer.maxRssKb ?? 0), errors: [...total.errors, ...writer.errors] }), { calls: 0, deduplicated: 0, network: 0, activeRequests: 0, peakRequests: 0, maxRssKb: 0, errors: [] });
 if (inputHash && digest(await regularFile(join(directory, 'index.json'))) !== inputHash) throw new Error('Snapshot index changed during the build.');
-if (statistics.errors.length || statistics.activeRequests) throw new Error('Build inputs were incomplete; no verified snapshot or deployment was published.');
-const index = input ? await verifySnapshot(directory, { root, required }) : await sealSnapshot(directory, { root, required, source: { packageLock: digest(await readFile(join(root, 'package-lock.json'))) } });
+if (statistics.errors.length || statistics.activeRequests) throw new Error(`Build inputs were incomplete; no verified snapshot or deployment was published. Request diagnostics: ${run}`);
+const index = input ? await verifySnapshot(directory, { root, required }) : await sealSnapshot(directory, { root, required, source: { packageLock: digest(await regularFile(join(root, 'package-lock.json'))) } });
 const snapshotHash = digest(await regularFile(join(directory, 'index.json')));
 const report = { mode: input ? 'replay' : 'capture', snapshot: directory, snapshotHash, studies: index.catalogue.count, durationMs: Math.round(performance.now() - started), ...statistics };
 await writeFile(join(run, 'report.json'), JSON.stringify(report, null, 2) + '\n');
