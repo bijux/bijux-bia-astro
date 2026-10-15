@@ -318,3 +318,10 @@ test("a sum outside the safe integer range does not display a rounded file total
     assert.match(sections["overflow-counts"], /<b>Number of images\/files:<\/b> Not reported/);
     assert.doesNotMatch(sections["overflow-counts"], /Number of images\/files:<\/b> 9007199254740992/);
 });
+
+test("a specimen with biosamples but no preparation protocols retains its available metadata", () => {
+    assert.match(sections["partial-specimen"], /Partial specimen biosample/);
+    assert.doesNotMatch(sections["partial-specimen"], /Specimen Preparation Protocols:/);
+    assert.match(sections["prepared-specimen"], /Preparation without a biosample/);
+    assert.doesNotMatch(sections["prepared-specimen"], /Biosamples:/);
+});

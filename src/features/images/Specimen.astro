@@ -23,7 +23,7 @@ var { specimen } = Astro.props;
         )
 }
 {
-     Array.isArray(specimen.sample_of) &&
+     Array.isArray(specimen.imaging_preparation_protocol) &&
         specimen.imaging_preparation_protocol.length > 0 && (
             <b>Specimen Preparation Protocols:</b>
             <div class="metadata-fields">
