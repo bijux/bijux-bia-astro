@@ -15,6 +15,7 @@ export function boundaryIssues(graph, clients = []) {
     for (const [file, entry] of graph) {
         for (const target of entry.targets) {
             if (file.startsWith('src/features/') && file.endsWith('.astro') && target === 'src/api/client.mjs') issues.push(`${file}: presentation imports API client ${target}`);
+            if (file.startsWith('src/server/') && target.startsWith('scripts/')) issues.push(`${file}: production runtime imports build tool ${target}`);
             if (file.startsWith('src/api/') && /^src\/(features|components|layouts|formatting)\//.test(target)) issues.push(`${file}: API imports presentation ${target}`);
             if (/^src\/(formatting|security)\//.test(file) && /^src\/(features|components|layouts|api)\//.test(target)) issues.push(`${file}: shared policy/formatting imports ${target}`);
             if (file.startsWith('src/components/ui/') && /^src\/(features|api|layouts)\//.test(target)) issues.push(`${file}: shared UI imports ${target}`);

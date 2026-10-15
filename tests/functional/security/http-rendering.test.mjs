@@ -54,7 +54,6 @@ before(async () => {
     await cp(path.join(repository, "src"), path.join(root, "src"), { recursive: true, filter: source => source !== path.join(repository, "src/pages") });
     for (const directory of ["image", "galleries/spatialomics/image", "galleries/ai/image"]) await mkdir(path.join(root, "src/pages", directory), { recursive: true });
     for (const name of ["images.astro", "studies.astro", "image/[uuid].astro", "galleries/spatialomics/image/[uuid].astro", "galleries/ai/image/[uuid].astro"]) await cp(path.join(repository, "src/pages", name), path.join(root, "src/pages", name));
-    await mkdir(path.join(root, "scripts")); await cp(path.join(repository, "scripts/server.mjs"), path.join(root, "scripts/server.mjs"));
     await cp(path.join(repository, "scripts/deployment"), path.join(root, "scripts/deployment"), { recursive: true });
     await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
     await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
@@ -74,7 +73,7 @@ env:{schema:{PUBLIC_SEARCH_API:envField.string({access:'public',context:'client'
     const portServer = createServer(); portServer.listen(0, "127.0.0.1"); await once(portServer, "listening");
     const port = portServer.address().port; await new Promise(resolve => portServer.close(resolve));
     address = `http://127.0.0.1:${port}`;
-    child = spawn(process.execPath, ["scripts/server.mjs"], { cwd: root, env: { ...env, NODE_ENV: "production", HOST: "127.0.0.1", PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
+    child = spawn(process.execPath, ["src/server/host.mjs"], { cwd: root, env: { ...env, NODE_ENV: "production", HOST: "127.0.0.1", PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
     child.stdout.on("data", value => { diagnostics += value; }); child.stderr.on("data", value => { diagnostics += value; });
     const deadline = Date.now() + 10000;
     while (Date.now() < deadline) {

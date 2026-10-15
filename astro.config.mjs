@@ -1,6 +1,6 @@
 import { defineConfig, envField } from 'astro/config';
 import { prepareArtifacts } from './scripts/build/artifacts.mjs';
-import { publicDefaults } from './scripts/deployment/configuration.mjs';
+import { publicDefaults } from './src/server/configuration.mjs';
 import { catalogueEnvironment } from './scripts/catalogue/environment.mjs';
 
 import mdx from "@astrojs/mdx";

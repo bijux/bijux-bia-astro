@@ -2,9 +2,9 @@ import { createServer } from "node:http";
 import { createServer as createSecureServer } from "node:https";
 import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { isImageOptimizer, securityHeaders } from "../src/security/headers.mjs";
-import { logEvent } from "../src/observability/events.mjs";
-import { deploymentConfiguration } from "./deployment/manifest.mjs";
+import { isImageOptimizer, securityHeaders } from "../security/headers.mjs";
+import { logEvent } from "../observability/events.mjs";
+import { deploymentConfiguration } from "./deployment.mjs";
 
 // Use the adapter's standalone handler while applying headers to assets, static pages and errors too.
 process.env.ASTRO_NODE_AUTOSTART = "disabled";
@@ -12,7 +12,7 @@ const configuration = process.env.DEPLOYMENT_MANIFEST
     ? await deploymentConfiguration(process.env.DEPLOYMENT_MANIFEST)
     : process.env;
 const headers = securityHeaders(configuration.PUBLIC_ALLOW_LOCAL_VIEWERS === "true");
-const { handler } = await import("../artifacts/dist/bioimage-archive/server/entry.mjs");
+const { handler } = await import(new URL("../../artifacts/dist/bioimage-archive/server/entry.mjs", import.meta.url).href);
 let stopping = false;
 const listener = (request, response) => {
     const started = performance.now();
