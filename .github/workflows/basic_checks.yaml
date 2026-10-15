@@ -27,6 +27,7 @@ jobs:
       - run: npm test
 
   wait-for-deploy:
+    if: github.repository == 'BioImage-Archive/BIA-astro'
     runs-on: ubuntu-latest
     timeout-minutes: 22
     steps:
