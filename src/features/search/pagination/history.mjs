@@ -1,4 +1,4 @@
-import { searchRequest } from './request.mjs';
+import { searchRequest } from '../request.mjs';
 
 /** Public history omits transport cursors while retaining query, filters and page size. */
 export function cleanHistoryURL(value, origin) {

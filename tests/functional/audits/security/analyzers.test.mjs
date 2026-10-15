@@ -23,7 +23,7 @@ test("installed security analyzers cover Astro and browser scripts without hidin
         assert.deepEqual(report.errors, []);
         assert.equal(report.probes.length, 15);
         assert.deepEqual(report.probes.filter(probe => !probe.passed), []);
-        assert(report.inventory.code.includes("src/features/search/HighlightedText.astro"));
+        assert(report.inventory.code.includes("src/features/search/results/HighlightedText.astro"));
         assert(report.inventory.code.includes("scripts/security/audit.mjs"));
         assert.equal(report.probes.find(probe => probe.name === "malformed-js").expectedRule, "PARSE_ERROR");
         assert.equal(report.probes.find(probe => probe.name === "astro-inline-client").expectedRule, "no-unsanitized/property");

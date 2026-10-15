@@ -2,8 +2,8 @@ import { fetchJSON } from '../../api/http.mjs';
 import { browseResponse } from '../../api/contracts.mjs';
 import { generateParamString } from './query.mjs';
 import { readSearchState } from './state.ts';
-import { sortedSearchResults } from './results.ts';
-import { searchFacets } from './facets.ts';
+import { sortedSearchResults } from './results/sort.ts';
+import { searchFacets } from './facets/model.ts';
 import type { SearchHits, PaginationData, SearchScope, FacetView } from './types.ts';
 
 type SearchRequest = (url: string, options?: {signal?: AbortSignal}) => Promise<unknown>;

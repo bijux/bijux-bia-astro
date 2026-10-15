@@ -1,4 +1,4 @@
-import { cleanHistoryURL } from '../history.mjs';
+import { cleanHistoryURL } from './history.mjs';
 function buildCleanHistoryURL(url) {
     return cleanHistoryURL(url, window.location.origin);
 }

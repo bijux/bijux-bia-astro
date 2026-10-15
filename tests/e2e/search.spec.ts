@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, expect } from '../support/browser';
+import studies from '../fixtures/api/browse-study-response.json' with { type: 'json' };
+import images from '../fixtures/api/browse-image-response.json' with { type: 'json' };
 
 test('search preserves production behaviour', async ({ page }) => {
 assert((await page.goto('/bioimage-archive/images?size_t=1')).ok());
@@ -43,4 +45,15 @@ test('study search retains distinct scientific names when common names are absen
     await page.goto('/bioimage-archive/studies?query=taxon-example');
     await expect(page.locator('#card-view')).toContainText('Mus musculus');
     await expect(page.locator('#card-view')).toContainText('Homo sapiens');
+});
+
+test('study and image result links survive empty highlights in cards and tables', async ({ page }) => {
+    for (const [scope, destination] of [
+        ['studies', `/bioimage-archive/study/${studies.hits.hits[0]._source.accession_id}`],
+        ['images', `/bioimage-archive/image/${images.hits.hits[0]._source.uuid}`],
+    ]) {
+        await page.goto(`/bioimage-archive/${scope}?query=empty-highlights`);
+        await expect(page.locator('#card-view .vf-card__heading a').first()).toHaveAttribute('href', destination);
+        await expect(page.locator('#table-view tbody tr a').first()).toHaveAttribute('href', destination);
+    }
 });

@@ -1,9 +1,9 @@
-import { cleanHistoryURL, historyRequestURL } from '../history.mjs';
+import { cleanHistoryURL, historyRequestURL } from '../pagination/history.mjs';
 import { formSearchURL } from '../query.mjs';
 import { createSearchNavigation } from './navigation.mjs';
-import { bindFacetControls, submitFacetsForm } from './facets.js';
+import { bindFacetControls, submitFacetsForm } from '../facets/controls.js';
 import { bindToolbar } from './toolbar.js';
-import { renderCursorPagination, syncPaginatedResults } from './pagination.js';
+import { renderCursorPagination, syncPaginatedResults } from '../pagination/controls.js';
 const SHELL_ID = 'search-results-shell';
 function mountSearch() {
     if (!document.getElementById(SHELL_ID))

@@ -1,6 +1,6 @@
 ---
-import { facetTitle } from "./facet-options.mjs";
-import { formatBytes, formatFieldName } from "../../formatting/units.mjs";
+import { facetTitle } from "./options.mjs";
+import { formatBytes, formatFieldName } from "../../../formatting/units.mjs";
 const { facet, id} = Astro.props;
 const title = facet['title'];
 const totalCounts = facet['totalFacetCounts'];

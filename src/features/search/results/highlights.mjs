@@ -1,4 +1,4 @@
-import { renderTaxonList } from "../metadata/taxonomy.mjs";
+import { renderTaxonList } from "../../metadata/taxonomy.mjs";
 export function highlightOrganism(study, query){
     const text = renderTaxonList(study)
     return query && text? applyHighlight(text, query): text;
@@ -46,17 +46,18 @@ export function applyHighlight(text, query) {
     .join("");
 }
 
-function textFragmentLink(baseUrl, highlightStr, query) {
-  const clean = highlightStr.replace(/__HIT__|__\/HIT__/g, "").trim();
-  if (!clean || !clean.toLowerCase().includes(query.toLowerCase()) ) return baseUrl;
-  return `${baseUrl}#:~:text=${encodeURIComponent(clean)}`;
-}
-
-export function highlightLinks(baseUrl, highlightObj, query, limit = 8) {
-  if (!query ){ return baseUrl}
-  const vals = Object.values(highlightObj || {}).flat();
-  const uniq = [...new Set(vals)].slice(0, limit);
-  return uniq.flatMap(h => ({ text: h[0]?.replace(/__HIT__|__\/HIT__/g, "").trim(), url: textFragmentLink(baseUrl, h, query) }))?.[0]?.["url"];
+/** Highlighting may refine a destination, but absent snippets must never remove it. */
+export function highlightLinks(baseUrl, highlights, query, limit = 8) {
+    if (typeof query !== 'string' || !query || !Number.isSafeInteger(limit) || limit <= 0) return baseUrl;
+    const fields = highlights && typeof highlights === 'object' ? highlights : {};
+    const snippets = Object.values(fields).flat().filter(value => typeof value === 'string');
+    for (const snippet of [...new Set(snippets)].slice(0, limit)) {
+        const text = snippet.replace(/__HIT__|__\/HIT__/g, '').trim();
+        if (text && text.toLowerCase().includes(query.toLowerCase())) {
+            return `${baseUrl}#:~:text=${encodeURIComponent(text)}`;
+        }
+    }
+    return baseUrl;
 }
 
 export function getHighlightTextString(highlights) {

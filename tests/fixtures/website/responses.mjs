@@ -42,6 +42,9 @@ export function fixtureResponse(value) {
             ];
             response.hits.hits[0].highlight = {};
         }
+        if (url.searchParams.get('query') === 'empty-highlights') {
+            response.hits.hits = response.hits.hits.slice(0, 1).map(hit => ({ ...hit, highlight: {} }));
+        }
         const page = Number(url.searchParams.get('pagination.page') ?? 1);
         const size = Number(url.searchParams.get('pagination.page_size') ?? 12);
         if (isImage && url.searchParams.get('facet.accession_id') === 'EMPIAR-12104') {
