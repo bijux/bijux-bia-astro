@@ -17,7 +17,7 @@ related_issue_url: https://embl.atlassian.net/browse/BIOIM-347
 
 [BIOIM-322](https://embl.atlassian.net/browse/BIOIM-322) delivers the audit tooling together with the reviewed source corrections and removals tracked by [BIOIM-347](https://embl.atlassian.net/browse/BIOIM-347). This document records the original source decisions and preserved runtime contracts. Its dated counts are historical; run the audit for the current inventory.
 
-The initial audit reported 80 candidates and 21 parser diagnostics. These counts describe analyzer observations, not 101 unused resources. Review the configured graph, source context and affected behavior before changing code. The audit commands and failure semantics are documented in [repository quality checks](quality.md).
+The initial audit reported 80 candidates and 21 parser diagnostics. These counts describe analyzer observations, not 101 unused resources. Review the configured graph, source context and affected behavior before changing code. The audit commands and failure semantics are documented in [repository quality checks](../verification.md).
 
 ## Verified inventory
 
@@ -60,7 +60,7 @@ The general image page renders the OME-Zarr copy button only when an interactive
 
 The Base, EMPIAR and Projects layouts load jQuery before their dependent DataTables 2.1.8 CDN script. Both use [`is:inline`](https://docs.astro.build/en/guides/client-side-scripts/#unprocessed-scripts) to preserve ordinary blocking script tags instead of Astro's module-import processing. Source order alone does not establish execution order for processed scripts. This corrects the previously reproduced `jQuery is not defined` error without changing library versions. Network availability and the volume-EM page's additional legacy CDN scripts remain separate integration concerns.
 
-`npm run test:controls` exercises the actual scripts with absent/present elements, a table API response, clipboard behavior and layout script order. These tests run through `make quality-test`; compiled-browser checks complement the controlled script tests.
+`npm run test:controls` exercises the actual scripts with absent/present elements, a table API response, clipboard behavior and layout script order. These tests run through `npm test`; compiled-browser checks complement the controlled script tests.
 
 ## Unreachable components and ineffective styles
 
@@ -85,7 +85,7 @@ CaseStudy's `img :global(img)` required an image inside another image, while its
 | `html-validate` development dependency | Reserved companion analyzer in the shared locked audit profile. Its usage is supplied by the independently reviewed markup audit; keep the standalone observation visible rather than suppressing it. |
 | SPORA `sporaData`, `sporaIO` and `sporaBench` bindings | Four binding observations across the SPORA landing/dataset pages come from accepted main. Preserve the accepted imports and page implementations pending an initializer/feature review; this integration does not retire them. |
 
-The application corrections do not relax audit rules or remove runtime initializers. The configured graph explicitly preserves live browser scripts and optional worker/fixture entry points. Remaining candidates stay visible. A completed configured scan is narrower than complete runtime coverage; `make quality` can still fail because candidates remain, while report-only mode succeeds when analysis itself completes.
+The application corrections do not relax audit rules or remove runtime initializers. The configured graph explicitly preserves live browser scripts and optional worker/fixture entry points. Remaining candidates stay visible. A completed configured scan is narrower than complete runtime coverage; `make audit-dead-code` can still fail because candidates remain, while report-only mode succeeds when analysis itself completes.
 
 ## Build and browser comparison limits
 

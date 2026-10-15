@@ -1,37 +1,6 @@
-# Security checks
+# Security boundaries
 
-The security audit records source-review candidates and locked dependency advisories. It does not certify that the application is free of vulnerabilities. Use Node 22 and a Git checkout with locked dependencies installed:
-
-```sh
-npm ci
-npm test
-npm run astro -- check
-npm run audit:security
-```
-
-`npm test` discovers all `tests/**/*.test.mjs` suites. There is no separate security test command. To run the same checks through Make, use `make security` or `make -j2 security`; the latter runs isolated tests alongside the source check, then starts the combined audit after both succeed.
-
-For a focused inventory, use `npm run audit:security -- code` or `npm run audit:security -- deps`. These profiles disclose the coverage they did not run and do not replace the combined summary.
-
-| Audit exit | Meaning |
-| --- | --- |
-| 0 | Requested stages completed without configured findings. |
-| 1 | Analysis completed and retained candidates or advisory matches require review. |
-| 2 | Required inputs, provenance, execution or output could not be verified. |
-
-Make propagates a failed recipe, normally as exit 2. This is distinct from the audit runner's exit 2. Do not suppress a nonzero result to make the gate green.
-
-## Evidence and coverage
-
-`artifacts/security/security.log` identifies the owned run directory under `artifacts/security/runs/`. Each run preserves its JSON report, raw analyzer output, subprocess outcomes, installed versions, Git provenance and input hashes. Code-only and dependency-only summaries have their own filenames. Generated evidence is ignored by Git.
-
-The code stage uses installed, locked ESLint tools with Astro and TypeScript parsing. Fifteen installed-analyzer probes check unsafe and safe syntax, client scripts and parser failures. Every selected file must produce its expected result. Source hashes and the selected file set are checked again before the combined report is published, including after the registry request. Inline suppression, missing results, unsafe file inputs, inconsistent reports, tool failures and hard deadlines make a run incomplete.
-
-The inventory includes untracked source and root configuration. Only root generated directories are excluded: `.git`, `node_modules`, `.astro`, `.netlify`, `dist`, `coverage` and `artifacts`. A similarly named directory inside `src` is still inspected. HTML, MDX, YAML, JSON and other non-JavaScript formats are inventoried but are not claimed as ESLint-analyzed code. Source files are not executed by the analyzer probes.
-
-The dependency stage runs one explicit npm registry audit against the lockfile, including production, development, optional and peer dependencies. Missing or inconsistent manifests, malformed advisory records, unresolved advisory aliases and registry errors cannot produce a clean result. Registry results may change without a source change.
-
-History secret scanning, CodeQL, passive browser scanning, external CDN inspection and deployment checks are separate investigations. They are not hidden inside `npm test` or the default audit. Test fixtures use saved or controlled API data; they do not reproduce every live backend behavior.
+See [verification](../verification.md) for audit commands, evidence and exit statuses.
 
 ## Application boundaries
 
