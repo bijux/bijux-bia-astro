@@ -40,8 +40,12 @@ test('SPORA filters regenerate working download actions and clear to the origina
 
 test('clipboard rejection leaves the SPORA dialog usable and a retry copies the same command', async ({ page }) => {
     await page.goto('/bioimage-archive/projects/spora/dataset');
+    // Allow native disabling to blur the active control before rejection settles.
     await page.evaluate(() => Object.defineProperty(navigator.clipboard, 'writeText', {
-        configurable: true, value: async () => { throw new DOMException('Denied for this check', 'NotAllowedError'); },
+        configurable: true, value: async () => {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            throw new DOMException('Denied for this check', 'NotAllowedError');
+        },
     }));
     const opener = page.getByRole('button', { name: 'Download', exact: true }).first();
     await opener.click();
@@ -50,8 +54,20 @@ test('clipboard rejection leaves the SPORA dialog usable and a retry copies the 
     const copy = dialog.locator('.copy-commands');
     await copy.click();
     await expect(copy).toHaveText('Copy unavailable');
-    await expect(copy).toBeEnabled(); await expect(dialog).toBeVisible();
+    await expect(copy).toBeEnabled();
+    await expect(copy).toBeFocused();
+    await expect(dialog).toBeVisible();
     await expect(dialog.locator('code')).toHaveText(command!);
+    await page.evaluate(() => Object.defineProperty(navigator.clipboard, 'writeText', {
+        configurable: true, value: () => new Promise<void>(resolve => document.addEventListener('finish-clipboard-check', () => resolve(), { once: true })),
+    }));
+    await copy.click();
+    const close = dialog.locator('.dialog-actions [value="cancel"]');
+    await expect(copy).toBeDisabled();
+    await close.focus();
+    await page.evaluate(() => document.dispatchEvent(new Event('finish-clipboard-check')));
+    await expect(copy).toHaveText('Copied!');
+    await expect(close).toBeFocused();
     await page.evaluate(() => Reflect.deleteProperty(navigator.clipboard, 'writeText'));
     await copy.click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
