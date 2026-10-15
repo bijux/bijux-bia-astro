@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseNumericRange } from '../../src/components/formatting/numeric-ranges.mjs';
+import { parseNumericRange } from '../../src/formatting/numeric-ranges.mjs';
 
 for (const [value, start, end] of [
     ['1-2', '1', '2'],

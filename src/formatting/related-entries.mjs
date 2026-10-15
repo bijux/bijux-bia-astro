@@ -1,5 +1,5 @@
-import { escapeHtml } from "../../security/html.mjs";
-import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import { escapeHtml } from "../security/html.mjs";
+import { navigationURL, resourceURL } from "../security/urls.mjs";
 
 function asArray(value) {
   if (!value) return [];

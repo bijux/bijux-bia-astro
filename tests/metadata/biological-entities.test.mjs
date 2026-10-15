@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { getOrganismClassifications, getBiologicalEntityDescriptions } from '../../src/components/ai-benchmarking/biological-entities.js';
+import { getOrganismClassifications, getBiologicalEntityDescriptions } from '../../src/features/metadata/biological-entities.js';
 
 for (const biological_entity of [undefined, null, {}, 'missing', 0, false]) {
     test(`missing or non-array biological entities produce empty metadata: ${JSON.stringify(biological_entity)}`, () => {
