@@ -21,6 +21,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
     </div>
 
     <script>
+      import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
       import { escapeHtml } from "../../../security/html.mjs";
       import { fetchJSON, boundedMap } from "../../../api/http.mjs";
 
@@ -74,12 +75,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
                         createdRow: (row) => {
                             $(row).find(".copy-btn").on("click", function () {
                                 const link = $(this).data("uri");
-                                navigator.clipboard.writeText(link).then(() => {
-                                  this.innerText = "URL Copied";
-                                  setTimeout(() => {
-                                      this.innerText = "Copy Url";
-                                  }, 700);
-                                });
+                                void copyWithFeedback(this, link, { success: "URL Copied" });
                             });
                         }
                     });

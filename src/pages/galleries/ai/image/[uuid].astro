@@ -1,64 +1,12 @@
 ---
-import { selectAnnotationImages } from "../../../../features/galleries/ai/annotations.mjs";
-import { scriptData } from "../../../../security/html.mjs";
+import ImagePage from '../../../../features/galleries/ai/ImagePage.astro';
+import { createRequestClient } from '../../../../api/client.mjs';
+import { loadGalleryImage } from '../../../../features/galleries/load-image.mjs';
+import { selectAnnotationImages } from '../../../../features/galleries/ai/annotations.mjs';
 export const prerender = false;
-import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
-import WebsiteStateButton from '../../../../components/ui/WebsiteStateButton.astro';
-import { getTaxons } from "../../../../features/metadata/taxonomy.mjs";
-import { getAnnotationType } from "../../../../features/metadata/records.mjs";
-import { getImageFromAPI, getStudyFromApiByAccession, getDerivedImages } from "../../../../api/client.mjs";
-
-import SourceAnnotatedImage from '../../../../features/galleries/ai/SourceAnnotatedImage.astro';
-import { type Study } from "../../../../api/types.ts"
-import StudyComponents from "../../../../features/galleries/ai/StudyComponents.astro";
-import "../../../../features/galleries/ai/image-slider.css";
-
-const { uuid } = Astro.params;
-const image = await getImageFromAPI(uuid);
-if (!image) return new Response("Image not found.", { status: 404 });
-const accession_id = image ? image.accession_id : "";
-const studyInfo: Study = await getStudyFromApiByAccession(accession_id);
-
-const sourceImage = image;
-const annotatedImages = selectAnnotationImages(await getDerivedImages(sourceImage.uuid), sourceImage.uuid)
-const organism = getTaxons(studyInfo).join(", ");
-const sourceDataset = studyInfo.dataset.find((d) => d['uuid'] === sourceImage.submission_dataset_uuid);
-const imagingMethod = sourceDataset?.acquisition_process?.[0]?.imaging_method_name?.join(", ") || "";
-const annotationDatasets = studyInfo.dataset.filter(dataset => dataset.acquisition_process.length == 0 && dataset.annotation_process.length > 0);
-const annotatedDatasetContent = annotationDatasets.map((dataset) => ({
-  dataset_uuid: dataset.uuid,
-  dataset_title: dataset.title,
-  organism: organism,
-  imaging: imagingMethod,
-  annotation_type: getAnnotationType([dataset]).join(", ") || "No information available",
-  annotation_method: dataset.annotation_process[0]?.protocol_description || dataset.annotation_process[0]?.annotation_criteria || "No information avaialable"
-}))
-const license = {link: "https://creativecommons.org/publicdomain/zero/1.0/", text: "CC0"}
-const breadcrumbs = [
-  "/bioimage-archive",
-  "/bioimage-archive/galleries",
-  "/bioimage-archive/galleries/ai",
-  "/bioimage-archive/galleries/ai/ai-ready-studies",
-  `/bioimage-archive/galleries/ai/ai-ready-study/${studyInfo.accession_id}`,
-]
+const client = createRequestClient(Astro.request.signal);
+const data = await loadGalleryImage(Astro.params.uuid, client);
+if (!data) return new Response('Image not found.', { status: 404 });
+const annotatedImages = selectAnnotationImages(await client.getDerivedImages(data.image.uuid), data.image.uuid);
 ---
-<BaseLayoutWithBreadcrumbs pageTitle={uuid} breadcrumbs={breadcrumbs}>
-    <div class="vf-stack vf-stack--500">
-        <section class="vf-content | embl-grid--has-centered-content">
-        <div style="padding-left: 10%;padding-right: 10%">
-        <h1 class="vf-intro__heading vf-intro__heading--has-tag">{ studyInfo.accession_id }
-                    <WebsiteStateButton/>
-                </h1>
-                <h2 class="vf-intro__subheading">{studyInfo.title}</h2>
-              <br />
-            <a href={`/bioimage-archive/galleries/ai/ai-ready-study/${studyInfo.accession_id}`} class="vf-button vf-button--primary vf-button--sm bia-button">Study Page</a>
-        </div>
-        </section>
-        <section class="vf-content "><a href={"/bioimage-archive/help/downloading-data#aws_client_download"}>How to download these images</a><br/></section>    
-        <SourceAnnotatedImage annotatedImages={annotatedImages} sourceImage={sourceImage} btnID="CopyURLButton"/>
-        <hr />
-        <StudyComponents title="Annotated Datasets" id ="annotated_datasets" content={annotatedDatasetContent} license={license}/>
-        <script type="application/json" id="images-length" set:html={scriptData(annotatedImages.length)} />
-        <script type="application/json" id="study-json" set:html={scriptData(studyInfo.dataset)} />
-    </div>
-</BaseLayoutWithBreadcrumbs>
+<ImagePage data={{ ...data, annotatedImages }} />

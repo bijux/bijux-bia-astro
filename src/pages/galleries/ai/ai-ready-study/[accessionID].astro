@@ -6,7 +6,7 @@ import { getThumbnail } from "../../../../features/images/thumbnails.mjs";
 import { getTaxons } from "../../../../features/metadata/taxonomy.mjs";
 import { getSimpleAttributeValue, getAnnotationType } from "../../../../features/metadata/records.mjs";
 import { formatBytesToHumanSize } from "../../../../formatting/units.mjs";
-import { getStudyFromApiByAccession, getImagesByAccessionID } from "../../../../api/client.mjs";
+import { createRequestClient } from "../../../../api/client.mjs";
 import { type Study } from "../../../../api/types.ts"
 import collection from '../../../../data/collections/ai-ready-datasets.json';
 import StudyContentsSummary from "../../../../features/studies/StudyContentsSummary.astro"
@@ -14,14 +14,17 @@ import StudyFiles from "../../../../features/studies/StudyFiles.astro";
 import StudyComponents from "../../../../features/galleries/ai/StudyComponents.astro";
 import "../../../../features/galleries/ai/image-slider.css"
 
+import { loadStudyFiles } from '../../../../features/studies/load-study.mjs';
 export function getStaticPaths() {
   return Object.values(collection.accession_ids).map(accession => ({params: { accessionID: accession }}));
 }
 
 const { accessionID } = Astro.params;
 
-const study = await getStudyFromApiByAccession(accessionID) as Study;
-const annotatedImagesMap = groupSourceAnnotations(await getImagesByAccessionID(study.accession_id));
+const client = createRequestClient(Astro.request.signal);
+const study = await client.getStudyFromApiByAccession(accessionID) as Study;
+const fileLinks = await loadStudyFiles(accessionID, client.getFromAPI);
+const annotatedImagesMap = groupSourceAnnotations(await client.getImagesByAccessionID(study.accession_id));
 
 const allSourceImages = Array.from(annotatedImagesMap.values())
   .filter(({ annotationImages }) => annotationImages.length > 0);
@@ -118,7 +121,7 @@ const breadcrumbs = [
           </figure>
         </div>
         <div slot="ftp-link">
-      <StudyFiles accessionID={accessionID}/>
+      <StudyFiles {...fileLinks}/>
     </div>
   </StudyContentsSummary>
   <hr/>

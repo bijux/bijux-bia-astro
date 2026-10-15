@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/ProjectsLayout.astro';
 import MenuCard from "../../../components/ui/LandingPageMenuCard.astro";
-import CodeDialog from "../../../components/ui/CodeDialog.astro";
+import CodeDialog from "./CodeDialog.astro";
 import sporaImage from "../../../assets/bioimage-archive/projects/spora/spora_landing_page.png";
 import bannerImage from "../../../assets/bioimage-archive/projects/spora/spora_banner_logo.png";
 import aimmLogo from "../../../assets/bioimage-archive/projects/spora/AIPM_PNG.png";
@@ -258,39 +258,7 @@ const projectNavItems = [
     </div>
     <div></div>
   </section>
-  <script is:inline>
-    const commandDialog = document.querySelector('.spora-command-dialog');
-    const commandCode = commandDialog?.querySelector('code');
-    const commandCopyButton = document.querySelector('.spora-command-copy');
-    document.querySelectorAll('.spora-step-trigger').forEach((button) => {
-      button.addEventListener('click', () => {
-        if (!commandDialog || !commandCode) return;
-        commandCode.textContent = button.dataset.command || '';
-        commandDialog.showModal();
-      });
-    });
-    if (commandCopyButton && commandCode) {
-      commandCopyButton.addEventListener('click', async () => {
-        const originalLabel = commandCopyButton.textContent;
-        await navigator.clipboard.writeText(commandCode.textContent || '');
-        commandCopyButton.textContent = 'Copied!';
-        setTimeout(() => {
-          commandCopyButton.textContent = originalLabel;
-        }, 1000);
-      });
-    }
-    const copyButton = document.querySelector('.spora-citation-box .spora-citation-copy');
-    if (copyButton) {
-      copyButton.addEventListener('click', async () => {
-        const originalLabel = copyButton.textContent;
-        await navigator.clipboard.writeText(copyButton.dataset.copyText || '');
-        copyButton.textContent = 'Copied!';
-        setTimeout(() => {
-          copyButton.textContent = originalLabel;
-        }, 1000);
-      });
-    }
-  </script>
+  <script src="./project-controls.js"></script>
 </Layout>
 <style>
   .spora-shell {

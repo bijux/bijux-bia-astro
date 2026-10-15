@@ -22,19 +22,10 @@ const metadataIdPrefix = text === "Annotation" ? "annotated" : btnID;
     <ImageMetadata idPrefix={metadataIdPrefix} imageRep={imageRep} imageAtrributes={imageAtrributes} />
 </div>
 <script>
+  import { copyWithFeedback } from '../../../components/ui/clipboard.mjs';
   window.addEventListener("DOMContentLoaded", () => {
-    const copyButtons = document.querySelectorAll<HTMLButtonElement>("button[data-url]");
-    copyButtons.forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const url = btn.dataset.url;
-        if (!url) return;
-        const originalText = btn.innerText;
-        try { await navigator.clipboard.writeText(url); btn.innerText = "URI Copied"; }
-        catch { btn.innerText = "Copy unavailable"; }
-        setTimeout(() => {
-          btn.innerText = originalText;
-        }, 700);
-      });
+    document.querySelectorAll<HTMLButtonElement>("button[data-url]").forEach(btn => {
+      btn.addEventListener("click", () => copyWithFeedback(btn, btn.dataset.url));
     });
   });
 </script>

@@ -55,7 +55,7 @@ export default defineConfig({
 import Layout from '../layouts/${layout}.astro';
 import News from '../features/news/News.astro';
 import SearchBar from '../features/search/SearchBar.astro';
-import CodeDialog from '../components/ui/CodeDialog.astro';
+import CodeDialog from '../features/projects/spora/CodeDialog.astro';
 import FileListTable from '../features/studies/FileListTable.astro';
 import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
 import ViewableImageTable from '../features/studies/ViewableImageTable.astro';
@@ -82,10 +82,10 @@ const tableRows = [{ study: study.accession_id, dataset_uuid: study.dataset[0].u
     <FileListTable file_list_urls={{ table_view: 'https://example.org/table', tree_view: 'https://example.org/tree' }} ftp_path="https://example.org/files" globus_link="https://example.org/globus" />
     <section id="gallery-fixture"><VolumeEMImageCard image={{ ...image, uuid }} /></section>
     <section id="table-fixture">
-      <ViewableImageTable study={study} images={[image]} />
+      <ViewableImageTable hasSpecimenTracks={false} study={study} images={[image]} />
       <SOTables datasetUUIDsAndFileStats={[]} />
-      <BenchmarkingTable tableRows={tableRows} studyOrModelPageMode="model" />
-      <ModelPredictionTable tableRows={tableRows} studyOrModelPageMode="model" />
+      <BenchmarkingTable datasetUUIDNameMap={new Map(study.dataset.map(dataset => [dataset.uuid, dataset.title]))} tableRows={tableRows} studyOrModelPageMode="model" />
+      <ModelPredictionTable datasetUUIDNameMap={new Map(study.dataset.map(dataset => [dataset.uuid, dataset.title]))} tableRows={tableRows} studyOrModelPageMode="model" />
       <ImageTable images={[capturedImage]} />
       <SpecimenTrackTable images={[capturedImage]} />
     </section>

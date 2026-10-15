@@ -1,9 +1,11 @@
 ---
 import StudyPage from '../../features/studies/StudyPage.astro';
-import { getAllStudiesFromAPI } from '../../api/client.mjs';
+import { getAllStudiesFromAPI, createRequestClient } from '../../api/client.mjs';
+import { loadStudyPage } from '../../features/studies/load-study.mjs';
 export async function getStaticPaths() {
     return (await getAllStudiesFromAPI()).map(study => ({ params: { accessionID: study.accession_id } }));
 }
 const { accessionID } = Astro.params;
+const data = await loadStudyPage(accessionID, createRequestClient(Astro.request.signal));
 ---
-<StudyPage accessionID={accessionID} />
+<StudyPage data={data} />

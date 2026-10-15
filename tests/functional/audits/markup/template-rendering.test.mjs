@@ -69,7 +69,7 @@ const volumeImage = { submitted_in_study_accession: 'EMPIAR-12104', label: 'Volu
     <FileListTable file_list_urls={{ table_view: 'https://example.org/table', tree_view: 'https://example.org/tree' }} ftp_path="https://example.org/files" globus_link="https://example.org/globus" />
     <TomogramCard tomogram={tomogram} />
     <VolumeEMImageCard image={volumeImage} />
-    <BenchmarkingTable tableRows={[]} studyOrModelPageMode="study" />
+    <BenchmarkingTable datasetUUIDNameMap={new Map()} tableRows={[]} studyOrModelPageMode="study" />
     <News />
 </BaseLayout>
 `);

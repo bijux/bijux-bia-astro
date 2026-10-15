@@ -2,12 +2,10 @@
 import { formatListItem } from "../../../../formatting/lists.mjs";
 import { taxonRender } from "../../../metadata/taxonomy.mjs";
 import { multilineTextRender } from "../../../../formatting/plain-text.js";
-import { getStudyFromApiByAccession } from "../../../../api/client.mjs";
 
 import { getOrganismClassifications, getBiologicalEntityDescriptions } from "../../../metadata/biological-entities.js";
 
-const { dataset, datasetAIInfo, studyAccessionID } = Astro.props;
-const studyMetadata = Object.fromEntries([[studyAccessionID, await getStudyFromApiByAccession(studyAccessionID)]])
+const { dataset, datasetAIInfo, studyAccessionID, studyMetadata } = Astro.props;
 
 function getTaxons(dataset) {
     return getOrganismClassifications(dataset).map(taxonRender)

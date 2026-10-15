@@ -1,3 +1,4 @@
+import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
 import { filterDatasets } from "./catalogue.mjs";
   const root = document.querySelector<HTMLElement>('.browser');
   if (root) {
@@ -56,7 +57,7 @@ import { filterDatasets } from "./catalogue.mjs";
       globusDialog.querySelector('code').textContent = buildDownloadCommandBlock(button.dataset.name);
       globusDialog.showModal();
     });
-    document.querySelector('.copy-commands').addEventListener('click', async () => navigator.clipboard.writeText(globusDialog.querySelector('code').textContent));
-    document.querySelector('.copy-citation').addEventListener('click', async () => navigator.clipboard.writeText(citeDialog.querySelector('code').textContent));
+    document.querySelector('.copy-commands').addEventListener('click', event => copyWithFeedback(event.currentTarget, globusDialog.querySelector('code').textContent, { success: 'Copied!' }));
+    document.querySelector('.copy-citation').addEventListener('click', event => copyWithFeedback(event.currentTarget, citeDialog.querySelector('code').textContent, { success: 'Copied!' }));
     render();
   }

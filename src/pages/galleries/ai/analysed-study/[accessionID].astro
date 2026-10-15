@@ -1,12 +1,13 @@
 ---
 import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import BenchmarkedDatasetPage from "../../../../features/galleries/ai/benchmarking/BenchmarkedDatasetPage.astro"
-import { getStudyFromApiByAccession } from "../../../../api/client.mjs";
+import { createRequestClient } from "../../../../api/client.mjs";
 import { type Study } from "../../../../api/types.ts"
 import additionalStudyMetadata from "../../../../data/ai-dataset-benchmarking/additional-study-metadata.json"
 import tableInfo from "../../../../data/ai-dataset-benchmarking/model-dataset-table.json"
 
 
+import { loadDatasetNames, loadAnnotationStudies } from '../../../../features/galleries/ai/benchmarking/data.mjs';
 export function getStaticPaths() {
   return Object.keys(additionalStudyMetadata).map((id) => {
     return {
@@ -16,10 +17,10 @@ export function getStaticPaths() {
 }
 
 const { accessionID } = Astro.params;
-const study = await getStudyFromApiByAccession(accessionID) as Study;
-const studyMetadata = {
-  [accessionID]: study
-};
+const client = createRequestClient(Astro.request.signal);
+const study = await client.getStudyFromApiByAccession(accessionID) as Study;
+const datasetUUIDNameMap = await loadDatasetNames(tableInfo.filter(row => row.study === accessionID), client);
+const studyMetadata = await loadAnnotationStudies(study, additionalStudyMetadata[accessionID].dataset, client);
 
 const breadcrumbs = [
   "/bioimage-archive",
@@ -31,7 +32,7 @@ const breadcrumbs = [
 ---
 
 <BaseLayoutWithBreadcrumbs pageTitle={accessionID} breadcrumbs={breadcrumbs}>
-  <BenchmarkedDatasetPage accessionID={accessionID} studyMetadata={studyMetadata} additionalStudyMetadata={additionalStudyMetadata} tableInfo={tableInfo}/>
+  <BenchmarkedDatasetPage datasetUUIDNameMap={datasetUUIDNameMap} accessionID={accessionID} studyMetadata={studyMetadata} additionalStudyMetadata={additionalStudyMetadata} tableInfo={tableInfo}/>
 </BaseLayoutWithBreadcrumbs>
 
 

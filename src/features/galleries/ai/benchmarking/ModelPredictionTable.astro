@@ -2,11 +2,10 @@
 import { navigationURL, resourceURL } from "../../../../security/urls.mjs";
 import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json"
 
-import { formatRowAnalysisParameters , getDatasetUUIDNameMap} from "./BenchmarkingTable.astro"
-const { tableRows, studyOrModelPageMode } = Astro.props;
+import { formatRowAnalysisParameters } from "./data.mjs";
+const { tableRows, studyOrModelPageMode, datasetUUIDNameMap } = Astro.props;
 
 
-const datasetUUIDNameMap = await getDatasetUUIDNameMap(tableRows)
 const hasReferenceImage = tableRows.filter(row => row.annotation_data_set_uuid != null).length > 0 ? true : false
 ---
 

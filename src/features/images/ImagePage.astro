@@ -182,23 +182,11 @@ const breadcrumbs = [
                     )
                 }
                 <script>
-
+                    import { copyWithFeedback } from "../../components/ui/clipboard.mjs";
                     const copyUrlButton = document.getElementById("CopyURLButton");
                     if (copyUrlButton) {
-                        const originalText = copyUrlButton.innerText;
-                        copyUrlButton.onclick = async () => {
-                            await copyUrl(copyUrlButton.dataset.url, copyUrlButton, originalText);
-                        };
+                        copyUrlButton.onclick = () => copyWithFeedback(copyUrlButton, copyUrlButton.dataset.url);
                     }
-
-                    async function copyUrl(url: string, button: HTMLElement, originalText: string) {
-                        await navigator.clipboard.writeText(url);
-                        button.innerText = "URI Copied";
-                        setTimeout(() => {
-                            button.innerText = originalText;
-                        }, 700);
-                    }
-
                 </script>
             </div>
         </section>

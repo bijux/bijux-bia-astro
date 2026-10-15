@@ -1,0 +1,58 @@
+---
+import { scriptData } from "../../../security/html.mjs";
+import BaseLayoutWithBreadcrumbs from '../../../layouts/BaseLayoutWithBreadcrumbs.astro';
+import WebsiteStateButton from '../../../components/ui/WebsiteStateButton.astro';
+import { getTaxons } from "../../metadata/taxonomy.mjs";
+import { getAnnotationType } from "../../metadata/records.mjs";
+
+import SourceAnnotatedImage from './SourceAnnotatedImage.astro';
+import StudyComponents from "./StudyComponents.astro";
+import "./image-slider.css";
+
+import type { Study } from "../../../api/types.ts";
+const { data } = Astro.props;
+const { image, annotatedImages } = data;
+const studyInfo: Study = data.study;
+const uuid = image.uuid;
+const sourceImage = image;
+const organism = getTaxons(studyInfo).join(", ");
+const sourceDataset = studyInfo.dataset.find((d) => d['uuid'] === sourceImage.submission_dataset_uuid);
+const imagingMethod = sourceDataset?.acquisition_process?.[0]?.imaging_method_name?.join(", ") || "";
+const annotationDatasets = studyInfo.dataset.filter(dataset => (dataset.acquisition_process?.length ?? 0) === 0 && (dataset.annotation_process?.length ?? 0) > 0);
+const annotatedDatasetContent = annotationDatasets.map((dataset) => ({
+  dataset_uuid: dataset.uuid,
+  dataset_title: dataset.title,
+  organism: organism,
+  imaging: imagingMethod,
+  annotation_type: getAnnotationType([dataset]).join(", ") || "No information available",
+  annotation_method: dataset.annotation_process[0]?.protocol_description || dataset.annotation_process[0]?.annotation_criteria || "No information avaialable"
+}))
+const license = {link: "https://creativecommons.org/publicdomain/zero/1.0/", text: "CC0"}
+const breadcrumbs = [
+  "/bioimage-archive",
+  "/bioimage-archive/galleries",
+  "/bioimage-archive/galleries/ai",
+  "/bioimage-archive/galleries/ai/ai-ready-studies",
+  `/bioimage-archive/galleries/ai/ai-ready-study/${studyInfo.accession_id}`,
+]
+---
+<BaseLayoutWithBreadcrumbs pageTitle={uuid} breadcrumbs={breadcrumbs}>
+    <div class="vf-stack vf-stack--500">
+        <section class="vf-content | embl-grid--has-centered-content">
+        <div style="padding-left: 10%;padding-right: 10%">
+        <h1 class="vf-intro__heading vf-intro__heading--has-tag">{ studyInfo.accession_id }
+                    <WebsiteStateButton/>
+                </h1>
+                <h2 class="vf-intro__subheading">{studyInfo.title}</h2>
+              <br />
+            <a href={`/bioimage-archive/galleries/ai/ai-ready-study/${studyInfo.accession_id}`} class="vf-button vf-button--primary vf-button--sm bia-button">Study Page</a>
+        </div>
+        </section>
+        <section class="vf-content "><a href={"/bioimage-archive/help/downloading-data#aws_client_download"}>How to download these images</a><br/></section>
+        <SourceAnnotatedImage annotatedImages={annotatedImages} sourceImage={sourceImage} btnID="CopyURLButton"/>
+        <hr />
+        <StudyComponents title="Annotated Datasets" id ="annotated_datasets" content={annotatedDatasetContent} license={license}/>
+        <script type="application/json" id="images-length" set:html={scriptData(annotatedImages.length)} />
+        <script type="application/json" id="study-json" set:html={scriptData(studyInfo.dataset)} />
+    </div>
+</BaseLayoutWithBreadcrumbs>
