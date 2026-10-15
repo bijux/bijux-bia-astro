@@ -9,6 +9,8 @@ export async function copyWithFeedback(control, value, { success = 'URI Copied',
     clearTimeout(state.timer);
     state.pending = true;
     controls.set(control, state);
+    const owner = control.ownerDocument;
+    const hadFocus = owner?.activeElement === control;
     control.disabled = true;
     let copied = false;
     try {
@@ -20,6 +22,8 @@ export async function copyWithFeedback(control, value, { success = 'URI Copied',
     } finally {
         state.pending = false;
         control.disabled = state.disabled;
+        // Native disabling can blur the button; preserve a later deliberate focus move.
+        if (hadFocus && control.isConnected && owner.activeElement === owner.body) control.focus();
         state.timer = setTimeout(() => {
             if (controls.get(control) !== state || state.pending) return;
             control.textContent = state.label;
