@@ -1,18 +1,18 @@
 ---
-import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import { navigationURL, resourceURL } from "../../../security/urls.mjs";
 import HighlightedTaxa from "./HighlightedTaxa.astro";
 import HighlightedFields from "./HighlightedFields.astro";
 import { getHighlightTextString, highlightOrganism, applyHighlight, highlightLinks, formatHighlightedList } from "./highlights.mjs";
-import { formatListItem } from "../../formatting/lists.mjs";
-import { getThumbnail } from "../images/thumbnails.mjs";
-import { getSimpleAttributeValue } from "../metadata/records.mjs";
-import { formatPhysicalDimensions } from "../../formatting/physical-dimensions.js";
-import { formatPixelDimensions } from "../../formatting/units.mjs";
-import { getLicenceLogo } from "../metadata/licences.mjs";
+import { formatListItem } from "../../../formatting/lists.mjs";
+import { getThumbnail } from "../../images/thumbnails.mjs";
+import { getSimpleAttributeValue } from "../../metadata/records.mjs";
+import { formatPhysicalDimensions } from "../../../formatting/physical-dimensions.js";
+import { formatPixelDimensions } from "../../../formatting/units.mjs";
+import { getLicenceLogo } from "../../metadata/licences.mjs";
 
-import "../../styles/dataset_card.css"
+import "../../../styles/dataset_card.css"
 import  HighlightedText  from "./HighlightedText.astro";
-import imageFallback from "../../assets/bioimage-archive/image_fallback.png"
+import imageFallback from "../../../assets/bioimage-archive/image_fallback.png"
 
 const { image, imagePageRoot, taglist, annotationType, highlight, query} = Astro.props;
 const highlightedTextString = getHighlightTextString(highlight);

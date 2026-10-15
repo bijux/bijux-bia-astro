@@ -1,15 +1,15 @@
 ---
 import "./search.css";
-import StudyCard from './BrowseStudyCard.astro';
-import ImageCard from './BrowseImageCard.astro';
+import StudyCard from './results/StudyCard.astro';
+import ImageCard from './results/ImageCard.astro';
 import SearchFacet from './facets/Facet.astro';
 import SearchSelectedFacet from './facets/SelectedFacet.astro';
 import PaginationControl from './pagination/Pagination.astro';
 import "../../styles/toggle.css";
 import "../../styles/browse_controls.css";
 import "../../styles/filter_cards.css";
-import SearchResultsTable from './SearchResultsTable.astro';
-import SearchResultsCompactCards from './SearchCompactCards.astro';
+import SearchResultsTable from './results/Table.astro';
+import SearchResultsCompactCards from './results/CompactCards.astro';
 import { PUBLIC_SEARCH_API } from 'astro:env/client';
 import { loadSearchPage } from './load-search.ts';
 import type { SearchScope } from './types.ts';

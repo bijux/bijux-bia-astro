@@ -1,7 +1,7 @@
 ---
 import HighlightedText from "./HighlightedText.astro";
 import { applyHighlight } from "./highlights.mjs";
-import { distinctTaxa } from "../metadata/taxonomy.mjs";
+import { distinctTaxa } from "../../metadata/taxonomy.mjs";
 
 const { record, query } = Astro.props;
 const highlight = value => query && value ? applyHighlight(value, query) : value;

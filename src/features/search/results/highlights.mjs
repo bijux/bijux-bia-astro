@@ -1,4 +1,4 @@
-import { renderTaxonList } from "../metadata/taxonomy.mjs";
+import { renderTaxonList } from "../../metadata/taxonomy.mjs";
 export function highlightOrganism(study, query){
     const text = renderTaxonList(study)
     return query && text? applyHighlight(text, query): text;

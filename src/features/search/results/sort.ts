@@ -1,4 +1,4 @@
-import type { SearchHits } from './types.ts';
+import type { SearchHits } from '../types.ts';
 
 function parseAccession(id: unknown): [string, number] {
   const match = String(id ?? "").match(/^([A-Z\-]+)(\d+)$/i);

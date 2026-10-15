@@ -1,15 +1,15 @@
 ---
-import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import { navigationURL, resourceURL } from "../../../security/urls.mjs";
 import HighlightedTaxa from "./HighlightedTaxa.astro";
 import HighlightedFields from "./HighlightedFields.astro";
 import { getHighlightTextString, highlightOrganism, highlightLinks, formatHighlightedList } from "./highlights.mjs";
-import { renderTaxonList } from "../metadata/taxonomy.mjs";
-import { formatListItem } from "../../formatting/lists.mjs";
-import { getStudyImage } from "../images/study-image.mjs";
-import { getLicenceLogo } from "../metadata/licences.mjs";
+import { renderTaxonList } from "../../metadata/taxonomy.mjs";
+import { formatListItem } from "../../../formatting/lists.mjs";
+import { getStudyImage } from "../../images/study-image.mjs";
+import { getLicenceLogo } from "../../metadata/licences.mjs";
 
 import  HighlightedText  from "./HighlightedText.astro";
-import "../../styles/dataset_card.css"
+import "../../../styles/dataset_card.css"
 const { study, studyPageRoot, taglist, annotationType, cardImageOverride, highlight, query} = Astro.props;
 
 function getDataForCardFilter(study) {

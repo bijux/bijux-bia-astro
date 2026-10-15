@@ -1,14 +1,14 @@
 ---
 import HighlightedFields from "./HighlightedFields.astro";
 const { result, resultType, highlight } = Astro.props;
-import imageFallback from "../../assets/bioimage-archive/image_fallback.png"
+import imageFallback from "../../../assets/bioimage-archive/image_fallback.png"
 import { getHighlightTextString } from "./highlights.mjs";
-import { getStudyImage } from "../images/study-image.mjs";
-import { getThumbnail } from "../images/thumbnails.mjs";
-import { formatPhysicalDimensions } from "../../formatting/physical-dimensions.js";
-import { formatPixelDimensions } from "../../formatting/units.mjs";
+import { getStudyImage } from "../../images/study-image.mjs";
+import { getThumbnail } from "../../images/thumbnails.mjs";
+import { formatPhysicalDimensions } from "../../../formatting/physical-dimensions.js";
+import { formatPixelDimensions } from "../../../formatting/units.mjs";
 
-import {getImageRep} from "./SearchResultsTable.astro"
+import {getImageRep} from "./Table.astro"
 
 const thumbnail = resultType === "study"? getStudyImage(result): getThumbnail(result);
 const isFallback = resultType === "study"? String(thumbnail).includes("placeholder"): thumbnail === imageFallback.src;
