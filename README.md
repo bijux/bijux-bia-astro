@@ -50,6 +50,14 @@ is supported, while experimental parallel-worker capture is rejected.
 Study pages remain static: replay removes upstream build latency without adding
 runtime catalogue requests or an HTML-cache invalidation policy.
 
+## Production verification
+
+`npm run verify:website` builds representative production routes using saved API
+data, validates generated HTML and checks desktop/mobile Chromium journeys.
+Install its browser with `PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium`.
+Unexpected API requests fail; no live catalogue is needed. Reports stay under
+`artifacts/website-verification/`. Live `npm run build` remains a separate check.
+
 ## Container deployment
 
 Build the image once, then start that same image without compilation or catalogue
