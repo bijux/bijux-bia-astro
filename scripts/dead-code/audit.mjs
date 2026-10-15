@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { eslintFindings, knipFindings, renderFindings, reportExitCode, sortFindings, verifyEslintSourceCoverage } from './report.mjs';
-import { execute as executeCommand } from './execution.mjs';
+import { run } from '../audit/execution.mjs';
 
 const args = new Set(process.argv.slice(2));
 const allowed = new Set(['--report-only', '--with-astro-check']);
@@ -33,8 +33,10 @@ const findings = [];
 const notes = [];
 const started = new Date().toISOString();
 
-function execute(command, parameters, timeout = 180_000) {
-  return executeCommand(command, parameters, { cwd: root, env, timeout });
+async function execute(command, parameters, timeout = 180_000) {
+  const result = await run(command, parameters, { cwd: root, env, timeout, maxBytes: 64 * 1024 * 1024 });
+  return { command: [command, ...parameters], exitCode: result.code, signal: result.signal,
+    stdout: result.stdout, stderr: result.stderr, error: result.failure };
 }
 function inputBytes(target, file) {
   // Open without waiting on a pipe, then verify the opened file rather than a
@@ -72,13 +74,13 @@ const requiredInputs = [
   'package-lock.json', 'configs/quality/eslint.config.mjs', 'configs/quality/knip.json',
   'configs/quality/tsconfig.dead-code.json',
 ];
-function captureProvenance(name) {
+async function captureProvenance(name) {
   const begin = Date.now();
   const stage = { name, state: 'FAILED', exitCode: null, error: null, commands: [] };
   const snapshot = { gitHead: null, trackedStatus: null, inputHashes: null, hashes: null };
   stages.push(stage);
-  function git(label, parameters) {
-    const result = execute('git', parameters);
+  async function git(label, parameters) {
+    const result = await execute('git', parameters);
     stage.commands.push({ label, command: result.command, exitCode: result.exitCode,
       signal: result.signal, error: result.error });
     writeFileSync(path.join(out, `${name}.${label}.stdout.log`), result.stdout);
@@ -89,16 +91,16 @@ function captureProvenance(name) {
     return result.stdout;
   }
   try {
-    const gitRoot = git('root', ['rev-parse', '--show-toplevel']).trim();
+    const gitRoot = (await git('root', ['rev-parse', '--show-toplevel'])).trim();
     if (realpathSync(gitRoot) !== realpathSync(root)) {
       throw new Error('Working directory is not the Git repository root');
     }
-    snapshot.gitHead = git('head', ['rev-parse', 'HEAD']).trim();
+    snapshot.gitHead = (await git('head', ['rev-parse', 'HEAD'])).trim();
     if (!/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(snapshot.gitHead)) {
       throw new Error('Git HEAD is not a complete commit hash');
     }
-    snapshot.trackedStatus = git('status', ['status', '--porcelain=v1', '--untracked-files=no']);
-    const files = git('inputs', ['ls-files', '--cached', '--others', '--exclude-standard', '-z']);
+    snapshot.trackedStatus = await git('status', ['status', '--porcelain=v1', '--untracked-files=no']);
+    const files = await git('inputs', ['ls-files', '--cached', '--others', '--exclude-standard', '-z']);
     const inputs = [...new Set(files.split('\0').filter(file =>
       file && (file === 'Makefile' || /\.(?:astro|mdx|[cm]?[jt]sx?|json|ya?ml|mk)$/.test(file)) &&
       !file.startsWith('artifacts/')))].sort();
@@ -117,7 +119,7 @@ function captureProvenance(name) {
   }
   return snapshot;
 }
-function runTool(name, parameters, parse = null) {
+async function runTool(name, parameters, parse = null) {
   const begin = Date.now();
   const stage = { name, state: 'FAILED', exitCode: null, error: null };
   stages.push(stage);
@@ -130,14 +132,14 @@ function runTool(name, parameters, parse = null) {
   try {
     let result;
     if (name === 'astro-probe') {
-      result = execute(process.execPath, ['scripts/dead-code/verify-tools.mjs']);
+      result = await execute(process.execPath, ['scripts/dead-code/verify-tools.mjs']);
     } else {
       const packageName = name === 'astro-check' ? 'astro' : name;
       const info = packageInfo(packageName);
       const executable = typeof info.data.bin === 'string' ? info.data.bin : info.data.bin?.[packageName];
       if (!executable) throw new Error(`No CLI executable in ${packageName}/package.json`);
       stage.version = info.data.version;
-      result = execute(process.execPath, [path.join(info.folder, executable), ...parameters]);
+      result = await execute(process.execPath, [path.join(info.folder, executable), ...parameters]);
     }
     Object.assign(stage, { exitCode: result.exitCode, signal: result.signal, command: result.command });
     writeFileSync(path.join(out, `${name}.stdout.log`), result.stdout);
@@ -174,7 +176,7 @@ function runTool(name, parameters, parse = null) {
   }
 }
 
-const before = captureProvenance('provenance-before');
+const before = await captureProvenance('provenance-before');
 const initialProvenanceComplete = stages.find(stage => stage.name === 'provenance-before').state === 'COMPLETED';
 const versions = {};
 for (const name of ['eslint', 'eslint-plugin-astro', 'typescript-eslint', 'knip', 'astro', '@astrojs/compiler', '@astrojs/check', 'typescript']) {
@@ -185,11 +187,11 @@ for (const name of ['eslint', 'eslint-plugin-astro', 'typescript-eslint', 'knip'
   try { versions[name] = packageInfo(name).data.version; } catch { versions[name] = 'NOT INSTALLED / NOT RESOLVED'; }
 }
 
-runTool('astro-probe', []);
-runTool('eslint', ['--config', 'configs/quality/eslint.config.mjs', '--format', 'json', '.'], eslintFindings);
-runTool('knip', ['--config', 'configs/quality/knip.json', '--reporter', 'json'], knipFindings);
+await runTool('astro-probe', []);
+await runTool('eslint', ['--config', 'configs/quality/eslint.config.mjs', '--format', 'json', '.'], eslintFindings);
+await runTool('knip', ['--config', 'configs/quality/knip.json', '--reporter', 'json'], knipFindings);
 if (args.has('--with-astro-check')) {
-  runTool('astro-check', ['check', '--tsconfig', 'configs/quality/tsconfig.dead-code.json']);
+  await runTool('astro-check', ['check', '--tsconfig', 'configs/quality/tsconfig.dead-code.json']);
 } else {
   notes.push('Optional Astro/type-check stage not run. Use --with-astro-check after checking installed CLI support.');
 }
@@ -210,7 +212,7 @@ notes.push(
 if (before.trackedStatus?.trim()) {
   notes.push('Tracked working tree changes were present before this scan; HEAD alone does not describe the input.');
 }
-const after = captureProvenance('provenance-after');
+const after = await captureProvenance('provenance-after');
 const inputsChanged = before.gitHead !== after.gitHead || before.trackedStatus !== after.trackedStatus ||
   JSON.stringify(before.inputHashes) !== JSON.stringify(after.inputHashes) ||
   JSON.stringify(before.hashes) !== JSON.stringify(after.hashes);

@@ -146,7 +146,7 @@ async function main() {
   provenanceFiles = [
     ...sourceFiles, ...generatedFiles,
     ...['package.json', 'package-lock.json', 'configs/quality/eslint.markup.config.mjs', 'configs/quality/htmlvalidate.markup.json',
-      'scripts/markup/audit.mjs', 'scripts/markup/worker.mjs', 'scripts/markup/provenance.mjs',
+      'scripts/audit/execution.mjs', 'scripts/markup/audit.mjs', 'scripts/markup/worker.mjs', 'scripts/markup/provenance.mjs',
       'scripts/markup/report.mjs', 'scripts/markup/probes.mjs', 'scripts/markup/explicit-closing-tags.mjs'].map(name => path.join(root, name)),
     ...(options.routes ? [path.resolve(root, options.routes)] : []),
   ];

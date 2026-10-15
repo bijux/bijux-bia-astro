@@ -23,6 +23,7 @@ async function checkout(action) {
     await mkdir(path.join(dir, 'public'));
     await mkdir(path.join(dir, 'configs/quality'), { recursive: true });
     await cp(path.join(root, 'scripts/markup'), path.join(dir, 'scripts/markup'), { recursive: true });
+    await cp(path.join(root, 'scripts/audit'), path.join(dir, 'scripts/audit'), { recursive: true });
     for (const name of ['eslint.markup.config.mjs', 'htmlvalidate.markup.json']) {
       await cp(path.join(root, 'configs/quality', name), path.join(dir, 'configs/quality', name));
     }

@@ -93,7 +93,8 @@ updates, image pins and rollback.
 For a verified Node artifact outside Docker, run `npm run build:deployment`, then
 `DEPLOYMENT_MANIFEST=artifacts/deployment/manifest.json npm run prod`. Package
 `artifacts/dist/`, `artifacts/deployment/`, production dependencies and the server's
-modules together. Docker verifies all output hashes after packaging; startup reads
+modules under `src/server/`, `src/security/` and `src/observability/` together.
+Docker verifies the output inventory during image creation; startup reads
 only the baked configuration and does not repeat the catalogue build.
 
 ## Run linkchecker locally

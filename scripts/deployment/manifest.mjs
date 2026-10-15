@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { lstat, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildConfiguration, publicDefaults } from './configuration.mjs';
+import { deploymentConfiguration } from '../../src/server/deployment.mjs';
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 const manifestPath = root => join(root, 'artifacts/deployment/manifest.json');
@@ -50,17 +50,6 @@ export async function verifyDeployment(root = repository) {
     return manifest;
 }
 
-/** Reject ineffective runtime overrides instead of silently serving the previous configuration. */
-export async function deploymentConfiguration(file, environment = process.env) {
-    const { configuration } = JSON.parse(await readFile(file, 'utf8'));
-    if (!configuration || Object.keys(configuration).length !== Object.keys(publicDefaults).length || Object.keys(publicDefaults).some(name => typeof configuration[name] !== 'string')) throw new Error('Invalid deployment configuration.');
-    const validated = buildConfiguration(configuration);
-    if (Object.entries(validated).some(([name, value]) => value !== configuration[name])) throw new Error('Invalid deployment configuration.');
-    for (const [name, value] of Object.entries(configuration)) {
-        if (environment[name] !== undefined && environment[name] !== value) throw new Error(`${name} is fixed at build time; rebuild the deployment to change it.`);
-    }
-    return configuration;
-}
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     if (process.argv[2] !== 'verify') throw new Error('Expected: manifest.mjs verify');

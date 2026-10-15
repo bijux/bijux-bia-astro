@@ -15,7 +15,6 @@ export async function loadSearchPage(url: URL, query: string, searchType: Search
     const searchEndpoint = `${apiURL}/website/browse/${searchType}`;
     const searchPageURL = searchType === 'study' ? '/bioimage-archive/studies' : '/bioimage-archive/images';
     let hits: SearchHits | undefined;
-    let facetData: Record<string, unknown> = {};
     let paginationData: Partial<PaginationData> = {};
     let facets: Record<string, FacetView> = {};
 
@@ -41,8 +40,7 @@ export async function loadSearchPage(url: URL, query: string, searchType: Search
       try {
         const data = browseResponse(await request(requestURL.toString(), { signal }));
         hits = data.hits;
-        facetData = data.facets;
-        facets = searchFacets(facetData, selectedFacets, searchType);
+        facets = searchFacets(data.facets, selectedFacets, searchType);
         paginationData = data.pagination;
       } catch {
         hits = undefined;

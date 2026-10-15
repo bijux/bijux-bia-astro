@@ -54,7 +54,7 @@ export function renderCursorPagination(root = document, state = history.state ||
         cursorPage: displayPage - 2,
         cursorTrail: cursorTrail.slice(2, 7),
     });
-    function pageItem(label, { page, fetchUrl, navState, cursorPage, active = false, ellipsis = false, className = "" } = {}) {
+    function pageItem(label, { fetchUrl, navState, cursorPage, active = false, ellipsis = false, className = "" } = {}) {
         const item = document.createElement("li");
         item.className = `vf-pagination__item ${className}`.trim();
         if (active)

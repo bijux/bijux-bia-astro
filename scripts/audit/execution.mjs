@@ -1,14 +1,14 @@
 import { spawn } from 'node:child_process';
 
 /** Bound the process group and its output; inherited pipes cannot extend the deadline. */
-export function run(command, args, { cwd, timeout = 180000, maxBytes = 32 * 1024 * 1024 } = {}) {
+export function run(command, args, { cwd, env, timeout = 180000, maxBytes = 32 * 1024 * 1024 } = {}) {
   if (![timeout, maxBytes].every(value => Number.isSafeInteger(value) && value > 0)) throw new RangeError('Invalid subprocess limits.');
   return new Promise(resolvePromise => {
     const stdout = [], stderr = [];
     let size = 0, failure = null, settled = false, forcedFinish;
     const started = Date.now();
     const grouped = process.platform !== 'win32';
-    const child = spawn(command, args, { cwd, shell: false, detached: grouped, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(command, args, { cwd, env, shell: false, detached: grouped, stdio: ['ignore', 'pipe', 'pipe'] });
     function kill() {
       try { if (grouped && child.pid) process.kill(-child.pid, 'SIGKILL'); else child.kill('SIGKILL'); }
       catch (error) { if (error.code !== 'ESRCH') failure ??= `Termination failed: ${error.code}`; }

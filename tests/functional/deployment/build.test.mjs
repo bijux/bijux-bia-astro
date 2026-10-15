@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
-import { buildConfiguration } from "../../../scripts/deployment/configuration.mjs";
-import { deploymentConfiguration, verifyDeployment } from "../../../scripts/deployment/manifest.mjs";
+import { buildConfiguration } from "../../../src/server/configuration.mjs";
+import { verifyDeployment } from "../../../scripts/deployment/manifest.mjs";
+import { deploymentConfiguration } from "../../../src/server/deployment.mjs";
 
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 const execute = promisify(execFile);
@@ -31,7 +32,7 @@ test('a Node deployment builds once, serves offline, preserves its configuration
     await cp(path.join(repository, 'scripts/deployment'), path.join(root, 'scripts/deployment'), { recursive: true });
     await cp(path.join(repository, 'scripts/catalogue'), path.join(root, 'scripts/catalogue'), { recursive: true });
     await cp(path.join(repository, 'package-lock.json'), path.join(root, 'package-lock.json'));
-    await cp(path.join(repository, 'scripts/server.mjs'), path.join(root, 'scripts/server.mjs'));
+    await cp(path.join(repository, 'src/server'), path.join(root, 'src/server'), { recursive: true });
     await cp(path.join(repository, 'src/security'), path.join(root, 'src/security'), { recursive: true });
     await mkdir(path.join(root, 'src/api'), { recursive: true });
     await cp(path.join(repository, 'src/api/http.mjs'), path.join(root, 'src/api/http.mjs'));
@@ -93,12 +94,13 @@ export async function GET({url}){
     const indexSource = await readFile(path.join(root, 'src/pages/index.astro'));
     await rm(path.join(root, 'src/pages'), { recursive: true });
     await rm(path.join(root, 'astro.config.mjs'));
+    await rename(path.join(root, 'scripts'), path.join(root, 'artifacts/build-tools'));
     await writeFile(path.join(root, 'deny-fetch.mjs'), 'globalThis.fetch=()=>{throw new Error("Startup must not fetch catalogue data");};');
     const reservation = createServer();
     await new Promise(resolve => reservation.listen(0, '127.0.0.1', resolve));
     const port = reservation.address().port;
     await new Promise(resolve => reservation.close(resolve));
-    const child = spawn(process.execPath, ['--import', './deny-fetch.mjs', 'scripts/server.mjs'], {
+    const child = spawn(process.execPath, ['--import', './deny-fetch.mjs', 'src/server/host.mjs'], {
         cwd: root, env: { ...env, HOST: '127.0.0.1', PORT: String(port), DEPLOYMENT_MANIFEST: manifestFile }, stdio: ['ignore', 'pipe', 'pipe'],
     });
     t.after(async () => { if (child.exitCode === null && child.signalCode === null) { child.kill('SIGTERM'); await once(child, 'exit'); } });
@@ -140,6 +142,7 @@ export async function GET({url}){
     await writeFile(provenanceFile, provenance);
     await writeFile(htmlFile, html + '\nchanged');
     await assert.rejects(verifyDeployment(root), /differ from the verified build/);
+    await rename(path.join(root, 'artifacts/build-tools'), path.join(root, 'scripts'));
     await mkdir(path.join(root, 'src/pages'));
     await writeFile(path.join(root, 'astro.config.mjs'), configSource);
     await writeFile(path.join(root, 'src/pages/index.astro'), indexSource);

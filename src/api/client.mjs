@@ -7,8 +7,4 @@ export function createRequestClient(signal) {
     return createSearchClient(PUBLIC_SEARCH_API, createRequestJSON({ signal }));
 }
 
-export const {
-    getFromAPI, getStudyFromApiByAccession, getImageFromAPI,
-    studyHasSpecimenTracks, getImagesByAccessionID,
-    getAllStudiesFromAPI, getDerivedImages,
-} = createSearchClient(PUBLIC_SEARCH_API);
+export const { getStudyFromApiByAccession, getAllStudiesFromAPI } = createSearchClient(PUBLIC_SEARCH_API);

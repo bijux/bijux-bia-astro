@@ -4,7 +4,7 @@ import { ownedDirectory, saveEvidence } from './evidence.mjs';
 import { gitProvenance } from './provenance.mjs';
 import { resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {run} from './execution.mjs';
+import {run} from '../audit/execution.mjs';
 import {sha256,inputBytes,inventory,fileHashes} from './inventory.mjs';
 import {exitFor,renderReport,normalizeLint} from './reporting.mjs';
 
@@ -44,8 +44,9 @@ if (args.length > 1 || !['all', 'code', 'deps'].includes(profile)) {
     const manifest = JSON.parse((await inputBytes(root, 'package.json')).toString('utf8'));
     const lock = JSON.parse((await inputBytes(root, 'package-lock.json')).toString('utf8'));
     if (lock.lockfileVersion !== 3 || !lock.packages?.[''] || ['dependencies','devDependencies','optionalDependencies'].some(field => JSON.stringify(Object.entries(manifest[field] ?? {}).sort()) !== JSON.stringify(Object.entries(lock.packages[''][field] ?? {}).sort()))) throw new Error('Manifest and locked dependency declarations disagree.');
-    const files = ['audit.mjs','scan-code.mjs','inventory.mjs','execution.mjs','dependencies.mjs','reporting.mjs','evidence.mjs','provenance.mjs'];
+    const files = ['audit.mjs','scan-code.mjs','inventory.mjs','dependencies.mjs','reporting.mjs','evidence.mjs','provenance.mjs'];
     for (const name of files) report.hashes[`scripts/security/${name}`] = sha256(await inputBytes(root, `scripts/security/${name}`));
+    report.hashes['scripts/audit/execution.mjs'] = sha256(await inputBytes(root, 'scripts/audit/execution.mjs'));
     if (profile !== 'deps') {
       const worker = fileURLToPath(new URL('./scan-code.mjs', import.meta.url));
       const result = await run(process.execPath, [worker, resolve(dir, 'code.json')], { cwd: root });

@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { buildConfiguration } from './configuration.mjs';
+import { buildConfiguration } from '../../src/server/configuration.mjs';
 import { sealDeployment } from './manifest.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));

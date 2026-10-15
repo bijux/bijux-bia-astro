@@ -1,5 +1,5 @@
 import { realpath } from 'node:fs/promises';
-import { run } from './execution.mjs';
+import { run } from '../audit/execution.mjs';
 
 export async function gitProvenance(root) {
   const args = ['--no-optional-locks', '-c', 'core.fsmonitor=false', '-c', 'core.hooksPath=/dev/null'];

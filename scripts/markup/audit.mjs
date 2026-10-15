@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 // Bound analyzer execution outside the worker so synchronous parser stalls can be stopped.
-import { spawn } from 'node:child_process';
+import { run } from '../audit/execution.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { openSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderLog, isWorkerReport, auditExitCode } from './report.mjs';
@@ -37,27 +36,14 @@ async function main() {
     console.error(argumentError);
     process.exit(2);
   }
-  const stdout = openSync(path.join(evidenceDir, 'worker.stdout.log'), 'w');
-  const stderr = openSync(path.join(evidenceDir, 'worker.stderr.log'), 'w');
-  let timedOut = false;
-  let spawnError = null;
-  const child = spawn(process.execPath, [fileURLToPath(new URL('./worker.mjs', import.meta.url)), ...args], {
-    cwd: root,
-    env: { ...process.env, BIJUX_MARKUP_EVIDENCE_DIR: evidenceDir },
-    stdio: ['ignore', stdout, stderr],
+  const result = await run(process.execPath, [fileURLToPath(new URL('./worker.mjs', import.meta.url)), ...args], {
+    cwd: root, env: { ...process.env, BIJUX_MARKUP_EVIDENCE_DIR: evidenceDir }, timeout: timeoutMs,
   });
-  let forceTimer;
-  const timer = setTimeout(() => {
-    timedOut = true;
-    child.kill('SIGTERM');
-    forceTimer = setTimeout(() => child.kill('SIGKILL'), 2000);
-  }, timeoutMs);
-  child.on('error', error => { spawnError = error.message; });
-  const { code, signal } = await new Promise(resolve => child.on('close', (code, signal) => resolve({ code, signal })));
-  clearTimeout(timer);
-  clearTimeout(forceTimer);
-  closeSync(stdout);
-  closeSync(stderr);
+  const { code, signal } = result;
+  const timedOut = result.failure === 'Timed out';
+  const spawnError = result.failure;
+  await writeFile(path.join(evidenceDir, 'worker.stdout.log'), result.stdout);
+  await writeFile(path.join(evidenceDir, 'worker.stderr.log'), result.stderr);
   let report;
   let reportError = null;
   let workerOutput;
