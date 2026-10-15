@@ -1,7 +1,9 @@
 replicaCount: 1
 
 image:
-  tag: "0.0.3"
+  repository: "ghcr.io/bijux/bijux-bia-astro"
+  tag: ""
+  digest: ""
   pullPolicy: IfNotPresent
 
 service:
@@ -10,11 +12,5 @@ service:
 
 resources:
   limits:
-    memory: "256M"
-    cpu: ".25"
-
-env:
-  publicSearchApi: "http://search:8080/v1"
-  publicMongoApi: "http://api:8080/v2"
-  publicGtag: "" # leave empty for dev
-  
+    memory: "256Mi"
+    cpu: "250m"

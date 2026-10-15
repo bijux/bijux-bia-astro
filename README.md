@@ -84,6 +84,10 @@ Mount certificate/key files together when using TLS. The image runs as `node` an
 supports a read-only filesystem; it contains production dependencies and verified
 output, with no application templates or build configuration. SIGTERM/SIGINT drain
 active requests for up to ten seconds; allow a longer container stop timeout.
+`/health/live` and `/health/ready` check the server without upstream requests.
+Error and slow-request logs are structured JSON; runtime responses include
+`X-Request-ID`. [Deployment instructions](helm-chart/README.md) cover rolling
+updates, image pins and rollback.
 
 For a verified Node artifact outside Docker, run `npm run build:deployment`, then
 `DEPLOYMENT_MANIFEST=artifacts/deployment/manifest.json npm run prod`. Package
