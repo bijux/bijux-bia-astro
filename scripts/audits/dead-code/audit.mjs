@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { eslintFindings, knipFindings, renderFindings, reportExitCode, sortFindings, verifyEslintSourceCoverage } from './report.mjs';
-import { run } from '../audit/execution.mjs';
+import { run } from '../execution.mjs';
 
 const args = new Set(process.argv.slice(2));
 const allowed = new Set(['--report-only', '--with-astro-check']);
@@ -132,7 +132,7 @@ async function runTool(name, parameters, parse = null) {
   try {
     let result;
     if (name === 'astro-probe') {
-      result = await execute(process.execPath, ['scripts/dead-code/verify-tools.mjs']);
+      result = await execute(process.execPath, ['scripts/audits/dead-code/verify-tools.mjs']);
     } else {
       const packageName = name === 'astro-check' ? 'astro' : name;
       const info = packageInfo(packageName);

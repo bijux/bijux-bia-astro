@@ -88,7 +88,7 @@ Generated evidence can contain article text, paths and served data. Review it be
 
 Markup uses its own configurations, commands, evidence and failure status. It can run before or after a dead-code audit or source cleanup is introduced. Existing parser failures must remain visible as incomplete analysis until their source/configuration causes are addressed; passing application tests do not override that status.
 
-Both audits retain matching locked analyzer dependencies and separate, compatible npm commands. Knip must treat `scripts/markup/worker.mjs` as an entry because the runner spawns it, and must load `configs/audits/markup/eslint.config.mjs` when discovering ESLint dependencies. Its entry/config regression should cover both paths. Include this Make fragment explicitly if integrating a shared root Makefile; keep the two audits independently invokable. CI gating and artifact retention require a separate agreed policy.
+Both audits retain matching locked analyzer dependencies and separate, compatible npm commands. Knip must treat `scripts/audits/markup/worker.mjs` as an entry because the runner spawns it, and must load `configs/audits/markup/eslint.config.mjs` when discovering ESLint dependencies. Its entry/config regression should cover both paths. Include this Make fragment explicitly if integrating a shared root Makefile; keep the two audits independently invokable. CI gating and artifact retention require a separate agreed policy.
 
 ## Shared analyzer dependencies
 

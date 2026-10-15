@@ -17,13 +17,13 @@ test('Knip discovers optional workers, copied metadata fixtures and ESLint confi
     const original = JSON.parse(await readFile(new URL('configs/audits/dead-code/knip.json', repository)));
     // Use the repository's actual optional entry/config patterns, with a minimal
     // import graph that exposes omissions as unreachable files/dependencies.
-    const config = { project: ['scripts/**/*.mjs', 'configs/**/*.mjs', 'tests/**/*.mjs'], entry: original.entry.filter(entry => entry.includes('scripts/markup/') || entry.includes("tests/fixtures/metadata/")), eslint: original.eslint };
-    for (const dir of ['scripts/markup', 'configs/audits/markup', "tests/fixtures/metadata"]) await mkdir(path.join(root, dir), { recursive: true });
-    await writeFile(path.join(root, 'package.json'), JSON.stringify({ type: 'module', scripts: { 'audit:markup': 'node scripts/markup/audit.mjs' }, devDependencies: { eslint: '9.39.5', 'eslint-plugin-astro': '1.3.1' } }));
+    const config = { project: ['scripts/**/*.mjs', 'configs/**/*.mjs', 'tests/**/*.mjs'], entry: original.entry.filter(entry => entry.includes('scripts/audits/markup/') || entry.includes("tests/fixtures/metadata/")), eslint: original.eslint };
+    for (const dir of ['scripts/audits/markup', 'configs/audits/markup', "tests/fixtures/metadata"]) await mkdir(path.join(root, dir), { recursive: true });
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ type: 'module', scripts: { 'audit:markup': 'node scripts/audits/markup/audit.mjs' }, devDependencies: { eslint: '9.39.5', 'eslint-plugin-astro': '1.3.1' } }));
     await writeFile(path.join(root, 'knip.json'), JSON.stringify(config));
-    await writeFile(path.join(root, 'scripts/markup/audit.mjs'), "import { spawn } from 'node:child_process'; spawn(process.execPath, [new URL('./worker.mjs', import.meta.url).pathname]);\n");
-    await writeFile(path.join(root, 'scripts/markup/worker.mjs'), "import './worker-helper.mjs';\n");
-    await writeFile(path.join(root, 'scripts/markup/worker-helper.mjs'), 'console.log("worker dependency");\n');
+    await writeFile(path.join(root, 'scripts/audits/markup/audit.mjs'), "import { spawn } from 'node:child_process'; spawn(process.execPath, [new URL('./worker.mjs', import.meta.url).pathname]);\n");
+    await writeFile(path.join(root, 'scripts/audits/markup/worker.mjs'), "import './worker-helper.mjs';\n");
+    await writeFile(path.join(root, 'scripts/audits/markup/worker-helper.mjs'), 'console.log("worker dependency");\n');
     await writeFile(path.join(root, 'configs/audits/markup/eslint.config.mjs'), "import astro from 'eslint-plugin-astro'; export default [...astro.configs['flat/base']];\n");
     await writeFile(path.join(root, "tests/fixtures/metadata/dataset-metadata.mjs"), "import './record-helper.mjs';\n");
     await writeFile(path.join(root, "tests/fixtures/metadata/record-helper.mjs"), 'console.log("compiled fixture dependency");\n');

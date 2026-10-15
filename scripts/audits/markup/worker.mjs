@@ -146,8 +146,8 @@ async function main() {
   provenanceFiles = [
     ...sourceFiles, ...generatedFiles,
     ...['package.json', 'package-lock.json', 'configs/audits/markup/eslint.config.mjs', 'configs/audits/markup/htmlvalidate.json',
-      'scripts/audit/execution.mjs', 'scripts/markup/audit.mjs', 'scripts/markup/worker.mjs', 'scripts/markup/provenance.mjs',
-      'scripts/markup/report.mjs', 'scripts/markup/probes.mjs', 'scripts/markup/explicit-closing-tags.mjs'].map(name => path.join(root, name)),
+      'scripts/audits/execution.mjs', 'scripts/audits/markup/audit.mjs', 'scripts/audits/markup/worker.mjs', 'scripts/audits/markup/provenance.mjs',
+      'scripts/audits/markup/report.mjs', 'scripts/audits/markup/probes.mjs', 'scripts/audits/markup/explicit-closing-tags.mjs'].map(name => path.join(root, name)),
     ...(options.routes ? [path.resolve(root, options.routes)] : []),
   ];
   try { report.provenanceBefore = await captureProvenance(root, provenanceFiles); }
@@ -289,7 +289,7 @@ finally {
         if (inputsChanged(report.provenanceBefore, report.provenanceAfter)) throw new Error('Audited inputs, HEAD or tracked status changed during analysis');
       } catch (error) { report.failures.push(`Input stability: ${error.message}`); }
     }
-    for (const file of ['package-lock.json', 'configs/audits/markup/eslint.config.mjs', 'scripts/markup/explicit-closing-tags.mjs']) {
+    for (const file of ['package-lock.json', 'configs/audits/markup/eslint.config.mjs', 'scripts/audits/markup/explicit-closing-tags.mjs']) {
       try { (report.configurationHashes ??= {})[file] = sha256(await readFile(path.join(root, file))); }
       catch { /* Missing required configuration is reported by the relevant analyzer. */ }
     }

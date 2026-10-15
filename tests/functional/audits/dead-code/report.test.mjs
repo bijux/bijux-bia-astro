@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { parse } from '@astrojs/compiler';
-import { eslintFindings, knipFindings, renderFindings, reportExitCode } from "../../../../scripts/dead-code/report.mjs";
+import { eslintFindings, knipFindings, renderFindings, reportExitCode } from "../../../../scripts/audits/dead-code/report.mjs";
 
 const root = '/work/BIA-astro';
 const eslintData = [{
@@ -219,7 +219,7 @@ test('Exit codes distinguish findings from a failed audit, even in report-only m
 
 
 test('Source coverage rejects omitted, duplicate and ignored selected files', async () => {
-  const { verifyEslintSourceCoverage } = await import("../../../../scripts/dead-code/report.mjs");
+  const { verifyEslintSourceCoverage } = await import("../../../../scripts/audits/dead-code/report.mjs");
   const root = '/repository';
   const input = { 'src/a.ts': 'hash', 'src/b.astro': 'hash' };
   const a = { filePath: '/repository/src/a.ts', messages: [] };
