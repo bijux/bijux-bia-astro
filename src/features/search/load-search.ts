@@ -6,7 +6,9 @@ import { sortedSearchResults } from './results.ts';
 import { searchFacets } from './facets.ts';
 import type { SearchHits, PaginationData, SearchScope, FacetView } from './types.ts';
 
-export async function loadSearchPage(url: URL, query: string, searchType: SearchScope, apiURL: string, request = fetchJSON) {
+type SearchRequest = (url: string, options?: {signal?: AbortSignal}) => Promise<unknown>;
+
+export async function loadSearchPage(url: URL, query: string, searchType: SearchScope, apiURL: string, { request = fetchJSON, signal }: {request?: SearchRequest; signal?: AbortSignal} = {}) {
     const state = readSearchState(url, query, searchType);
     const { page, pageSize, cursor, selectedFacets, sortBy, sortOrder, sortSource, shouldKeepSort, releaseDateSortField } = state;
     let { requestError, status } = state;
@@ -37,7 +39,7 @@ export async function loadSearchPage(url: URL, query: string, searchType: Search
       }
 
       try {
-        const data = browseResponse(await request(requestURL.toString()));
+        const data = browseResponse(await request(requestURL.toString(), { signal }));
         hits = data.hits;
         facetData = data.facets;
         facets = searchFacets(facetData, selectedFacets, searchType);

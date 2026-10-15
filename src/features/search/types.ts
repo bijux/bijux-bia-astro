@@ -9,7 +9,7 @@ export interface SearchHits {
 
 export interface FacetData {
   buckets: { key: string | number; key_as_string?: string | null; doc_count: number }[];
-  sum_other_doc_count?: number;
+  sum_other_doc_count?: number | null;
 }
 
 export interface FacetView {
@@ -19,11 +19,11 @@ export interface FacetView {
   selectedValue?: string[];
   totalFacetCounts?: number;
   field?: string;
-  min?: number;
-  max?: number;
+  min?: number | null;
+  max?: number | null;
   globalMin?: number;
   globalMax?: number;
-  globalCount?: number;
+  globalCount?: number | null;
   selectedMin?: string;
   selectedMax?: string;
   gteKey?: string;

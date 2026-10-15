@@ -31,14 +31,14 @@ const FACET_CONFIG: Record<string, FacetConfig> = {
 function hasBuckets(x: unknown): x is FacetData {
   return !!x && typeof x === 'object' && 'buckets' in x && Array.isArray(x.buckets) &&
     x.buckets.every(bucket => bucket && ['string', 'number'].includes(typeof bucket.key) && Number.isSafeInteger(bucket.doc_count) && bucket.doc_count >= 0 && (bucket.key_as_string == null || typeof bucket.key_as_string === 'string')) &&
-    (!('sum_other_doc_count' in x) || Number.isSafeInteger(x.sum_other_doc_count) && Number(x.sum_other_doc_count) >= 0);
+    (!('sum_other_doc_count' in x) || x.sum_other_doc_count == null || Number.isSafeInteger(x.sum_other_doc_count) && Number(x.sum_other_doc_count) >= 0);
 }
 
-function hasMinMax(x: unknown): x is { min?: number; max?: number; globalMin: number; globalMax: number; globalCount?: number } {
+function hasMinMax(x: unknown): x is { min?: number | null; max?: number | null; globalMin: number; globalMax: number; globalCount?: number | null } {
   if (!x || typeof x !== 'object' || Array.isArray(x)) return false;
   const data = x as Record<string, unknown>;
   return ['globalMin', 'globalMax'].every(key => typeof data[key] === 'number' && Number.isFinite(data[key])) &&
-    ['min', 'max', 'globalCount'].every(key => data[key] === undefined || typeof data[key] === 'number' && Number.isFinite(data[key]));
+    ['min', 'max', 'globalCount'].every(key => data[key] == null || typeof data[key] === 'number' && Number.isFinite(data[key]));
 }
 
 

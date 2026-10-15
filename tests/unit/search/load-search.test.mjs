@@ -9,7 +9,7 @@ test('search loading retains numeric selections, sort aliases and exact scientif
     const original = JSON.stringify(response);
     const calls = [];
     const url = new URL('https://example.org/images?size_t.eq=+1&total_physical_size_x=%E2%89%A41e-9&pagination.page_size=25&sortBy=accession&sortOrder=ascending');
-    const view = await loadSearchPage(url, '', 'image', 'https://api.example.org/v1', async value => { calls.push(new URL(value)); return response; });
+    const view = await loadSearchPage(url, '', 'image', 'https://api.example.org/v1', { request: async value => { calls.push(new URL(value)); return response; } });
     assert.equal(view.status, 200);
     assert.equal(view.sortBy, 'accession_id'); assert.equal(view.sortOrder, 'asc');
     assert.deepEqual(view.selectedFacets.size_t, ['1']);
@@ -22,14 +22,14 @@ test('search loading retains numeric selections, sort aliases and exact scientif
 
 test('invalid controls do not fetch and failed/malformed aggregations cannot masquerade as completed facets', async () => {
     let calls = 0;
-    const invalid = await loadSearchPage(new URL('https://example.org/images?pagination.page_size=Infinity'), '', 'image', 'https://api.example.org', async () => { calls++; return response; });
+    const invalid = await loadSearchPage(new URL('https://example.org/images?pagination.page_size=Infinity'), '', 'image', 'https://api.example.org', { request: async () => { calls++; return response; } });
     assert.equal(invalid.status, 400); assert.equal(calls, 0);
     for (const request of [
         async () => { throw new Error('Unavailable'); },
         async () => ({ ...response, facets: { time_steps: { buckets: [null] } } }),
         async () => ({ ...response, pagination: null }),
     ]) {
-        const failed = await loadSearchPage(new URL('https://example.org/images?size_t=1'), '', 'image', 'https://api.example.org', request);
+        const failed = await loadSearchPage(new URL('https://example.org/images?size_t=1'), '', 'image', 'https://api.example.org', { request: request });
         assert.equal(failed.status, 502);
         assert.equal(failed.results, undefined);
         assert.deepEqual(failed.facets, {});
@@ -39,7 +39,7 @@ test('invalid controls do not fetch and failed/malformed aggregations cannot mas
 
 test('cursor requests preserve query/filter state while removing numbered transport paging', async () => {
     let requested;
-    const view = await loadSearchPage(new URL('https://example.org/images?cursor=opaque&pagination.page=9&size_t=1'), 'cell', 'image', 'https://api.example.org', async value => { requested = new URL(value); return response; });
+    const view = await loadSearchPage(new URL('https://example.org/images?cursor=opaque&pagination.page=9&size_t=1'), 'cell', 'image', 'https://api.example.org', { request: async value => { requested = new URL(value); return response; } });
     assert.equal(requested.searchParams.get('cursor'), 'opaque');
     assert.equal(requested.searchParams.has('pagination.page'), false);
     assert.equal(requested.searchParams.get('query'), 'cell');
@@ -60,4 +60,15 @@ test('toolbar URL changes retain repeated facets/query while dropping stale curs
     assert.equal(sorted.searchParams.get('sort_source'), 'user');
     assert.equal(changedSearchURL(sorted, { sortBy: '', sortOrder: '', reset: true }).searchParams.has('sort_by'), false);
     assert.equal(current.searchParams.get('cursor'), 'old');
+});
+
+test('an interrupted search forwards cancellation to the bounded API transport', async () => {
+    const controller = new AbortController();
+    controller.abort(new Error('Client left the page'));
+    const view = await loadSearchPage(new URL('https://example.org/images'), '', 'image', 'https://api.example.org', {
+        signal: controller.signal,
+        request: async (_url, { signal }) => { assert.equal(signal, controller.signal); signal.throwIfAborted(); },
+    });
+    assert.equal(view.status, 502);
+    assert.equal(view.results, undefined);
 });

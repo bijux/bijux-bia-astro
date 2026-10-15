@@ -17,10 +17,10 @@ import type { SearchScope } from './types.ts';
 const { url, query, searchType } = Astro.props as {url: URL; query: string; searchType: SearchScope};
 const { requestError, status, searchPageURL, totalResults, results, paginationData, facets, pageSize,
     cappedPage, displayPage, cursor, shouldKeepSort, sortBy, sortOrder, sortSource, selectedFacets,
-    hasQueryParam, hasPageSizeParam, releaseDateSortField } = await loadSearchPage(url, query, searchType, PUBLIC_SEARCH_API);
+    hasQueryParam, hasPageSizeParam, releaseDateSortField } = await loadSearchPage(url, query, searchType, PUBLIC_SEARCH_API, { signal: Astro.request.signal });
 if (status !== 200) Astro.response.status = status;
 ---
-<script src="./search-results.js"></script>
+<script src="./client/controller.js"></script>
 {requestError && <p role="alert">{requestError}</p>}
 <section
   id="search-results-shell"
