@@ -12,6 +12,7 @@ import { securityHeaders } from "../../src/security/headers.mjs";
 const repository = fileURLToPath(new URL("../../", import.meta.url));
 const marker = '<img data-security-probe="metadata" src="https://blocked.invalid/probe"> µ |';
 let root, upstream, child, address;
+let diagnostics = '';
 let requests = [];
 let upstreamMode = "valid";
 const emptyBrowse = { hits: { hits: [], total: { value: 0 } }, facets: {}, pagination: { page: 1, page_size: 12, total_pages: 0, next_cursor: null } };
@@ -74,7 +75,7 @@ env:{schema:{PUBLIC_SEARCH_API:envField.string({access:'public',context:'client'
     const port = portServer.address().port; await new Promise(resolve => portServer.close(resolve));
     address = `http://127.0.0.1:${port}`;
     child = spawn(process.execPath, ["scripts/server.mjs"], { cwd: root, env: { ...env, NODE_ENV: "production", HOST: "127.0.0.1", PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
-    let diagnostics = ""; child.stdout.on("data", value => { diagnostics += value; }); child.stderr.on("data", value => { diagnostics += value; });
+    child.stdout.on("data", value => { diagnostics += value; }); child.stderr.on("data", value => { diagnostics += value; });
     const deadline = Date.now() + 10000;
     while (Date.now() < deadline) {
         try { if ((await fetch(address + "/bioimage-archive/headers")).ok) return; } catch { /* bounded startup polling */ }
@@ -117,6 +118,13 @@ test("unexpected runtime rendering errors do not expose operator details to the 
     const response = await fetch(`${address}/bioimage-archive/runtime-error`);
     assert.equal(response.status, 502);
     assert.equal(await response.text(), "Page temporarily unavailable.");
+    const requestId = response.headers.get('X-Request-ID');
+    assert.match(requestId, /^[a-f0-9-]{36}$/);
+    for (let attempt = 0; attempt < 100 && !diagnostics.includes(requestId); attempt++) await new Promise(resolve => setTimeout(resolve, 10));
+    const event = diagnostics.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line)).find(value => value.event === 'page_render_failed' && value.requestId === requestId);
+    assert.equal(event.path, '/bioimage-archive/runtime-error');
+    assert.equal(event.errorType, 'Error');
+    assert.doesNotMatch(diagnostics, /PRIVATE_RENDERING_DETAIL|PRIVATE_UPSTREAM_DETAIL/);
 });
 
 test("redirects keep their status and destination when security headers are applied", async () => {

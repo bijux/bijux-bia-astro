@@ -21,7 +21,7 @@ before(async () => {
     await mkdir(output, { recursive: true });
     root = await mkdtemp(path.join(output, "application-"));
     await mkdir(path.join(root, "src/pages"), { recursive: true });
-    for (const relative of ["src/components", "src/assets", "src/styles"]) {
+    for (const relative of ["src/components", "src/assets", "src/styles", "src/features"]) {
         await cp(path.join(repository, relative), path.join(root, relative), { recursive: true });
     }
     await mkdir(path.join(root, "src/data"), { recursive: true });
@@ -29,7 +29,7 @@ before(async () => {
     await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
     await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
     // Include shared rendering and request dependencies used by the real components.
-    for (const relative of ["src/security", "src/components/formatting"]) {
+    for (const relative of ["src/security", "src/api", "src/formatting"]) {
         await cp(path.join(repository, relative), path.join(root, relative), { recursive: true });
     }
     await writeFile(path.join(root, "astro.config.mjs"), `
@@ -49,8 +49,8 @@ export default defineConfig({
         await cp(path.join(repository, "tests/fixtures/api", name), path.join(root, "src/data/api", name));
     }
     await writeFile(path.join(root, "src/pages/index.astro"), `---
-import DatasetInfo from '../components/DatasetInfo.astro';
-import DatasetDetail from '../components/DatasetDetail.astro';
+import DatasetInfo from '../features/metadata/DatasetInfo.astro';
+import DatasetDetail from '../features/metadata/DatasetDetail.astro';
 import ImageInfo from '../components/ai-gallery/ImageInfo.astro';
 import fieldMap from '../data/metadata-field-name-mapping.json';
 import studyResponse from '../data/api/study-s-biad3335-response.json';

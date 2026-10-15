@@ -1,5 +1,6 @@
 name: Basic website checks
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -7,12 +8,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: website-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   site_name: bia-beta-website # remainder added by netlify
 
 jobs:
   tests:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     permissions:
       contents: read
     steps:
@@ -26,9 +33,48 @@ jobs:
       - run: npm ci
       - run: npm run quality:check
       - run: npm test
+      - run: PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --with-deps --only-shell chromium
+      - run: npm run verify:website
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
+        with:
+          version: v3.18.3
+      - run: helm lint --strict helm-chart --set image.tag=verification
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: website-verification
+          path: |
+            artifacts/website-verification/report.json
+            artifacts/website-verification/*.png
+            artifacts/website-verification/application/artifacts/deployment/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  live-catalogue:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:deployment
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: success()
+        with:
+          name: catalogue-snapshot
+          path: |
+            artifacts/catalogue/
+            artifacts/deployment/
+          retention-days: 7
 
   wait-for-deploy:
-    if: github.repository == 'BioImage-Archive/BIA-astro'
+    if: github.event_name == 'pull_request' && github.repository == 'BioImage-Archive/BIA-astro'
     runs-on: ubuntu-latest
     timeout-minutes: 22
     steps:

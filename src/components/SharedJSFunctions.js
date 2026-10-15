@@ -1,9 +1,14 @@
-import { fetchJSON, fetchText, boundedMap } from "../security/requests.mjs";
+import { getMetadataValue } from "../features/metadata/records.mjs";
+export { getSimpleAttributeValue, getDatasetStatsByUUID, getAnnotationType, getMetadataValue } from "../features/metadata/records.mjs";
+import { loadRelatedEntries } from "../api/related-entries.mjs";
+import { renderRelatedEntries } from "../formatting/related-entries.mjs";
+export { getRelatedEntryLinks } from "../api/related-entries.mjs";
+export { buildDatasetFileSummary } from "../api/empiar.mjs";
+export { getFromAPI, getStudyFromApiByAccession, getImageFromAPI, getImagesFromAPI, getDownstreamDisplayImages, studyHasSpecimenTracks, getImagesByAccessionID, getAllStudiesFromAPI, getAnnotationFromDerivedImages, generateSourceAnnotatedImageMap } from "../api/client.mjs";
 import { escapeHtml } from "../security/html.mjs";
 import { navigationURL, resourceURL } from "../security/urls.mjs";
-import { PUBLIC_SEARCH_API } from "astro:env/client";
 import imageFallback from "../assets/bioimage-archive/image_fallback.png"
-import { parseNumericRange } from "./formatting/numeric-ranges.mjs";
+import { parseNumericRange } from "../formatting/numeric-ranges.mjs";
 
 function getPlaceholderHeroImage(accessionID) {
     const match = (String(accessionID ?? "").match(/(\d{1,5})$/)) || ['0','1'];
@@ -30,7 +35,6 @@ export function formatListItem(outputString, item, i, list) {
     }
 }
 
-
 export function taxonRender(taxon) {
     if (taxon["common_name"] && taxon["scientific_name"]){
         return `<i>${escapeHtml(taxon.scientific_name)}</i> (${escapeHtml(taxon["common_name"])})`
@@ -41,9 +45,7 @@ export function taxonRender(taxon) {
     }
  }
 
-
-export { multilineTextRender } from "./formatting/plain-text.js";
-
+export { multilineTextRender } from "../formatting/plain-text.js";
 
 export function formatBytesToHumanSize(sizeBytes) {
   var i = sizeBytes == 0 ? 0 : Math.floor(Math.log(sizeBytes) / Math.log(1000));
@@ -90,13 +92,6 @@ export function formatFieldName(fieldName, fieldValue) {
     return fieldValue;
   }
     
-}
-
-export function getSimpleAttributeValue(obj, attrName) {
-    // For attributes of structure: { "name": "AttributeName", "value": { "AttributeName": <value> } }
-    return obj?.additional_metadata
-      ?.find(attr => attr.name === attrName)
-      ?.value[attrName] ?? null;
 }
 
 export function getPublicVisualisationURI(uri) {
@@ -149,18 +144,6 @@ export function getLicenceLogo(licenceURL) {
     } catch { return ""; }
 }
 
-export function getDatasetStatsByUUID(study) {
-    return aggregateDatasetStats(study?.dataset || []);
-}
-
-function aggregateDatasetStats(datasets) {
-    const dataset_uuids = []
-    for (var dataset of datasets) {
-      dataset_uuids.push([dataset.uuid,dataset.file_reference_count,dataset.title])
-    }
-    return dataset_uuids
-}
-
 export function getTaxons(study) {
     const taxonHtmlList = []
     const taxonList = []
@@ -184,67 +167,6 @@ export function highlightOrganism(study, query){
     return query && text? applyHighlight(text, query): text;
 }
 
-
-export function getAnnotationType(datasets) {
-  const annotationTypes = new Set();
-
-  datasets.forEach(dataset => {
-    // 1. Process annotation_type from additional_metadata
-    const annotationMetaData = dataset.additional_metadata?.find(md => md.name === "annotation_type");
-
-    if (annotationMetaData) {
-      if (Array.isArray(annotationMetaData.value?.annotation_type)) {
-        // Case 1: It's an array of arrays!
-        // We need to iterate through the outer array, and then through the inner array.
-        annotationMetaData.value.annotation_type.forEach(innerArray => {
-          if (Array.isArray(innerArray)) {
-            innerArray.forEach(type => {
-              if (typeof type === 'string') {
-                annotationTypes.add(type.replace(/_/g, ' ').trim().toLowerCase());
-              }
-            });
-          } else if (typeof innerArray === 'string') {
-            annotationTypes.add(innerArray.replace(/_/g, ' ').trim().toLowerCase());
-          }
-        });
-      } else if (typeof annotationMetaData.value === 'string') {
-        // Case 2: It's a direct string (e.g., "type1,type2" or just "type1")
-        annotationMetaData.value.split(',').forEach(typePart => {
-          const cleanedType = typePart.replace(/_/g, ' ').trim().toLowerCase();
-          if (cleanedType) {
-            annotationTypes.add(cleanedType);
-          }
-        });
-      }
-    }
-
-    // 2. Fallback to method_type from annotation_process
-    // This comes from the logic in [accessionID].astro page
-    if (dataset.annotation_process && dataset.annotation_process.length > 0) {
-      dataset.annotation_process.forEach(process => {
-        if (process.method_type && Array.isArray(process.method_type) && process.method_type.length > 0) {
-          process.method_type.forEach(type => {
-            if (typeof type === 'string') {
-              const cleanedType = type.replace(/_/g, ' ').trim().toLowerCase();
-              if (cleanedType) {
-                annotationTypes.add(cleanedType);
-              }
-            }
-          });
-        }
-      });
-    }
-  });
-
-  // Convert Set to Array and sort for consistent display
-  return Array.from(annotationTypes).sort();
-}
-
-export function getMetadataValue(mdArray, key, field = null) {
-  const md = mdArray?.find(md => md.name === key)?.value;
-  return field && md ? md[field]?.[0] : md;
-}
-
 export function getThumbnail(img) {
     const thumbnail_uri = getMetadataValue(img.additional_metadata, "image_thumbnail_uri")?.["256"]?.["uri"] || imageFallback.src;
     return resourceURL(thumbnail_uri) ?? navigationURL(imageFallback.src);
@@ -254,8 +176,7 @@ export function formatBytes(value, field){
   return field === "total_size_in_bytes"? formatBytesToHumanSize(value) : value
 }
 
-export { formatPhysicalDimensions, formatPhysicalVoxelDimensions } from "./formatting/physical-dimensions.js";
-
+export { formatPhysicalDimensions, formatPhysicalVoxelDimensions } from "../formatting/physical-dimensions.js";
 
 function formatPixelDimension(value, text) {
     if (text === "") {
@@ -359,172 +280,6 @@ export function generateParamString(baseURL, query, page, selectedFacets, pageSi
   return isPageURL ? `${url.pathname}${url.search}` : url.toString()
 }
 
-export async function getFromAPI(url) {
-    return fetchJSON(url);
-}
-
-export async function getStudyFromApiByAccession(accessionID){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/study?facet.accession_id=${encodeURIComponent(accessionID)}`);
-    const study = response?.hits?.hits?.find(
-        (hit) => hit._source?.accession_id === accessionID
-      )?._source || undefined;
-    return study;
-}
-
-export async function getImageFromAPI(uuid){
-    if (typeof uuid !== "string" || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(uuid)) return null;
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?query=${encodeURIComponent(uuid)}`);
-    if (!Array.isArray(response?.hits?.hits)) throw new TypeError("Invalid image response.");
-    const image = response.hits.hits.find(hit => typeof hit?._source?.uuid === "string" && hit._source.uuid.toLowerCase() === uuid.toLowerCase())?._source || null;
-    return image
-}
-
-export async function getImagesFromAPI(uuid_list){
-  const image_list = await boundedMap(uuid_list, getImageFromAPI);
-  return image_list;
-}
-
-export async function getDownstreamDisplayImages(uuid){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?facet.downstream_of=${encodeURIComponent(uuid)}&facet.specimen_track_position=terminal`);
-    const displayImages = response?.hits?.hits?.map(img => img._source) ?? [];
-    return displayImages
-}
-
-export async function studyHasSpecimenTracks(accessionID){
-    const response = await getFromAPI(
-        `${PUBLIC_SEARCH_API}/website/browse/image` +
-        `?facet.accession_id=${encodeURIComponent(accessionID)}` +
-        `&has.specimen_track_display_image=false` +
-        `&pagination.page_size=1`
-    );
-    return (response?.hits?.total?.value ?? 0) > 0;
-}
-
-async function getAllPaginatedHits(urlBuilder, pageSize = 100) {
-  const firstPage = await getFromAPI(urlBuilder(1, pageSize));
-
-  if (!Array.isArray(firstPage?.hits?.hits)) throw new Error("Catalogue page unavailable or invalid.");
-
-  const totalPages = firstPage.pagination?.total_pages ?? 1;
-  const expectedCount = firstPage.hits.total?.value;
-  if (!Number.isSafeInteger(expectedCount) || expectedCount < 0 || firstPage.hits.total?.relation && firstPage.hits.total.relation !== "eq") throw new Error("Catalogue did not provide an exact result count.");
-  if (!Number.isSafeInteger(totalPages) || totalPages < 0 || totalPages > 10000) throw new RangeError("Invalid catalogue page count.");
-  if (totalPages === 0 && firstPage.hits.hits.length) throw new Error("Inconsistent catalogue page count.");
-  const allHits = [...firstPage.hits.hits];
-
-  const otherPages = await boundedMap(
-    Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => index + 2),
-    page => getFromAPI(urlBuilder(page, pageSize))
-  );
-
-  otherPages.forEach((page) => {
-    if (!Array.isArray(page?.hits?.hits)) throw new Error("Catalogue page unavailable or invalid.");
-    allHits.push(...page.hits.hits);
-  });
-
-  const identifiers = allHits.map(hit => hit?._source?.uuid ?? hit?._id);
-  if (allHits.length !== expectedCount || allHits.some(hit => !hit?._source || typeof hit._source !== "object" || Array.isArray(hit._source)) || identifiers.some(value => typeof value !== "string" || !value) || new Set(identifiers).size !== identifiers.length) {
-    throw new Error("Catalogue pages are incomplete, duplicated or changed during retrieval.");
-  }
-  return allHits;
-}
-
-export async function getImagesByAccessionID(accessionID) {
-  const hits = await getAllPaginatedHits((page, pageSize) =>
-    `${PUBLIC_SEARCH_API}/website/image` +
-    `?facet.accession_id=${encodeURIComponent(accessionID)}` +
-    `&pagination.page_size=${pageSize}` +
-    `&pagination.page=${page}`
-  );
-
-  return hits.map((hit) => hit._source).filter(Boolean);
-}
-
-export async function getAllStudiesFromAPI() {
-  const hits = await getAllPaginatedHits((page, pageSize) =>
-    `${PUBLIC_SEARCH_API}/website/browse/study` +
-    `?pagination.page_size=${pageSize}` +
-    `&pagination.page=${page}`
-  );
-
-  const studies = hits.map((hit) => hit._source);
-  if (studies.some(study => typeof study.accession_id !== "string" || !/^[a-z\d][a-z\d._-]{0,127}$/i.test(study.accession_id))) throw new Error("Catalogue supplied an invalid study route identifier.");
-  if (new Set(studies.map(study => study.accession_id)).size !== studies.length) throw new Error("Catalogue supplied duplicate study routes.");
-  return studies;
-}
-
-function isImageAnAnnotation(img){
-    return (img.creation_process?.input_image_uuid?.length && 
-    img.representation.some(imgRep => imgRep.image_format === ".ome.zarr") &&
-    !img?.additional_metadata?.some(md =>
-        (
-            md.value?.attributes?.["file description"] === "Raw image in JPEG format" || 
-            md.value?.attributes?.["file description"] === "Visualization of groundtruth masks in PNG format" ||
-            md.value?.attributes?.["file description"] === "Visualization of groundtruth for randomly selected nuclei in PNG format"
-        )
-    ))
-}
-
-export async function getAnnotationFromDerivedImages(sourceImageUUID) {
-  const derivedImages = await getDerivedImagesFromSourceImage(sourceImageUUID)
-  const annotatedImages = derivedImages.filter(img => isImageAnAnnotation(img))
-  return annotatedImages  
-}
-
-async function getDerivedImagesFromSourceImage(uuid){
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/image?query=${encodeURIComponent(uuid)}&includeDerivedImages=true`);
-    const derivedImages = response?.hits?.hits.map(img => img._source).filter(img => img.uuid !== uuid);
-    return derivedImages
-}
-
-export async function generateSourceAnnotatedImageMap(accession_id) {
-  const annotatedImagesMap = new Map();
-
-  const skipImageUUID = [
-    "2a382f3a-aa6d-4ace-99fb-468335fa3809",
-    "8921dcfb-4f5b-4ac1-a390-04b3ef2155ea",
-    "d0b3f24f-4a9c-499b-99e4-343de48e7c82",
-  ];
-
-  const images = await getImagesByAccessionID(accession_id);
-
-  const sourceImagesByUuid = new Map(
-    images
-      .filter(img => img && !isImageAnAnnotation(img))
-      .filter(img => !skipImageUUID.includes(img.uuid))
-      .map(img => [img.uuid, img])
-  );
-
-  for (const img of images) {
-    if (!img || !isImageAnAnnotation(img)) {
-      continue;
-    }
-
-    const sourceImageUuid = img.creation_process?.input_image_uuid?.[0];
-
-    if (!sourceImageUuid || skipImageUUID.includes(sourceImageUuid)) {
-      continue;
-    }
-
-    const sourceImage = sourceImagesByUuid.get(sourceImageUuid);
-
-    if (!sourceImage) {
-      continue;
-    }
-
-    if (!annotatedImagesMap.has(sourceImageUuid)) {
-      annotatedImagesMap.set(sourceImageUuid, {
-        sourceImage,
-        annotationImages: [],
-      });
-    }
-
-    annotatedImagesMap.get(sourceImageUuid).annotationImages.push(img);
-  }
-
-  return annotatedImagesMap;
-}
-
 export function getTutorialURLs(urlType){
     const quickTourURL = "https://www.ebi.ac.uk/training/online/courses/bioimage-archive-quick-tour"
     return urlType === "submission"? `${quickTourURL}/submitting-data-to-bioimage-archive-2/submission/` : quickTourURL
@@ -551,7 +306,6 @@ function formatUniqueList(values = [], { sort = true, transform = value => value
 export function formatHighlightedList(values = [], query, options = {}) {
   return highlightText(formatUniqueList(values, options), query);
 }
-
 
 export function applyHighlight(text, query) {
   const out = text ?? "";
@@ -586,268 +340,10 @@ export function highlightLinks(baseUrl, highlightObj, query, limit = 8) {
   return uniq.flatMap(h => ({ text: h[0]?.replace(/__HIT__|__\/HIT__/g, "").trim(), url: textFragmentLink(baseUrl, h, query) }))?.[0]?.["url"];
 }
 
-const EMPIAR_HEADERS_BASE_URL = "https://ftp.ebi.ac.uk/pub/databases/emtest/empiar/headers";
-
-function decodeXmlText(value) {
-  return String(value ?? "")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)));
+export async function buildPDBandEMDBLinks(study) {
+  const { pdb, emdb } = await loadRelatedEntries(study);
+  return renderRelatedEntries(pdb, emdb);
 }
-
-function getXmlTagText(xml, tagName) {
-  const match = String(xml ?? "").match(new RegExp(`<${tagName}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tagName}>`, "i"));
-  return match ? decodeXmlText(match[1]).trim() : "";
-}
-
-function getImageSetXmlBlocks(xml) {
-  return [...String(xml ?? "").matchAll(/<imageSet(?:\s[^>]*)?>[\s\S]*?<\/imageSet>/gi)].map((match) => match[0]);
-}
-
-function buildXmlImageSetSummary(imageSetXml, fallbackDatasetName = "Unknown dataset") {
-  const dataset = getXmlTagText(imageSetXml, "name") || fallbackDatasetName;
-  const dataFormat = getXmlTagText(imageSetXml, "dataFormat");
-  const numImagesOrTiltSeries = Number(getXmlTagText(imageSetXml, "numImagesOrTiltSeries")) || null;
-  return {
-    dataset,
-    data_format: dataFormat,
-    file_count: numImagesOrTiltSeries,
-  };
-}
-
-function getDatasetTitle(dataset, fallbackDatasetName) {
-  return typeof dataset === "string" ? dataset : dataset?.title || fallbackDatasetName;
-}
-
-function formatDatasetFileSummary(accessionID, xmlUrl, imageSetSummaries, studyDatasets = []) {
-  const sourceSummaries = imageSetSummaries.length > 0
-    ? imageSetSummaries
-    : [buildXmlImageSetSummary("", "Unknown dataset")];
-  const summariesByDataset = new Map(sourceSummaries.map((summary) => [summary.dataset, summary]));
-  const datasets = studyDatasets.length > 0
-    ? studyDatasets.map((dataset, index) => {
-        const datasetName = getDatasetTitle(dataset, `Dataset ${index + 1}`);
-        const sourceSummary = summariesByDataset.get(datasetName) || sourceSummaries[index] || sourceSummaries[0];
-        return {
-          ...sourceSummary,
-          dataset: datasetName,
-        };
-      })
-    : sourceSummaries;
-
-  const firstSummary = datasets[0] || {};
-  return {
-    accession_id: accessionID,
-    source: xmlUrl,
-    data_format: firstSummary.data_format || "",
-    file_count: firstSummary.file_count ?? null,
-    datasets,
-  };
-}
-
-export async function buildDatasetFileSummary(accessionID, studyDatasets = []) {
-  const empiarEntryId = encodeURIComponent(accessionID.replace("EMPIAR-", ""));
-  const xmlUrl = `${EMPIAR_HEADERS_BASE_URL}/${empiarEntryId}.xml`;
-  try {
-    const xml = await fetchText(xmlUrl);
-    const imageSetSummaries = getImageSetXmlBlocks(xml).map((imageSetXml) => buildXmlImageSetSummary(imageSetXml));
-    return formatDatasetFileSummary(accessionID, xmlUrl, imageSetSummaries, studyDatasets);
-  } catch (error) {
-    console.warn(`Optional EMPIAR XML summary unavailable for ${encodeURIComponent(accessionID)}.`);
-    return "";
-  }
-}
-
-
-function asArray(value) {
-  if (!value) return [];
-  return Array.isArray(value) ? value : [value];
-}
-
-
-function normalisePDBAccession(accession) {
-  return String(accession ?? "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function normaliseEMDBAccession(accession) {
-  const digits = String(accession ?? "").match(/\d+/)?.[0];
-  return digits || "";
-}
-
-function buildEMDBThumbnailURL(emdbNumber) {
-  const subDirectory = emdbNumber.length > 4
-    ? `${emdbNumber.slice(0, 2)}/${emdbNumber.slice(2, 3)}`
-    : emdbNumber.slice(0, 2);
-  return `https://www.ebi.ac.uk/emdb/static/em/${subDirectory}/${emdbNumber}/images/400_${emdbNumber}.gif`;
-}
-
-function formatEMDBUnits(units) {
-  if (!units || units === "Å" || units === "Å") {
-    return "&#x212B;";
-  }
-  return escapeHtml(units);
-}
-
-function getEMDBResolution(emdbEntry) {
-  const structureDeterminations = asArray(emdbEntry?.structure_determination_list?.structure_determination);
-
-  for (const structureDetermination of structureDeterminations) {
-    const imageProcessing = asArray(structureDetermination?.image_processing);
-    for (const processing of imageProcessing) {
-      const resolution = processing?.final_reconstruction?.resolution;
-      if (resolution?.valueOf_) {
-        return {
-          value: resolution.valueOf_,
-          units: formatEMDBUnits(resolution.units),
-        };
-      }
-    }
-  }
-
-  return null;
-}
-
-function buildRelatedEntryPreviewLink({ accession, href, thumbnailURL, type, measurement }) {
-  const safeAccession = escapeHtml(accession);
-  const safeType = escapeHtml(type);
-  const measurementHtml = measurement
-    ? `<span class="bia-related-entry-preview__measurement">${escapeHtml(measurement.label)}: ${escapeHtml(measurement.value)} ${escapeHtml(measurement.units)}</span>`
-    : "";
-
-  return `
-    <span class="bia-related-entry">
-      <a class="vf-link bia-related-entry__link" href="${escapeHtml(navigationURL(href) ?? "#")}" target="_blank" rel="noopener noreferrer">${safeAccession}</a>${measurement?.value ? ` (${escapeHtml(measurement.value)} ${escapeHtml(measurement.units)})`: ""}
-      <span class="bia-related-entry-preview" role="tooltip">
-        <img src="${escapeHtml(resourceURL(thumbnailURL) ?? "")}" alt="Preview image for ${safeAccession}" loading="lazy" />
-        <span class="bia-related-entry-preview__body">
-          <span class="bia-related-entry-preview__title">${safeType} ${safeAccession}</span>
-          ${measurementHtml}
-        </span>
-      </span>
-    </span>
-  `;
-}
-
-function getHrefFromLinkValue(link) {
-  const value = String(link ?? "").trim();
-  const markdownLink = value.match(/^\[[^\]]+\]\(([^)]+)\)$/);
-  return markdownLink?.[1] ?? value;
-}
-
-function getPDBAccessionFromLink(link) {
-  const href = getHrefFromLinkValue(link);
-  const pdbPathMatch = href.match(/\/pdb\/([a-z0-9]{4})(?:[/?#]|$)/i);
-  if (pdbPathMatch) return normalisePDBAccession(pdbPathMatch[1]);
-
-  try {
-    const lastPathPart = new URL(href).pathname.split("/").filter(Boolean).pop();
-    const accession = normalisePDBAccession(lastPathPart);
-    return accession.length === 4 ? accession : "";
-  } catch {
-    const accession = normalisePDBAccession(href);
-    return accession.length === 4 ? accession : "";
-  }
-}
-
-function getEMDBAccessionFromLink(link) {
-  const href = getHrefFromLinkValue(link);
-  const emdbMatch = href.match(/EMD[-_]?(\d+)/i);
-  return emdbMatch?.[1] ?? normaliseEMDBAccession(href);
-}
-
-function uniqueRelatedEntries(entries) {
-  const uniqueEntries = new Map();
-  for (const entry of entries) {
-    if (entry?.accession && !uniqueEntries.has(entry.accession)) {
-      uniqueEntries.set(entry.accession, entry);
-    }
-  }
-  return Array.from(uniqueEntries.values());
-}
-
-function getRelatedEntries(study, linkType) {
-  const lowerLinkType = String(linkType ?? "").toLowerCase();
-  const normaliseAccession = lowerLinkType === "pdb"
-    ? normalisePDBAccession
-    : normaliseEMDBAccession;
-  const getAccessionFromLink = lowerLinkType === "pdb"
-    ? getPDBAccessionFromLink
-    : getEMDBAccessionFromLink;
-  const legacyField = lowerLinkType === "pdb" ? "pdb_accession" : "emdb_accession";
-
-  const apiEntries = asArray(study?.see_also)
-    .filter((entry) => String(entry?.link_type ?? "").toLowerCase() === lowerLinkType)
-    .map((entry) => {
-      const link = entry?.link;
-      const href = getHrefFromLinkValue(link);
-      return {
-        accession: getAccessionFromLink(link),
-        href,
-      };
-    });
-
-  const legacyEntries = asArray(study?.[legacyField])
-    .map(normaliseAccession)
-    .filter(Boolean)
-    .map((accession) => ({
-      accession,
-      href: lowerLinkType === "pdb"
-        ? `https://www.ebi.ac.uk/pdbe/entry/pdb/${accession}`
-        : `https://www.ebi.ac.uk/emdb/EMD-${accession}`,
-    }));
-
-  return uniqueRelatedEntries([...apiEntries, ...legacyEntries]);
-}
-
-export function getRelatedEntryLinks(study, linkType) {
-  return getRelatedEntries(study, linkType).map(({ accession }) => accession);
-}
-
-export async function buildPDBandEMDBLinks(study){
-  const studyPDBLinks = getRelatedEntries(study, "pdb");
-  const studyEMDBLinks = getRelatedEntries(study, "emdb");
-
-  const pdbLinks = studyPDBLinks.length > 0
-    ? studyPDBLinks.map(({ accession, href }) => buildRelatedEntryPreviewLink({
-      accession,
-      href,
-      thumbnailURL: `https://www.ebi.ac.uk/pdbe/static/entry/${accession}_deposited_chain_front_image-200x200.png`,
-      type: "PDB",
-    })).join(", ")
-    : null;
-
-  const emdbEntries = await boundedMap(studyEMDBLinks, async ({ accession, href }) => {
-    let metadata = null;
-    try { metadata = await getFromAPI(`https://www.ebi.ac.uk/emdb/api/entry/EMD-${encodeURIComponent(accession)}`); }
-    catch { console.warn(`Optional EMDB resolution unavailable for EMD-${encodeURIComponent(accession)}.`); }
-    return { accession, href, metadata };
-  });
-
-  const emdbLinks = emdbEntries.length > 0
-    ? emdbEntries.map(({ accession, href, metadata }) => {
-      const displayAccession = `EMD-${accession}`;
-      const resolution = getEMDBResolution(metadata);
-      return buildRelatedEntryPreviewLink({
-        accession: displayAccession,
-        href,
-        thumbnailURL: buildEMDBThumbnailURL(accession),
-        type: "EMDB",
-        measurement: resolution ? {
-          label: "Resolution",
-          value: resolution.value,
-          units: resolution.units,
-        } : null,
-      });
-    }).join(", ")
-    : null;
-
-  return [pdbLinks, emdbLinks]
-}
-
 
 export function getHighlightTextString(highlights) {
   if (!highlights) return "";

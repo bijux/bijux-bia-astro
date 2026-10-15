@@ -40,7 +40,7 @@ import Layout from '../layouts/${layout}.astro';
 import HighlightedText from '../components/HighlightedText.astro';
 import HighlightedTaxa from '../components/HighlightedTaxa.astro';
 import HighlightedFields from '../components/HighlightedFields.astro';
-import DatasetDetail from '../components/DatasetDetail.astro';
+import DatasetDetail from '../features/metadata/DatasetDetail.astro';
 import { scriptData } from '../security/html.mjs';
 const payload = ${JSON.stringify(payload)};
 const markup = ${JSON.stringify(markup)};

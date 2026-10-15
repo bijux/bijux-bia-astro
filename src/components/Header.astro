@@ -22,7 +22,7 @@ const state = PUBLIC_WEBSITE_STATE === "DEV"? "Alpha": "Beta";
                     <p class="vf-hero__subheading">A resource for open, FAIR life science imaging data</p>
                 </div>
             </section>
-        <SearchBar/>
+        <SearchBar query={Astro.url.searchParams.get('query') ?? ''} />
         </div>
     </section>
 </header>

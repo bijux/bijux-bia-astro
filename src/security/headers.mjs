@@ -1,4 +1,4 @@
-export const reportOnlyPolicy = "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.datatables.net https://assets.emblstatic.net https://ebi.emblstatic.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://assets.emblstatic.net https://ebi.emblstatic.net https://cdn.datatables.net; img-src 'self' data: https:; font-src 'self' data: https://assets.emblstatic.net https://ebi.emblstatic.net; connect-src 'self' https:; frame-src 'self' https:";
+export const reportOnlyPolicy = "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://assets.emblstatic.net https://ebi.emblstatic.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://assets.emblstatic.net https://ebi.emblstatic.net; img-src 'self' data: https:; font-src 'self' data: https://assets.emblstatic.net https://ebi.emblstatic.net; connect-src 'self' https:; frame-src 'self' https:";
 
 export function securityHeaders(allowLocalViewers = false) {
     const local = allowLocalViewers ? '(self "https://livingobjects.ebi.ac.uk")' : "()";

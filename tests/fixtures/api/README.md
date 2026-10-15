@@ -9,6 +9,7 @@ a test-specific wrapper.
 - `image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39-response.json`: image metadata
   from EMPIAR-12104 with `obo:FBbi_00000256`.
 - `study-s-biad3397-response.json`: study metadata with empty FBBI arrays.
+- `study-empiar12104-response.json`: complete EMPIAR metadata for production-build checks.
 - `browse-image-response.json`: image browse results and numeric/text facets.
 - `browse-study-response.json`: study browse results and year/text facets.
   Both browse captures request one result per page, retaining the complete

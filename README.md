@@ -6,6 +6,10 @@ Set `SITE_URL` at build time for a custom public origin; Netlify previews use
 `DEPLOY_PRIME_URL`. Unapproved request hosts cannot control generated URLs.
 `npm ci` supports this layout; `npm ls` may report spurious errors when inspecting
 the dependency-directory link. Tests and audit probes execute the installed tools.
+The document layouts share their head/footer and serve pinned jQuery/DataTables
+assets locally, in dependency order. EMBL chrome remains externally maintained.
+Search clients and response contracts live in `src/api/`; HTML formatters consume
+data without making requests. Existing shared-helper exports remain compatible.
 
 ## 🧞 Commands
 
@@ -50,6 +54,14 @@ is supported, while experimental parallel-worker capture is rejected.
 Study pages remain static: replay removes upstream build latency without adding
 runtime catalogue requests or an HTML-cache invalidation policy.
 
+## Production verification
+
+`npm run verify:website` builds representative production routes using saved API
+data, validates generated HTML and checks desktop/mobile Chromium journeys.
+Install its browser with `PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium`.
+Unexpected API requests fail; no live catalogue is needed. Reports stay under
+`artifacts/website-verification/`. Live `npm run build` remains a separate check.
+
 ## Container deployment
 
 Build the image once, then start that same image without compilation or catalogue
@@ -72,6 +84,10 @@ Mount certificate/key files together when using TLS. The image runs as `node` an
 supports a read-only filesystem; it contains production dependencies and verified
 output, with no application templates or build configuration. SIGTERM/SIGINT drain
 active requests for up to ten seconds; allow a longer container stop timeout.
+`/health/live` and `/health/ready` check the server without upstream requests.
+Error and slow-request logs are structured JSON; runtime responses include
+`X-Request-ID`. [Deployment instructions](helm-chart/README.md) cover rolling
+updates, image pins and rollback.
 
 For a verified Node artifact outside Docker, run `npm run build:deployment`, then
 `DEPLOYMENT_MANIFEST=artifacts/deployment/manifest.json npm run prod`. Package

@@ -19,7 +19,7 @@ before(async () => {
     await mkdir(output, { recursive: true });
     application = await mkdtemp(path.join(output, 'application-'));
     await mkdir(path.join(application, 'src/pages'), { recursive: true });
-    for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content', 'security']) {
+    for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content', 'security', 'api', 'features', 'formatting']) {
         await cp(path.join(repository, 'src', directory), path.join(application, 'src', directory), { recursive: true });
     }
     await cp(path.join(repository, 'src/content.config.ts'), path.join(application, 'src/content.config.ts'));
@@ -40,7 +40,7 @@ export default defineConfig({ cacheDir: './.astro-cache', vite: { cacheDir: './.
     await cp(path.join(repository, 'tests/fixtures/api/study-s-biad3335-response.json'), path.join(application, 'src/data/study-response.json'));
     await writeFile(path.join(application, 'src/pages/index.astro'), `---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import DatasetDetail from '../components/DatasetDetail.astro';
+import DatasetDetail from '../features/metadata/DatasetDetail.astro';
 import Specimen from '../components/image/Specimen.astro';
 import imageResponse from '../data/image-response.json';
 import StudyTitleInfo from '../components/study-page/StudyTitleInfo.astro';

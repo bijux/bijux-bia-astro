@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": ["repository", "tag", "digest"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "tag": { "type": "string", "pattern": "^$|^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$" },
+        "digest": { "type": "string", "pattern": "^$|^sha256:[a-f0-9]{64}$" }
+      },
+      "oneOf": [
+        { "properties": { "tag": { "minLength": 1 }, "digest": { "const": "" } } },
+        { "properties": { "tag": { "const": "" }, "digest": { "minLength": 1 } } }
+      ]
+    },
+    "env": { "type": "object", "additionalProperties": false }
+  }
+}
