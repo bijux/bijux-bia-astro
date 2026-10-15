@@ -1,9 +1,9 @@
 ---
 import '../styles/bars_and_sections.css';
 import Document from './document/Document.astro';
-import Header from '../components/Header.astro';
-import Navigation from '../components/Navigation.astro';
-import Announcement from '../components/Announcement.astro';
+import Header from '../components/navigation/Header.astro';
+import Navigation from '../components/navigation/Navigation.astro';
+import Announcement from '../features/news/Announcement.astro';
 const { pageTitle } = Astro.props;
 ---
 <Document pageTitle={pageTitle} tables scrollPadding="48px">

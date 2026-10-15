@@ -12,13 +12,13 @@ import emailImage from "../assets/bioimage-archive/email_embl_green.png";
 import githubImage from "../assets/bioimage-archive/github_embl_green.png";
 import blueskyImage from "../assets/bioimage-archive/bluesky_embl_green.png";
 import linkedinImage from "../assets/bioimage-archive/linkedin_embl_green.png";
-import NewsSection from "../components/News.astro"
+import NewsSection from "../features/news/News.astro"
 import ukriImage from "../assets/bioimage-archive/uk_ri_logo.jpg";
 import emblImage from "../assets/bioimage-archive/EMBL_logo_colour_wordmark.png";
 import euImage from "../assets/bioimage-archive/EU_logo.jpg";
 import SearchBar from "../features/search/SearchBar.astro";
-import TrainingSection from "../components/TrainingSection.astro";
-import Announcement from "../components/Announcement.astro";
+import TrainingSection from "../features/training/TrainingSection.astro";
+import Announcement from "../features/news/Announcement.astro";
 import { PUBLIC_WEBSITE_STATE } from "astro:env/client";
 
 const state = PUBLIC_WEBSITE_STATE === "DEV"? "Alpha": "Beta";
@@ -90,7 +90,7 @@ const contactLinks = [
 ];
 
 import multiImageStrip from "../assets/bioimage-archive/multi_image_strip.webp";
-import MenuCard from "../components/cards/LandingPageMenuCard.astro";
+import MenuCard from "../components/ui/LandingPageMenuCard.astro";
 import bannerImage from "../assets/bioimage-archive/banner.webp";
 
 ---

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { articleDateKey, sortNewsByDate } from "../../src/news/article-order.mjs";
+import { articleDateKey, sortNewsByDate } from "../../src/features/news/article-order.mjs";
 
 // Entry IDs deliberately differ from date order to catch filename-based sorting.
 const exampleEntries = [

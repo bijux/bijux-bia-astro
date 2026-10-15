@@ -7,7 +7,7 @@ import collection from '../../../../data/collections/ai-ready-datasets.json';
 import StudyContentsSummary from "../../../../features/studies/StudyContentsSummary.astro"
 import StudyFiles from "../../../../features/studies/StudyFiles.astro";
 import StudyComponents from "../../../../features/galleries/ai/StudyComponents.astro";
-import "../../../../styles/image_slider.css"
+import "../../../../features/galleries/ai/image-slider.css"
 
 export function getStaticPaths() {
   return Object.values(collection.accession_ids).map(accession => ({params: { accessionID: accession }}));

@@ -63,9 +63,9 @@ export default defineConfig({
     for (const layout of ["BaseLayout", "MinimalLayout", "EMPIARLayout", "ProjectsLayout"]) {
         await writeFile(path.join(root, "src/pages", `${layout}.astro`), `---
 import Layout from '../layouts/${layout}.astro';
-import News from '../components/News.astro';
+import News from '../features/news/News.astro';
 import SearchBar from '../features/search/SearchBar.astro';
-import CodeDialog from '../components/CodeDialog.astro';
+import CodeDialog from '../components/ui/CodeDialog.astro';
 import FileListTable from '../features/studies/FileListTable.astro';
 import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
 import ViewableImageTable from '../features/studies/ViewableImageTable.astro';

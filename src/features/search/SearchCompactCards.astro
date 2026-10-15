@@ -1,10 +1,10 @@
 ---
-import HighlightedFields from "../../components/HighlightedFields.astro";
+import HighlightedFields from "./HighlightedFields.astro";
 const { result, resultType, highlight } = Astro.props;
 import imageFallback from "../../assets/bioimage-archive/image_fallback.png"
 import { getHighlightTextString, getStudyImage, getThumbnail, formatPhysicalDimensions, formatPixelDimensions } from "../../components/SharedJSFunctions.js";
 import {getImageRep} from "./SearchResultsTable.astro"
-import  HighlightedText  from "../../components/HighlightedText.astro";
+import  HighlightedText  from "./HighlightedText.astro";
 
 const thumbnail = resultType === "study"? getStudyImage(result): getThumbnail(result);
 const isFallback = resultType === "study"? String(thumbnail).includes("placeholder"): thumbnail === imageFallback.src;

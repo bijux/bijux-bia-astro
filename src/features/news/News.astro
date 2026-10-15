@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
-import { sortNewsByDate } from "../news/article-order.mjs";
+import { sortNewsByDate } from "./article-order.mjs";
 const items = sortNewsByDate(await getCollection("news_articles"));
 
 ---

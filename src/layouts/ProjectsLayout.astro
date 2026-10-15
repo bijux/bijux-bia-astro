@@ -1,9 +1,9 @@
 ---
 import '../styles/bars_and_sections.css';
 import Document from './document/Document.astro';
-import Navigation from '../components/Navigation.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
-import Announcement from '../components/Announcement.astro';
+import Navigation from '../components/navigation/Navigation.astro';
+import Breadcrumbs from '../components/navigation/Breadcrumbs.astro';
+import Announcement from '../features/news/Announcement.astro';
 import { Image } from 'astro:assets';
 const { projectLogo, projectTitle, projectSubTitle, projectBannerImage, pageTitle, breadcrumbs, projectNavItems } = Astro.props;
 const pagePath = breadcrumbs ?? Astro.url.pathname;

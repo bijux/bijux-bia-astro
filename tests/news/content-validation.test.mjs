@@ -4,7 +4,7 @@ import { spawn } from "node:child_process";
 import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sortNewsByDate } from "../../src/news/article-order.mjs";
+import { sortNewsByDate } from "../../src/features/news/article-order.mjs";
 
 const repository = fileURLToPath(new URL("../../", import.meta.url));
 const evidence = join(repository, "artifacts/news-date-order/content-validation");
@@ -16,10 +16,10 @@ async function fixture(t) {
   const root = await mkdtemp(join(evidence, "articles-"));
   // Register before setup so assertion and setup failures also release this fixture.
   t.after(() => rm(root, { recursive: true, force: true }));
-  for (const directory of ["src/content/news_articles", "src/news", "src/components", "src/pages", "src/assets/bioimage-archive"]) {
+  for (const directory of ["src/content/news_articles", "src/features/news", "src/components", "src/pages", "src/assets/bioimage-archive"]) {
     await mkdir(join(root, directory), { recursive: true });
   }
-  for (const path of ["src/content.config.ts", "src/news/article-order.mjs", "src/components/News.astro"]) {
+  for (const path of ["src/content.config.ts", "src/features/news/article-order.mjs", "src/features/news/News.astro"]) {
     await copyFile(join(repository, path), join(root, path));
   }
   for (const name of originals) {
@@ -32,7 +32,7 @@ async function fixture(t) {
   await writeFile(join(root, "astro.config.mjs"), `import { defineConfig } from 'astro/config';
 export default defineConfig({ outDir: './build', cacheDir: './cache', vite: { cacheDir: './vite-cache' } });\n`);
   await writeFile(join(root, "src/pages/index.astro"), `---
-import News from "../components/News.astro";
+import News from "../features/news/News.astro";
 import { getCollection } from "astro:content";
 const entries = await getCollection("news_articles");
 const inventory = entries.map(({ id, data }) => ({ id, data: { articleDate: data.articleDate } }));

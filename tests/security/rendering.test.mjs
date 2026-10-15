@@ -37,9 +37,9 @@ export default defineConfig({ cacheDir: './.astro-cache', vite: { cacheDir: './.
     for (const layout of layouts) {
         await writeFile(path.join(root, "src/pages", `${layout}.astro`), `---
 import Layout from '../layouts/${layout}.astro';
-import HighlightedText from '../components/HighlightedText.astro';
-import HighlightedTaxa from '../components/HighlightedTaxa.astro';
-import HighlightedFields from '../components/HighlightedFields.astro';
+import HighlightedText from '../features/search/HighlightedText.astro';
+import HighlightedTaxa from '../features/search/HighlightedTaxa.astro';
+import HighlightedFields from '../features/search/HighlightedFields.astro';
 import DatasetDetail from '../features/metadata/DatasetDetail.astro';
 import { scriptData } from '../security/html.mjs';
 const payload = ${JSON.stringify(payload)};

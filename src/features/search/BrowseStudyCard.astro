@@ -1,9 +1,9 @@
 ---
 import { navigationURL, resourceURL } from "../../security/urls.mjs";
-import HighlightedTaxa from "../../components/HighlightedTaxa.astro";
-import HighlightedFields from "../../components/HighlightedFields.astro";
+import HighlightedTaxa from "./HighlightedTaxa.astro";
+import HighlightedFields from "./HighlightedFields.astro";
 import { getHighlightTextString, highlightOrganism, renderTaxonList, formatListItem, getStudyImage, highlightLinks, getLicenceLogo, formatHighlightedList } from "../../components/SharedJSFunctions.js";
-import  HighlightedText  from "../../components/HighlightedText.astro";
+import  HighlightedText  from "./HighlightedText.astro";
 import "../../styles/dataset_card.css"
 const { study, studyPageRoot, taglist, annotationType, cardImageOverride, highlight, query} = Astro.props;
 

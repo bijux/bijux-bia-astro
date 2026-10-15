@@ -19,7 +19,7 @@ before(async () => {
     await mkdir(output, { recursive: true });
     application = await mkdtemp(path.join(output, 'application-'));
     await mkdir(path.join(application, 'src/pages'), { recursive: true });
-    for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content', 'security', 'api', 'features', 'formatting']) {
+    for (const directory of ['components', 'layouts', 'styles', 'data', 'content', 'security', 'api', 'features', 'formatting']) {
         await cp(path.join(repository, 'src', directory), path.join(application, 'src', directory), { recursive: true });
     }
     await cp(path.join(repository, 'src/content.config.ts'), path.join(application, 'src/content.config.ts'));
@@ -50,7 +50,7 @@ import FileListTable from '../features/studies/FileListTable.astro';
 import TomogramCard from '../features/galleries/volume-em/TomogramCard.astro';
 import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
 import BenchmarkingTable from '../features/galleries/ai/benchmarking/BenchmarkingTable.astro';
-import News from '../components/News.astro';
+import News from '../features/news/News.astro';
 import response from '../data/study-response.json';
 import fieldMap from '../data/metadata-field-name-mapping.json';
 const specimen = imageResponse.hits.hits[0]._source.creation_process.subject;

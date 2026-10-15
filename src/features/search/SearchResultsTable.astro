@@ -1,8 +1,8 @@
 ---
-import HighlightedTaxa from "../../components/HighlightedTaxa.astro";
+import HighlightedTaxa from "./HighlightedTaxa.astro";
 const { results, resultType, query, cardImageOverride } = Astro.props;
 import { highlightOrganism,  getStudyImage, getThumbnail, formatPhysicalDimensions, formatPixelDimensions, getSimpleAttributeValue, highlightLinks, applyHighlight, formatHighlightedList } from "../../components/SharedJSFunctions.js";
-import  HighlightedText  from "../../components/HighlightedText.astro";
+import  HighlightedText  from "./HighlightedText.astro";
 
 export function getImageRep(image){
     const vizarrRepUuid = getSimpleAttributeValue(image, "recommended_vizarr_representation");

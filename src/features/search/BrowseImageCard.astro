@@ -1,10 +1,10 @@
 ---
 import { navigationURL, resourceURL } from "../../security/urls.mjs";
-import HighlightedTaxa from "../../components/HighlightedTaxa.astro";
-import HighlightedFields from "../../components/HighlightedFields.astro";
+import HighlightedTaxa from "./HighlightedTaxa.astro";
+import HighlightedFields from "./HighlightedFields.astro";
 import { getHighlightTextString, highlightOrganism, formatListItem, getThumbnail, getSimpleAttributeValue, formatPhysicalDimensions, formatPixelDimensions, applyHighlight, highlightLinks, getLicenceLogo, formatHighlightedList } from "../../components/SharedJSFunctions.js";
 import "../../styles/dataset_card.css"
-import  HighlightedText  from "../../components/HighlightedText.astro";
+import  HighlightedText  from "./HighlightedText.astro";
 import imageFallback from "../../assets/bioimage-archive/image_fallback.png"
 
 const { image, imagePageRoot, taglist, annotationType, highlight, query} = Astro.props;

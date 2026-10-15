@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 // Execute the component's own slideshow logic with controlled DOM and timer inputs.
-const sourceUrl = new URL("../../src/components/News.astro", import.meta.url);
+const sourceUrl = new URL("../../src/features/news/News.astro", import.meta.url);
 let source;
 try {
   source = await readFile(sourceUrl, "utf8");

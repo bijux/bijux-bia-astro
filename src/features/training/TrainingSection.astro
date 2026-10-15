@@ -28,8 +28,8 @@
 </div>
 
 <script>
-    import { fetchJSON } from "../security/requests.mjs";
-    import { renderTutorials } from "./training/tutorials.mjs";
+    import { fetchJSON } from "../../security/requests.mjs";
+    import { renderTutorials } from "./tutorials.mjs";
 
     async function fetchTutorials(url, containerId, type = "live") {
         const container = document.getElementById(containerId);

@@ -1,6 +1,6 @@
 ---
 import { PUBLIC_GTAG } from "astro:env/client";
-import { scriptData } from "../security/html.mjs";
+import { scriptData } from "../../security/html.mjs";
 
 const source = new URL("https://www.googletagmanager.com/gtag/js");
 source.searchParams.set("id", PUBLIC_GTAG);
