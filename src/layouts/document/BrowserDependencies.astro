@@ -1,0 +1,9 @@
+---
+import jquery from 'jquery/dist/jquery.js?url';
+import dataTables from 'datatables.net/js/dataTables.js?url';
+import dataTablesStyle from 'datatables.net-dt/css/dataTables.dataTables.css?url';
+---
+<link rel="stylesheet" href={dataTablesStyle} />
+<!-- Classic blocking scripts establish the globals before page handlers execute. -->
+<script is:inline src={jquery} data-bia-dependency="jquery"></script>
+<script is:inline src={dataTables} data-bia-dependency="datatables"></script>

@@ -1,0 +1,18 @@
+---
+import '../../styles/button-shape.css';
+import Head from './Head.astro';
+import Footer from '../../components/Footer.astro';
+const { pageTitle, icon, tables, scrollPadding } = Astro.props;
+---
+<!doctype html>
+<html lang="en" class="vf-js" style={scrollPadding ? `scroll-padding-top: ${scrollPadding}` : undefined}>
+  <head><Head pageTitle={pageTitle} icon={icon} tables={tables} /></head>
+  <body class="vf-body">
+    <header id="masthead-black-bar" class="clearfix masthead-black-bar | ebi-header-footer vf-content vf-u-fullbleed"></header>
+    <script is:inline defer src="https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.4/js/script.js"></script>
+    <slot />
+    <Footer />
+    <div class="embl-contenthub-footer vf-content-hub-html"></div>
+    <script is:inline src="https://assets.emblstatic.net/vf/v2.5.12/scripts/scripts.js"></script>
+  </body>
+</html>

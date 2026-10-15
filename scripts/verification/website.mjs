@@ -75,12 +75,10 @@ try {
                 try { return route.fulfill({ json: fixtureResponse(url.href) }); }
                 catch (error) { unexpected.push(error.message); return route.abort(); }
             }
-            if (url.hostname === 'code.jquery.com') return route.fulfill({ path: path.join(repository, 'node_modules/jquery/dist/jquery.js'), contentType: 'text/javascript' });
-            if (url.hostname === 'cdn.datatables.net' && url.pathname.endsWith('.js')) return route.fulfill({ path: path.join(repository, 'node_modules/datatables.net/js/dataTables.js'), contentType: 'text/javascript' });
             if (url.hostname === 'www.googletagmanager.com') return route.fulfill({ body: '', contentType: 'text/javascript' });
             if (url.origin === 'https://livingobjects.ebi.ac.uk' && url.pathname === '/bioimaging-01-pub/bia-filelist/bff/index.html') return route.fulfill({ body: '<!doctype html><title>External file browser excluded</title>', contentType: 'text/html' });
             if (['image', 'font'].includes(request.resourceType())) return route.fulfill({ status: 204 });
-            if (['assets.emblstatic.net', 'ebi.emblstatic.net', 'www.embl.org', 'cdn.datatables.net'].includes(url.hostname)) return route.fulfill({ body: '', contentType: request.resourceType() === 'stylesheet' ? 'text/css' : 'text/javascript' });
+            if (['assets.emblstatic.net', 'ebi.emblstatic.net', 'www.embl.org'].includes(url.hostname)) return route.fulfill({ body: '', contentType: request.resourceType() === 'stylesheet' ? 'text/css' : 'text/javascript' });
             unexpected.push(request.url()); return route.abort();
         });
         const page = await context.newPage();
@@ -98,6 +96,9 @@ try {
         assert(await page.locator('#cite-dialog').evaluate(element => element.open));
         await page.keyboard.press('Escape');
         assert(await page.locator('#open-cite-dialog').evaluate(element => element === document.activeElement));
+        assert((await page.goto(address + '/bioimage-archive/study/EMPIAR-12104')).ok());
+        await page.waitForFunction(() => window.jQuery?.fn.dataTable?.isDataTable('#viewable_images_table') && window.jQuery('#viewable_images_table').DataTable().rows().data().length > 0);
+        assert.deepEqual(await page.locator('[data-bia-dependency]').evaluateAll(nodes => nodes.map(node => node.dataset.biaDependency)), ['jquery', 'datatables']);
         assert((await page.goto(address + '/bioimage-archive/images?size_t=1')).ok());
         assert(await page.locator('input[name="size_t"][value="1"]').isChecked());
         await page.locator('#pageSize').selectOption('30');

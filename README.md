@@ -6,6 +6,8 @@ Set `SITE_URL` at build time for a custom public origin; Netlify previews use
 `DEPLOY_PRIME_URL`. Unapproved request hosts cannot control generated URLs.
 `npm ci` supports this layout; `npm ls` may report spurious errors when inspecting
 the dependency-directory link. Tests and audit probes execute the installed tools.
+The document layouts share their head/footer and serve pinned jQuery/DataTables
+assets locally, in dependency order. EMBL chrome remains externally maintained.
 
 ## 🧞 Commands
 
