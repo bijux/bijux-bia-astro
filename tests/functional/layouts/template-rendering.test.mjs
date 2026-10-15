@@ -7,7 +7,7 @@ import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { HtmlValidate } from 'html-validate';
 
-const repository = fileURLToPath(new URL("../../../../", import.meta.url));
+const repository = fileURLToPath(new URL("../../../", import.meta.url));
 let application;
 let html;
 let logoHtml;

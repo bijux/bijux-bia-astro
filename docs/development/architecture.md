@@ -11,7 +11,7 @@ runtime import resolution, cycles and direct server dependencies in browser grap
 
 `npm test` runs every Node unit/functional suite in `tests/unit` and
 `tests/functional`. Production browser journeys live in `tests/e2e` and run through
-`npm run verify:website` (or `npm run test:e2e`). The fixture application builds
+`npm run test:e2e`. The fixture application builds
 once before its server starts; browser cases use isolated storage.
 
 Captured API responses and their provenance stay unchanged in `tests/fixtures/api`.
