@@ -1,0 +1,52 @@
+---
+
+---
+<div>
+  <h2 class="vf-section-header vf-section-header__heading">Training</h2>
+  <br/>
+  <div class="vf-grid vf-tabs">
+    <ul class="vf-tabs__list" data-vf-js-tabs>
+      <li class="vf-tabs__item">
+        <a class="vf-link vf-tabs__link" href="#vf-tabs__section--1">On-demand training</a>
+      </li>
+      <li class="vf-tabs__item">
+        <a class="vf-link vf-tabs__link" href="#vf-tabs__section--2">Live training</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="vf-tabs-content" data-vf-js-tabs-content>
+    <section class="vf-tabs__section" id="vf-tabs__section--1">
+      <div id="ondemand-tutorials"></div>
+      <a href="https://www.ebi.ac.uk/training/on-demand?query=bioimage-archive&domain=ebiweb_training_online" class="vf-link" target="_blank">View all on-demand training</a>
+    </section>
+    <section class="vf-tabs__section" id="vf-tabs__section--2">
+      <div id="live-tutorials"></div>
+      <a href="https://www.ebi.ac.uk/training/live-events?query=bioimage-archive&domain=ebiweb_training_events" class="vf-link" target="_blank">View all live training</a>
+    </section>
+  </div>
+</div>
+
+<script>
+    import { fetchJSON } from "../../security/requests.mjs";
+    import { renderTutorials } from "./tutorials.mjs";
+
+    async function fetchTutorials(url, containerId, type = "live") {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        try {
+            const data = await fetchJSON(url, { maxBytes: 1024 * 1024 });
+            renderTutorials(container, data.entries ?? data, type);
+        } catch {
+            const message = document.createElement("p");
+            message.textContent = "Training events are temporarily unavailable. Use the link below to view them.";
+            container.replaceChildren(message);
+        }
+    }
+    const PUBLIC_LIVE_TUTORIAL = "https://www.ebi.ac.uk/ebisearch/ws/rest/ebiweb_training_events?format=json&query=domain_source:ebiweb_training_events%20AND%20timeframe:upcoming&start=0&size=2&fieldurl=true&fields=title,description,start_date,end_date,date_time_clean,resource_training_page,type,training_type,url,venue,materials,status,timeframe,resource_training_page,course_image&facetcount=0&sort=start_date&facets=resource_training_page:BioImage%20Archive"
+    const PUBLIC_ON_DEMAND_TUTORIAL = "https://www.ebi.ac.uk/ebisearch/ws/rest/ebiweb_training_online?format=json&query=domain_source:ebiweb_training_online&start=0&size=2&fields=title,subtitle,description,type,url&sort=title&facets=resource_training_page:BioImage%20Archive"
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchTutorials(PUBLIC_LIVE_TUTORIAL, "live-tutorials", "live");
+        fetchTutorials(PUBLIC_ON_DEMAND_TUTORIAL, "ondemand-tutorials", "ondemand");
+    });
+</script>

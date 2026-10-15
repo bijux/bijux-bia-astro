@@ -2,12 +2,12 @@
 import { fetchJSON } from "../../../../security/requests.mjs";
 import { navigationURL } from "../../../../security/urls.mjs";
 import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
-import StudyTitleInfo from '../../../../components/study-page/StudyTitleInfo.astro'
-import StudyContentsSummary from '../../../../components/study-page/StudyContentsSummary.astro'
-import DatasetInfo  from "../../../../components/spatialomics/DatasetInfo.astro"
-import ViewableImageTable from '../../../../components/ViewableImageTable.astro';
-import StudyFiles from '../../../../components/StudyFiles.astro';
-import SOTables from '../../../../components/spatialomics/SOTables.astro';
+import StudyTitleInfo from '../../../../features/studies/StudyTitleInfo.astro'
+import StudyContentsSummary from '../../../../features/studies/StudyContentsSummary.astro'
+import DatasetInfo  from "../../../../features/galleries/spatialomics/DatasetInfo.astro"
+import ViewableImageTable from '../../../../features/studies/ViewableImageTable.astro';
+import StudyFiles from '../../../../features/studies/StudyFiles.astro';
+import SOTables from '../../../../features/galleries/spatialomics/SOTables.astro';
 import { type Study } from "../../../../components/SharedInterface.astro"
 import spatialomicsCollection from "../../../../data/collections/spatialomics.json"
 import { getStudyImage, getDatasetStatsByUUID, getSimpleAttributeValue, getStudyFromApiByAccession, getImagesByAccessionID} from "../../../../components/SharedJSFunctions.js"

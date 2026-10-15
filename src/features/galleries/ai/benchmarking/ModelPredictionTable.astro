@@ -1,0 +1,118 @@
+---
+import { navigationURL, resourceURL } from "../../../../security/urls.mjs";
+import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json"
+
+import { formatRowAnalysisParameters , getDatasetUUIDNameMap} from "./BenchmarkingTable.astro"
+const { tableRows, studyOrModelPageMode } = Astro.props;
+
+
+const datasetUUIDNameMap = await getDatasetUUIDNameMap(tableRows)
+const hasReferenceImage = tableRows.filter(row => row.annotation_data_set_uuid != null).length > 0 ? true : false
+---
+
+<section class="vf-intro | embl-grid | embl-grid--has-centered-content | section-spacing">
+
+    <div class="vf-section-header">
+      <h2 class="vf-section-header__heading" id="predictions">
+        Model Predictions
+      </h2>
+    </div>
+
+    <div class="bia-table-controls">
+        <table id="model_prediction_table" class="display">
+            <thead class="vf-table__header">
+                <tr class="vf-table__header">
+                    {
+                        studyOrModelPageMode === 'model' && (
+                            <th class="vf-table__heading" >Study</th>
+                        )
+                    }
+                    <th class="vf-table__heading" >Dataset</th>
+                    {
+                        studyOrModelPageMode === 'study' && (
+                            <th class="vf-table__heading" >Model</th>
+                            <th class="vf-table__heading" >Task</th>
+
+                        )
+                    }
+                    <th class="vf-table__heading" style="min-width: 200px;" >Original image</th>
+                    {
+                        hasReferenceImage && (
+                            <th class="vf-table__heading" style="min-width: 200px;">Reference annotation</th>
+                        )
+                    }
+                    <th class="vf-table__heading" style="min-width: 200px;">Prediction</th>
+                    <th class="vf-table__heading" >Analysis parameters</th>
+                </tr>
+            </thead>
+            <tbody class="vf_table__body">
+            {
+                tableRows.map((row) => (
+                <tr>
+                    {
+                        studyOrModelPageMode == 'model' && (
+                            <td style="white-space: nowrap;"> <a href={`/bioimage-archive/galleries/ai/analysed-study/${row.study}`}>{row.study}</a></td>
+                        )
+                    }
+                    <td>{datasetUUIDNameMap.get(row.dataset_uuid)}</td>
+                    {
+                        studyOrModelPageMode == 'study' && (
+                            <td> <a href={`/bioimage-archive/galleries/ai/model/${row.model}`}>{row.model}</a></td>
+                            <td> {modelMetadata[row.model]?.task}</td>
+
+                        )
+                    }
+                    <td style="text-align:center;">{
+                        row.example_image && (
+                            <a href={navigationURL(row.example_image) ?? undefined} target="_blank" rel="noopener noreferrer">
+                                <img src={resourceURL(row.example_image) ?? undefined} style="max-width: 180px; max-height: 180px;"/>
+                            </a>
+                            <br/>
+                            <a href={navigationURL(row.example_image) ?? undefined} download>
+                                    Download
+                            </a>
+                        )
+                    }</td>
+                    {
+                        hasReferenceImage && (
+                            <td style="text-align:center;">{
+                                row.example_ground_truth && (
+                                    <a href={navigationURL(row.example_ground_truth) ?? undefined} target="_blank" rel="noopener noreferrer">
+                                        <img src={resourceURL(row.example_ground_truth) ?? undefined} style="max-width: 180px; max-height: 180px;"/>
+                                    </a>
+                                    <br/>
+                                    <a href={navigationURL(row.example_ground_truth) ?? undefined} download>
+                                        Download
+                                    </a>
+                                )
+                            }</td>
+                        )
+                    }
+                    <td style="text-align:center;">{
+                        row.example_process_image && (
+                            <a href={navigationURL(row.example_process_image) ?? undefined} target="_blank" rel="noopener noreferrer">
+                                <img src={resourceURL(row.example_process_image) ?? undefined} style="max-width: 180px; max-height: 180px;"/>
+                            </a>
+                            <br/>
+                            <a href={navigationURL(row.example_process_image) ?? undefined} download >
+                                Download
+                            </a>
+                        )
+                    }</td>
+                    <td style="white-space: nowrap;"> <Fragment set:html={formatRowAnalysisParameters(row.analysis_parameters)}/></td>
+                </tr>
+                ))
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          $("#model_prediction_table").DataTable({
+            scrollX: true,
+            columnDefs: [{ type: "natural", targets: 0 }],
+          });
+        });
+    </script>
+</section>

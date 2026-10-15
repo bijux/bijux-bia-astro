@@ -63,17 +63,17 @@ export default defineConfig({
     for (const layout of ["BaseLayout", "MinimalLayout", "EMPIARLayout", "ProjectsLayout"]) {
         await writeFile(path.join(root, "src/pages", `${layout}.astro`), `---
 import Layout from '../layouts/${layout}.astro';
-import News from '../components/News.astro';
-import SearchBar from '../components/search/SearchBar.astro';
-import CodeDialog from '../components/CodeDialog.astro';
-import FileListTable from '../components/FileListTable.astro';
-import VolumeEMImageCard from '../components/cards/VolumeEMImageCard.astro';
-import ViewableImageTable from '../components/ViewableImageTable.astro';
-import SOTables from '../components/spatialomics/SOTables.astro';
-import BenchmarkingTable from '../components/ai-benchmarking/BenchmarkingTable.astro';
-import ModelPredictionTable from '../components/ai-benchmarking/ModelPredictionTable.astro';
-import ImageTable from '../components/image/ImageTable.astro';
-import SpecimenTrackTable from '../components/image/SpecimenTrackTable.astro';
+import News from '../features/news/News.astro';
+import SearchBar from '../features/search/SearchBar.astro';
+import CodeDialog from '../components/ui/CodeDialog.astro';
+import FileListTable from '../features/studies/FileListTable.astro';
+import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
+import ViewableImageTable from '../features/studies/ViewableImageTable.astro';
+import SOTables from '../features/galleries/spatialomics/SOTables.astro';
+import BenchmarkingTable from '../features/galleries/ai/benchmarking/BenchmarkingTable.astro';
+import ModelPredictionTable from '../features/galleries/ai/benchmarking/ModelPredictionTable.astro';
+import ImageTable from '../features/images/ImageTable.astro';
+import SpecimenTrackTable from '../features/images/SpecimenTrackTable.astro';
 import volumeImages from '../data/collections/vem_image_summaries.json';
 const [uuid, image] = Object.entries(volumeImages)[0];
 const study = JSON.parse(${JSON.stringify(responses.get("study"))}).hits.hits[0]._source;
@@ -106,7 +106,7 @@ const tableRows = [{ study: study.accession_id, dataset_uuid: study.dataset[0].u
     for (const kind of ["study", "image"]) {
         await writeFile(path.join(root, "src/pages", `search-${kind}.astro`), `---
 import Layout from '../layouts/MinimalLayout.astro';
-import Search from '../components/search/Search.astro';
+import Search from '../features/search/Search.astro';
 ---
 <Layout pageTitle="Search controls">
   <Search query="" url={new URL(Astro.request.url)} searchType="${kind}" />

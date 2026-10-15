@@ -1,0 +1,39 @@
+---
+import "./active-left-menu.css"
+
+const pageData = {   
+  "search": "Searching Data",
+  "explore-file-list": "Exploring the File List",
+  "downloading-data":"Downloading Data",
+  "submitting-data":"Submitting Data",
+  "supporting-tools": "Supporting Tools",
+  "galleries-contribute": "Contribute to Galleries",
+  "faq": "FAQ"
+}
+
+// Method to make sure dev and prod behave the same whilst having Astro config trailingslash set to ignore by default
+function addTrailingSlash(pathname: String) {
+    pathname += pathname.endsWith("/") ? "" : "/";
+    return pathname
+}
+
+const pathName = addTrailingSlash(Astro.url.pathname)
+const pageName = pathName.split('/').at(-2);
+---
+<ul class="vf-list vf-list--l">
+  <li class={pageName === "help" ? "vf-list__item | active" : "vf-list__item"}>
+    <a href={`/bioimage-archive/help`} class="vf-navigation__link">Help Overview</a>
+  </li>
+  <li class={pageName === "about-the-new-website" ? "vf-list__item | active" : "vf-list__item"}>
+    <a href=`/bioimage-archive/help/about-the-new-website` class="vf-navigation__link">About the New Website</a>
+  </li>
+</ul>
+<ul class="vf-list vf-list--l">
+      {Object.entries(pageData).map(([key, value]) => (
+        <li class={pageName === key ? "vf-list__item | active" : "vf-list__item"}>
+            <a href={`/bioimage-archive/help/${key}`} class="vf-navigation__link">{value}</a>
+        </li>
+        )
+      )}
+    </ul>
+<!-- </nav> -->

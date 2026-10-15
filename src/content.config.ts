@@ -1,7 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { articleDateKey } from './news/article-order.mjs';
+import { articleDateKey } from './features/news/article-order.mjs';
 const case_studiesCollection = defineCollection({
     loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/case_studies' }),
     schema: ({ image }) => z.object({

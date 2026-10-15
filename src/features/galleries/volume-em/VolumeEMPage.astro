@@ -1,0 +1,301 @@
+---
+import EMPIARLayout from '../../../layouts/EMPIARLayout.astro';
+import VolumeEMImage from './VolumeEMImageCard.astro';
+import VolumeEMTable from './VolumeEMTable.astro';
+import VolumeEMImageCompact from './VolumeEMImageCompactCard.astro';
+import vemImages from "../../../data/collections/vem_image_summaries.json";
+import { PUBLIC_WEBSITE_STATE } from "astro:env/client";
+
+const state = PUBLIC_WEBSITE_STATE === "DEV"? "Alpha": "Beta";
+---
+<script>
+import { copyURI } from "./download-dialog.mjs";
+declare global { interface Window { copyURI: typeof copyURI; } }
+window.copyURI = copyURI;
+</script>
+<script is:inline>
+// Initialize grid columns function
+window.setGridColumns = function(columns) {
+    const gridInner = document.querySelector('.grid-inner');
+    if (gridInner) {
+        gridInner.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+        // Get all size bars and cube wrappers
+        const sizeBars = document.querySelectorAll('.size-bar');
+        const cubeWrappers = document.querySelectorAll('.cube-wrapper');
+
+        // Show/hide based on column count
+        const display = columns === 5 ? 'none' : '';
+        sizeBars.forEach(bar => bar.style.display = display);
+        cubeWrappers.forEach(wrapper => wrapper.style.display = display);
+    }
+}
+
+    let dataTable;
+
+    function toggleView(viewId) {
+        const views = ['card-view', 'table-view', 'grid-view'];
+        views.forEach(id => {
+            document.getElementById(id).style.display = id === viewId ? 'block' : 'none';
+        });
+
+        if (viewId === 'table-view') {
+            dataTable?.columns.adjust();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchBox = document.getElementById('searchBox');
+
+        const totalCount = document.querySelectorAll('.vf-card').length;
+        document.getElementById('totalCount').textContent = totalCount;
+
+        // Add event listeners for view toggles
+        document.querySelectorAll('input[name="view"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    toggleView(e.target.value);
+                }
+            });
+        });
+
+        searchBox.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const allCards = document.querySelectorAll('.vf-card, .compact-card');
+            let visibleCount = 0;
+
+            allCards.forEach(card => {
+                let title, organism;
+                if (card.classList.contains('vf-card')) {
+                    title = card.querySelector('.title-text')?.textContent.toLowerCase() || '';
+                    organism = card.querySelector('.subtitle-text')?.textContent.toLowerCase() || '';
+                } else {
+                    title = card.querySelector('.compact-title')?.textContent.toLowerCase() || '';
+                    organism = card.querySelector('.compact-subtitle')?.textContent.toLowerCase() || '';
+                }
+
+                const isVisible = title.includes(searchTerm) || organism.includes(searchTerm);
+                card.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
+
+            document.getElementById('visibleCount').textContent = searchTerm ? visibleCount : 'all';
+        });
+        dataTable = new DataTable('.vf-table', {
+            pageLength: 25,
+            order: [[1, 'asc']], // Sort by Label column by default
+            columnDefs: [
+                { orderable: false, targets: [4, 5, 6] } // Disable sorting for dimensions, physical size, and voxel size columns
+            ]
+        });
+
+
+        // Set initial grid columns
+        setGridColumns(4);
+    });
+</script>
+<EMPIARLayout pageTitle="Volume EM Gallery">
+  <Fragment>
+    <section class="vf-intro | embl-grid embl-grid--has-centered-content">
+        <div></div>
+        <div>
+            <h1 class="vf-intro__heading vf-intro__heading--has-tag">EMPIAR Volume EM Volumes <a href="JavaScript:Void(0);" class="vf-badge vf-badge--primary vf-badge--phases">{state}</a></h1>
+            <h2 class="vf-intro__subheading">3D volume images, browsable, downloadable and streamable</h2>
+            <p>Individual volume images across a range of species, vEM imaging methods and reconstruction approaches. Each volume has background information, and can be viewed in the browser, accessed remotely, or downloaded either as OME-Zarr or in the format in which data were originally captured.</p>
+        </div>
+        <div class="controls-container">
+            <div class="controls-inner">
+                <input type="text" id="searchBox" placeholder="Filter (e.g. title,organism)" class="search-input">
+                <div class="counter-display">
+                    Showing <span id="visibleCount">all</span> of <span id="totalCount">0</span> images
+                </div>
+                <div class="toggle-switch">
+                    <label class="toggle-option">
+                        <input type="radio" name="view" value="card-view" checked>
+                        <span class="toggle-label">Cards</span>
+                    </label>
+                    <label class="toggle-option">
+                        <input type="radio" name="view" value="table-view">
+                        <span class="toggle-label">Table</span>
+                    </label>
+                    <label class="toggle-option">
+                        <input type="radio" name="view" value="grid-view">
+                        <span class="toggle-label">Grid</span>
+                    </label>
+                </div>
+                </div>
+            </div>
+    </section>
+
+    <div id="card-view">
+        <section class="vf-card-container vf-card-container__col-4 | vf-u-background-color-ui--white vf-u-fullbleed" style="--vf-card__image--aspect-ratio: 16 / 9; --vf-card-container__inner--grid-gap: 0.5rem;">
+            <div class="vf-card-container__inner">
+                { Object.entries(vemImages).map(([uuid, image]) => (
+                    <VolumeEMImage image={{...image, uuid}} />
+                ))}
+            </div>
+        </section>
+    </div>
+
+    <div id="table-view" class="bia-table-controls" style="display: none;">
+        <VolumeEMTable images={vemImages} />
+    </div>
+
+    <div id="grid-view" style="display: none;">
+        <div class="column-toggle-container">
+            <div class="column-toggle">
+                <label class="column-option">
+                    <input type="radio" name="columns" value="3" onchange="setGridColumns(3)">
+                    <span class="column-label">3 Columns</span>
+                </label>
+                <label class="column-option">
+                    <input type="radio" name="columns" value="4" checked onchange="setGridColumns(4)">
+                    <span class="column-label">4 Columns</span>
+                </label>
+                <label class="column-option">
+                    <input type="radio" name="columns" value="5" onchange="setGridColumns(5)">
+                    <span class="column-label">5 Columns</span>
+                </label>
+            </div>
+        </div>
+        <section class="grid-container">
+            <div class="grid-inner">
+                { Object.entries(vemImages).map(([uuid, image]) => (
+                    <VolumeEMImageCompact image={{...image, uuid}} />
+                ))}
+            </div>
+        </section>
+    </div>
+
+    <style>
+        .vf-intro {
+                margin-bottom: 1rem;
+        }
+        .controls-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding: 1em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 8em;
+        }
+        .controls-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5em;
+            max-width: var(--vf-content-max-width, 1200px);
+            margin: 0 auto;
+        }
+        .toggle-switch {
+            display: inline-flex;
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: var(--bia-button-radius);
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .toggle-option {
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .toggle-label {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: var(--bia-button-radius);
+            transition: all 0.3s ease;
+        }
+        .toggle-option input:checked + .toggle-label {
+            background: #3b6fb6;
+            color: white;
+        }
+        .toggle-option:hover input:not(:checked) + .toggle-label {
+            background: #e0e0e0;
+        }
+        .grid-container {
+            background-color: var(--vf-u-background-color-ui--white);
+            width: 100%;
+            padding: 0 1rem;
+        }
+        .grid-inner {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.25rem;
+            max-width: var(--vf-content-max-width, 1200px);
+            margin: 0 auto;
+        }
+        /* Hide size bar and cube in 5-column grid view */
+        .grid-inner .size-bar,
+        .grid-inner .cube-wrapper {
+            display: none;
+        }
+        .column-toggle-container {
+            text-align: center;
+            padding: 0.5em;
+        }
+        .column-toggle {
+            display: inline-flex;
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: var(--bia-button-radius);
+            gap: 4px;
+            margin-bottom: 1em;
+        }
+        .column-option {
+            position: relative;
+            cursor: pointer;
+        }
+        .column-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .column-label {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--bia-button-radius);
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+        .column-option input:checked + .column-label {
+            background: #3b6fb6;
+            color: white;
+        }
+        .column-option:hover input:not(:checked) + .column-label {
+            background: #e0e0e0;
+        }
+        .license-badge {
+            --license-badge-padding: 2px 12px;
+            --license-badge-margin: 0;
+            --license-badge-height: 18px;
+        }
+        .search-input {
+            width: 300px;
+            width: 80%;
+            max-width: 600px;
+            padding: 8px 16px;
+            border: 2px solid #3b6fb6;
+            border-radius: 20px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            box-shadow: 0 0 5px rgba(59, 111, 182, 0.5);
+        }
+        .counter-display {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 0.5em;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+  </Fragment>
+</EMPIARLayout>

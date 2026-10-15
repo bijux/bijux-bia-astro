@@ -1,0 +1,60 @@
+---
+import { navigationURL, resourceURL } from "../../../security/urls.mjs";
+import { metadataColour } from "../../../security/styles.mjs";
+import "../../../styles/dataset_card.css"
+const { tomogram } = Astro.props;
+---
+<article class="vf-card vf-card--brand vf-card--bordered">
+    <img src={resourceURL(tomogram.attributes["_annotated_thumbnail_uri"]) ?? undefined} alt="" class="vf-card__image" loading="lazy" style="aspect-ratio: 1/1;">
+    <div class="vf-card__content | vf-stack vf-stack--400">
+        <h3 class="vf-card__heading">
+            <!-- <a class="vf-card__link" href={ "/dataset/" + dataset.accession_id } > -->
+                { tomogram.name }
+                <!-- <svg aria-hidden="true" class="vf-card__heading__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="currentColor" fill-rule="nonzero"></path></svg> -->
+        </h3>
+        { tomogram.uuid }<hr>
+        <div class="vf-card__text">
+            Annotations:
+        { Object.values(tomogram.annotation_files).map((annfile) =>
+        <div class="row">
+            <div class='box' style={ "background-color: " + metadataColour(annfile["rendering_colour"]) }></div>
+            <span>{annfile["name"]} - <a href={navigationURL(annfile["starfile_uri"]) ?? undefined}>download STAR file</a></span>
+        </div>
+        )}
+        <hr>
+        View:
+        <a href={navigationURL(tomogram.attributes["_neuroglancer_link"]) ?? undefined} class="card-action bia-button">Neuroglancer</a>
+        <a href={navigationURL(tomogram.attributes["_vizarr_link"]) ?? undefined} class="card-action bia-button">Vizarr</a>
+        <a href={navigationURL(tomogram.attributes["_molstar_link"]) ?? undefined} class="card-action bia-button">Mol*</a>
+        <br>
+        <a href={navigationURL(tomogram.mrcfile_uri) ?? undefined} class="card-action bia-button">Download tomogram</a>
+        </div>
+    </div>
+</article>
+
+<style>
+    .card-action {
+        display: inline-block;
+        background: #efefef;
+        border: 1px solid #767676;
+        border-radius: var(--bia-button-radius, 2px);
+        padding: 2px 6px;
+        font: inherit;
+        text-decoration: none;
+    }
+    .row {
+        /* display : flex; */
+        /* align-items : center; */
+        /* margin-bottom: 15px; */
+    }
+    .box {
+    float: left;
+    height: 20px;
+    width: 20px;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    border: 1px solid black;
+    clear: both;
+    }
+
+</style>

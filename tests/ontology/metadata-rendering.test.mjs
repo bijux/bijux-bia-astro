@@ -51,7 +51,7 @@ export default defineConfig({
     await writeFile(path.join(root, "src/pages/index.astro"), `---
 import DatasetInfo from '../features/metadata/DatasetInfo.astro';
 import DatasetDetail from '../features/metadata/DatasetDetail.astro';
-import ImageInfo from '../components/ai-gallery/ImageInfo.astro';
+import ImageInfo from '../features/galleries/ai/ImageInfo.astro';
 import fieldMap from '../data/metadata-field-name-mapping.json';
 import studyResponse from '../data/api/study-s-biad3335-response.json';
 import imageResponse from '../data/api/image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39-response.json';

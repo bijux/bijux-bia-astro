@@ -1,0 +1,28 @@
+---
+import { imageSizeMicrometres } from './image-dimensions.mjs';
+const { imageRep, imageAtrributes, idPrefix = "annotated" } = Astro.props;
+
+const [tissue_x, tissue_y] = imageSizeMicrometres(imageRep);
+---
+<h3>Image metadata</h3>
+    <b>Image size: </b> <span id={`${idPrefix}-size`}>{tissue_x}μm x {tissue_y}μm</span><br>
+    <span id={`${idPrefix}-pixels`}>{imageRep?.size_x ?? "Not reported"} x {imageRep?.size_y ?? "Not reported"} pixels</span><br />
+    <span id={`${idPrefix}-channels`}>{imageRep?.size_c ?? "Not reported"} channels</span><br />
+    <span id={`${idPrefix}-timesteps`}>{imageRep?.size_t ?? "Not reported"} timesteps</span>
+    <br /> <br />
+
+    <div id={`${idPrefix}-metadata`}>
+    {
+      imageAtrributes && Object.keys(imageAtrributes).length === 0 ?
+      <span></span> : (
+        <>
+          <h3>Additional metadata</h3>
+          {Object.entries(imageAtrributes).map(([key, value]) => (
+            <>
+            <b>{key}:</b> {value}<br />
+            </>
+        ))}
+        </>
+      )
+    }
+    </div>

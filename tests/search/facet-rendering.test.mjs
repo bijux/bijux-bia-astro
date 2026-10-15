@@ -91,7 +91,7 @@ export default defineConfig({
 `);
     for (const [name, params] of Object.entries(cases)) {
         await writeFile(path.join(root, `src/pages/${name}.astro`), `---
-import Search from '../components/search/Search.astro';
+import Search from '../features/search/Search.astro';
 const url = new URL(${JSON.stringify('http://local/bioimage-archive/' + (['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'studies' : 'images') + '?' + params + '&query=' + name)});
 ---
 <Search url={url} query=${JSON.stringify(name)} searchType=${JSON.stringify(['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'study' : 'image')} />

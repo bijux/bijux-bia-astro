@@ -1,0 +1,73 @@
+---
+import imageFallback from "../../assets/bioimage-archive/image_fallback.png";
+import { PUBLIC_SEARCH_API } from "astro:env/client";
+import { studyHasSpecimenTracks } from "../../components/SharedJSFunctions.js";
+import "../../styles/toggle.css";
+const SEARCH_API = PUBLIC_SEARCH_API === "http://localhost:8081/v1" || PUBLIC_SEARCH_API.includes("alpha.bioimage")? PUBLIC_SEARCH_API: "/search/v1";
+const { study, images, imagePageRoot } = Astro.props;
+
+const hasImages = Array.isArray(images) && images.length > 0;
+const hasSpecimenTracks = hasImages ? await studyHasSpecimenTracks(study.accession_id) : false;
+
+---
+
+<section class="vf-intro | embl-grid embl-grid--has-centered-content | section-spacing">
+    <div class="vf-section-header">
+      <h2 class="vf-section-header__heading" id="viewable_images">
+        Viewable Images
+      </h2>
+    </div>
+    {hasImages ? (
+      <p id="viewable-images-status" role="alert" hidden></p>
+      <div class="bia-table-controls">
+      {hasSpecimenTracks && (
+        <div class="display-images-switch">
+          <span id="show_display_images_label">Show only "terminal" images:</span>
+          <label class="switch">
+            <input type="checkbox" id="showDisplayImagesToggle" aria-labelledby="show_display_images_label" />
+            <span class="slider round"></span>
+          </label>
+          <small>Terminal images are those at the end of a processing chain. Intermediate images are also shown if they have a segmentation, as are segmentations with no source image.</small>
+        </div>
+      )}
+      <table id="viewable_images_table" class="vf-table vf-table--compact display" data-study-accession-id={study.accession_id}
+      data-image-page-root={imagePageRoot || ""} data-image-fallback-src={imageFallback.src} data-api-path={SEARCH_API}
+      data-has-specimen-tracks={String(hasSpecimenTracks)}>
+        <thead>
+          <tr>
+            <th>Preview</th>
+            <th>UUID</th>
+            <th>File Path</th>
+            <th>Dataset</th>
+            <th>Download Size (bytes)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    ): (
+      <div>
+        <p>
+          We currently have no viewable interactive images for this study. You can read more as to why this might be the case <a href="/bioimage-archive/help/about-the-new-website#why-does-a-submission-not-have-any-interactive-images" class="vf-link">here</a>. 
+        </p>
+      </div>
+    )}
+</section>
+<style>
+ .file-path {
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+ .display-images-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+</style>
+
+<script src="./viewable-images.js"></script>

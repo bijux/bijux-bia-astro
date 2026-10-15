@@ -3,7 +3,7 @@ import { navigationURL, resourceURL } from "../../../../security/urls.mjs";
 export const prerender = false;
 import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import DatasetDetail from '../../../../features/metadata/DatasetDetail.astro';
-import WebsiteStateButton from '../../../../components/WebsiteStateButton.astro';
+import WebsiteStateButton from '../../../../components/ui/WebsiteStateButton.astro';
 
 import fieldMap from "../../../../data/metadata-field-name-mapping.json";
 
@@ -192,11 +192,13 @@ const breadcrumbs = [
                   }
                   <script>
   
-                      let copyUrlButton = document.getElementById("CopyURLButton")
-                      let originalText = copyUrlButton.innerText;
-                      copyUrlButton.onclick=async() => {
-                          await copyUrl(copyUrlButton.dataset.url, copyUrlButton, originalText);
-                      };
+                      const copyUrlButton = document.getElementById("CopyURLButton");
+                      if (copyUrlButton) {
+                          const originalText = copyUrlButton.innerText;
+                          copyUrlButton.onclick = async () => {
+                              await copyUrl(copyUrlButton.dataset.url, copyUrlButton, originalText);
+                          };
+                      }
   
                       async function copyUrl(url, button, originalText) {
                           await navigator.clipboard.writeText(url);

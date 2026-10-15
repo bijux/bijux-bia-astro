@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import { resourceURL } from '../../src/security/urls.mjs';
 
-const input = await readFile(new URL('../../src/components/ViewableImageTable.js', import.meta.url), 'utf8');
+const input = await readFile(new URL('../../src/features/studies/viewable-images.js', import.meta.url), 'utf8');
 const source = ts.transpileModule(input, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
 
 function mount({ hasTable = true, hasTracks = false, hasToggle = hasTracks, restored = null } = {}) {
@@ -38,10 +38,11 @@ function mount({ hasTable = true, hasTracks = false, hasToggle = hasTracks, rest
     } : { length: 0 };
     jquery.fn = { DataTable: { isDataTable: () => false } };
     vm.runInNewContext(source, {
-        exports: {}, require: name => { assert.equal(name, '../security/urls.mjs'); return { resourceURL }; },
+        exports: {}, require: name => { assert.equal(name, '../../security/urls.mjs'); return { resourceURL }; },
         document: {
             querySelector(selector) {
                 if (selector === '#viewable_images_table') return hasTable ? tableElement : null;
+                if (selector === '#viewable-images-status') return null;
                 assert.equal(selector, '#showDisplayImagesToggle');
                 return hasToggle ? toggle : null;
             },

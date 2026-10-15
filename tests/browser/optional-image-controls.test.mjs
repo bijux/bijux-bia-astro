@@ -6,12 +6,12 @@ import { parse } from '@astrojs/compiler';
 import ts from 'typescript';
 import { resourceURL } from '../../src/security/urls.mjs';
 
-const tableSource = await readFile(new URL('../../src/components/ViewableImageTable.js', import.meta.url), 'utf8');
+const tableSource = await readFile(new URL('../../src/features/studies/viewable-images.js', import.meta.url), 'utf8');
 const tableScript = ts.transpileModule(tableSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
 function runTable(context) {
-    vm.runInNewContext(tableScript, { ...context, exports: {}, require: name => { assert.equal(name, '../security/urls.mjs'); return { resourceURL }; } });
+    vm.runInNewContext(tableScript, { ...context, exports: {}, require: name => { assert.equal(name, '../../security/urls.mjs'); return { resourceURL }; } });
 }
-const imageSource = await readFile(new URL('../../src/pages/image/[uuid].astro', import.meta.url), 'utf8');
+const imageSource = await readFile(new URL('../../src/features/images/ImagePage.astro', import.meta.url), 'utf8');
 const { ast } = await parse(imageSource);
 function findScripts(node) {
     return [

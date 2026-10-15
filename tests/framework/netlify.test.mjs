@@ -31,7 +31,7 @@ test('the real Netlify configuration builds collections and serves search with a
     await cp(path.join(repository, 'src/pages/images.astro'), path.join(root, 'src/pages/images.astro'));
     await writeFile(path.join(root, 'src/pages/index.astro'), `---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import News from '../components/News.astro';
+import News from '../features/news/News.astro';
 ---
 <BaseLayout pageTitle="Adapter verification"><News /></BaseLayout>`);
     await writeFile(path.join(root, 'package.json'), '{"type":"module"}\n');

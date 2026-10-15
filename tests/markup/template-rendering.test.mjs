@@ -19,7 +19,7 @@ before(async () => {
     await mkdir(output, { recursive: true });
     application = await mkdtemp(path.join(output, 'application-'));
     await mkdir(path.join(application, 'src/pages'), { recursive: true });
-    for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content', 'security', 'api', 'features', 'formatting']) {
+    for (const directory of ['components', 'layouts', 'styles', 'data', 'content', 'security', 'api', 'features', 'formatting']) {
         await cp(path.join(repository, 'src', directory), path.join(application, 'src', directory), { recursive: true });
     }
     await cp(path.join(repository, 'src/content.config.ts'), path.join(application, 'src/content.config.ts'));
@@ -41,16 +41,16 @@ export default defineConfig({ cacheDir: './.astro-cache', vite: { cacheDir: './.
     await writeFile(path.join(application, 'src/pages/index.astro'), `---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DatasetDetail from '../features/metadata/DatasetDetail.astro';
-import Specimen from '../components/image/Specimen.astro';
+import Specimen from '../features/images/Specimen.astro';
 import imageResponse from '../data/image-response.json';
-import StudyTitleInfo from '../components/study-page/StudyTitleInfo.astro';
-import StudyComponents from '../components/ai-gallery/StudyComponents.astro';
-import ImageInfo from '../components/ai-gallery/ImageInfo.astro';
-import FileListTable from '../components/FileListTable.astro';
-import TomogramCard from '../components/cards/TomogramCard.astro';
-import VolumeEMImageCard from '../components/cards/VolumeEMImageCard.astro';
-import BenchmarkingTable from '../components/ai-benchmarking/BenchmarkingTable.astro';
-import News from '../components/News.astro';
+import StudyTitleInfo from '../features/studies/StudyTitleInfo.astro';
+import StudyComponents from '../features/galleries/ai/StudyComponents.astro';
+import ImageInfo from '../features/galleries/ai/ImageInfo.astro';
+import FileListTable from '../features/studies/FileListTable.astro';
+import TomogramCard from '../features/galleries/volume-em/TomogramCard.astro';
+import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
+import BenchmarkingTable from '../features/galleries/ai/benchmarking/BenchmarkingTable.astro';
+import News from '../features/news/News.astro';
 import response from '../data/study-response.json';
 import fieldMap from '../data/metadata-field-name-mapping.json';
 const specimen = imageResponse.hits.hits[0]._source.creation_process.subject;

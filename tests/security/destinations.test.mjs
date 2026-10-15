@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { navigationURL, resourceURL } from "../../src/security/urls.mjs";
 import { scriptData } from "../../src/security/html.mjs";
-import { downloadCommand } from "../../src/components/volume-em/download-dialog.mjs";
+import { downloadCommand } from "../../src/features/galleries/volume-em/download-dialog.mjs";
 import { metadataColour } from "../../src/security/styles.mjs";
-import { imageSizeMicrometres } from "../../src/components/ai-gallery/image-dimensions.mjs";
+import { imageSizeMicrometres } from "../../src/features/galleries/ai/image-dimensions.mjs";
 
 test("navigation preserves page-local links and rejects executable/credentialed destinations", () => {
     for (const value of ["javascript:alert(1)", "data:text/html,probe", "//elsewhere.example/path", "https://name:password@example.org/", "https://example.org/\nprobe", "https:\\example.org/"]) assert.equal(navigationURL(value), null, value);
