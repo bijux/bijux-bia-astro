@@ -64,7 +64,7 @@ export default defineConfig({
         await writeFile(path.join(root, "src/pages", `${layout}.astro`), `---
 import Layout from '../layouts/${layout}.astro';
 import News from '../components/News.astro';
-import SearchBar from '../components/search/SearchBar.astro';
+import SearchBar from '../features/search/SearchBar.astro';
 import CodeDialog from '../components/CodeDialog.astro';
 import FileListTable from '../components/FileListTable.astro';
 import VolumeEMImageCard from '../components/cards/VolumeEMImageCard.astro';
@@ -106,7 +106,7 @@ const tableRows = [{ study: study.accession_id, dataset_uuid: study.dataset[0].u
     for (const kind of ["study", "image"]) {
         await writeFile(path.join(root, "src/pages", `search-${kind}.astro`), `---
 import Layout from '../layouts/MinimalLayout.astro';
-import Search from '../components/search/Search.astro';
+import Search from '../features/search/Search.astro';
 ---
 <Layout pageTitle="Search controls">
   <Search query="" url={new URL(Astro.request.url)} searchType="${kind}" />

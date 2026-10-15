@@ -1,7 +1,8 @@
 import { test as base, expect } from '@playwright/test';
 import { fixtureResponse } from '../fixtures/website/responses.mjs';
-export const test = base.extend({
-    page: async ({ page, context, baseURL }, use) => {
+export const test = base.extend<{ expectedHTTPFailures: string[] }>({
+    expectedHTTPFailures: [[], { option: true }],
+    page: async ({ page, context, baseURL, expectedHTTPFailures }, use) => {
         const errors: string[] = [], unexpected: string[] = [];
         await context.route('**/*', async route => {
             const request = route.request(), url = new URL(request.url());
@@ -18,7 +19,7 @@ export const test = base.extend({
         });
 
         page.on('pageerror', error => errors.push(error.message));
-        page.on('response', response => { if (response.url().startsWith(baseURL!) && !response.url().includes('/images?query=unavailable') && response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`); });
+        page.on('response', response => { if (response.url().startsWith(baseURL!) && !response.url().includes('/images?query=unavailable') && response.status() >= 400 && !expectedHTTPFailures.some(value => response.url().includes(value))) errors.push(`HTTP ${response.status()}: ${response.url()}`); });
         page.on('requestfailed', request => { if (request.url().startsWith(baseURL!)) errors.push(`Failed request: ${request.url()}`); });
         page.on('dialog', async dialog => { errors.push(`Unexpected browser dialog: ${dialog.message()}`); await dialog.dismiss(); });
         await use(page);

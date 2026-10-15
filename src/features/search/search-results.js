@@ -1,15 +1,11 @@
+import { cleanHistoryURL } from './navigation.mjs';
 const SHELL_ID = "search-results-shell";
 let activeSearchNavigation = 0;
 
 function buildCleanHistoryURL(url) {
-    const nextURL = new URL(url.toString(), window.location.origin);
-    nextURL.searchParams.delete("pagination.page");
-    nextURL.searchParams.delete("cursor");
-    nextURL.searchParams.delete("page");
-    nextURL.searchParams.delete("prev_cursor_1");
-    nextURL.searchParams.delete("prev_cursor_2");
-    return nextURL;
+    return cleanHistoryURL(url, window.location.origin);
 }
+
 
 function buildNumberedPageURL(targetPage) {
     const nextURL = buildCleanHistoryURL(new URL(window.location.href));
@@ -198,6 +194,8 @@ async function navigateSearch(url, { push = true, state = {} } = {}) {
 
       initSearchResultsShell(nextShell);
     } catch (error) {
+      // A superseded request must not redirect away from newer results.
+      if (navigationId !== activeSearchNavigation) return;
       console.error(error);
       window.location.href = url.toString();
     } finally {

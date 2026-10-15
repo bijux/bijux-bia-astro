@@ -1,15 +1,15 @@
 ---
 import { searchRequest, fetchJSON, browseResponse } from "../../security/requests.mjs";
-import "../../styles/search.css";
+import "./search.css";
 import StudyCard from '../../components/cards/BrowseStudyCard.astro';
 import ImageCard from '../../components/cards/BrowseImageCard.astro';
 import SearchFacet from './SearchFacet.astro';
 import SearchSelectedFacet from './SearchSelectedFacet.astro';
-import PaginationControl from '../PaginationControl.astro';
+import PaginationControl from '../../components/PaginationControl.astro';
 import  "../../styles/toggle.css"
 import "../../styles/browse_controls.css"
 import "../../styles/filter_cards.css"
-import { generateParamString } from "../SharedJSFunctions.js"
+import { generateParamString } from "../../components/SharedJSFunctions.js"
 import {type SelectedFacets, type SearchHits, type FacetData, type PaginationData} from "./SearchInterface.astro"
 import SearchResultsTable  from "./SearchResultsTable.astro"
 import SearchResultsCompactCards  from "./SearchCompactCards.astro"
