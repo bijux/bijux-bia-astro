@@ -1,9 +1,9 @@
 ---
-import { generateParamString } from "./query.mjs";
-import { formatBytes, formatFieldName } from "../../formatting/units.mjs";
+import { generateParamString } from "../query.mjs";
+import { formatBytes, formatFieldName } from "../../../formatting/units.mjs";
 
-import {type SelectedFacets} from "./types.ts";
-import { facetTitle } from "./facet-options.mjs"
+import {type SelectedFacets} from "../types.ts";
+import { facetTitle } from "./options.mjs"
 
 const { selectedList, key, url, text, query, selectedFacets = {}, kind, minVal, maxVal, pageSize = 12, sortBy = "", sortOrder = "", sortSource = ""} = Astro.props;
 

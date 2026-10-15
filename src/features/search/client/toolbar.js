@@ -1,5 +1,5 @@
 import { changedSearchURL } from '../state.ts';
-import { submitFacetsForm } from './facets.js';
+import { submitFacetsForm } from '../facets/controls.js';
 export function bindToolbar(root, navigateSearch, signal) {
     function toggleView(viewId) {
         const views = ['card-view', 'table-view', 'grid-view'];

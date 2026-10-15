@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { buildFacetOptions, getFacetQueryValues } from "../../../src/features/search/facet-options.mjs";
+import { buildFacetOptions, getFacetQueryValues } from "../../../src/features/search/facets/options.mjs";
 
 const fixture = JSON.parse(await readFile(new URL("../../fixtures/api/browse-image-response.json", import.meta.url)));
 function readValue(queryKey, value) {

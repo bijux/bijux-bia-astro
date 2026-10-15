@@ -1,5 +1,5 @@
 import { searchRequest } from './request.mjs';
-import { getFacetQueryValues as readFacetQueryValues } from './facet-options.mjs';
+import { getFacetQueryValues as readFacetQueryValues } from './facets/options.mjs';
 import type { SelectedFacets, SearchScope } from './types.ts';
 
 /** Canonical selection/sort rules shared by server rendering and browser URL handling. */

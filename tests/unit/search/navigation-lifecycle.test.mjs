@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createSearchNavigation } from '../../../src/features/search/client/navigation.mjs';
-import { historyRequestURL } from '../../../src/features/search/history.mjs';
+import { historyRequestURL } from '../../../src/features/search/pagination/history.mjs';
 
 const deferred = () => {
     let resolve, reject;

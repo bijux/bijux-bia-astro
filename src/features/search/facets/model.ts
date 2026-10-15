@@ -1,5 +1,5 @@
-import { buildFacetOptions, isNumericFacet } from './facet-options.mjs';
-import type { FacetData, FacetView, SelectedFacets, SearchScope } from './types.ts';
+import { buildFacetOptions, isNumericFacet } from './options.mjs';
+import type { FacetData, FacetView, SelectedFacets, SearchScope } from '../types.ts';
 
 type FacetConfig =
   | { title: string; type: 'terms' | 'boolean'; queryKey: string }
