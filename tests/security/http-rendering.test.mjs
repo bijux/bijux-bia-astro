@@ -54,6 +54,7 @@ before(async () => {
     for (const directory of ["image", "galleries/spatialomics/image", "galleries/ai/image"]) await mkdir(path.join(root, "src/pages", directory), { recursive: true });
     for (const name of ["images.astro", "studies.astro", "image/[uuid].astro", "galleries/spatialomics/image/[uuid].astro", "galleries/ai/image/[uuid].astro"]) await cp(path.join(repository, "src/pages", name), path.join(root, "src/pages", name));
     await mkdir(path.join(root, "scripts")); await cp(path.join(repository, "scripts/server.mjs"), path.join(root, "scripts/server.mjs"));
+    await cp(path.join(repository, "scripts/deployment"), path.join(root, "scripts/deployment"), { recursive: true });
     await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
     await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
     await writeFile(path.join(root, "astro.config.mjs"), `

@@ -25,6 +25,35 @@ Note that:
 `npm run dev` will update as you change things but may give a false impression of the final result, whereas running `npm run build` and then `npm run preview` will recreate what netlify runs, and will provide an accurate display of the website.
 
 
+## Container deployment
+
+Build the image once, then start that same image without compilation or catalogue
+retrieval. Image creation requires the catalogue APIs and fails if retrieval or
+rendering fails. Live search and image routes still contact their APIs on request.
+
+```sh
+docker build --build-arg PUBLIC_WEBSITE_STATE=PROD -t bia-website .
+docker run --rm -p 8080:8080 bia-website
+```
+
+Pass `PUBLIC_SEARCH_API`, `PUBLIC_MONGO_API`, `PUBLIC_GTAG`,
+`PUBLIC_WEBSITE_STATE`, `PUBLIC_ALLOW_LOCAL_VIEWERS` and `SITE_URL` as build
+arguments when needed. The defaults match local builds. These are public settings,
+not secrets; `.env` files are excluded from the image. Rebuild to change them.
+Conflicting runtime overrides stop startup rather than silently taking no effect.
+
+`HOST`, `PORT`, `SERVER_CERT_PATH` and `SERVER_KEY_PATH` remain runtime settings.
+Mount certificate/key files together when using TLS. The image runs as `node` and
+supports a read-only filesystem; it contains production dependencies and verified
+output, with no application templates or build configuration. SIGTERM/SIGINT drain
+active requests for up to ten seconds; allow a longer container stop timeout.
+
+For a verified Node artifact outside Docker, run `npm run build:deployment`, then
+`DEPLOYMENT_MANIFEST=artifacts/deployment/manifest.json npm run prod`. Package
+`artifacts/dist/`, `artifacts/deployment/`, production dependencies and the server's
+modules together. Docker verifies all output hashes after packaging; startup reads
+only the baked configuration and does not repeat the catalogue build.
+
 ## Run linkchecker locally
 
 Prerequisites

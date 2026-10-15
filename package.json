@@ -9,6 +9,7 @@
     "quality:markup:check": "astro check --tsconfig configs/quality/tsconfig.markup.json",
     "start": "astro dev",
     "build": "astro check && astro build && cp public/robots.txt artifacts/dist/robots.txt && cp public/redirect_index.html artifacts/dist/index.html",
+    "build:deployment": "node scripts/deployment/build.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "audit:dead-code": "node scripts/dead-code/audit.mjs",

@@ -2,11 +2,15 @@ import { createServer } from "node:http";
 import { createServer as createSecureServer } from "node:https";
 import { readFile } from "node:fs/promises";
 import { isImageOptimizer, securityHeaders } from "../src/security/headers.mjs";
+import { deploymentConfiguration } from "./deployment/manifest.mjs";
 
 // Use the adapter's standalone handler while applying headers to assets, static pages and errors too.
 process.env.ASTRO_NODE_AUTOSTART = "disabled";
+const configuration = process.env.DEPLOYMENT_MANIFEST
+    ? await deploymentConfiguration(process.env.DEPLOYMENT_MANIFEST)
+    : process.env;
+const headers = securityHeaders(configuration.PUBLIC_ALLOW_LOCAL_VIEWERS === "true");
 const { handler } = await import("../artifacts/dist/bioimage-archive/server/entry.mjs");
-const headers = securityHeaders(process.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true");
 const listener = (request, response) => {
     for (const [name, value] of Object.entries(headers)) response.setHeader(name, value);
     if (!["GET", "HEAD"].includes(request.method)) {
@@ -24,4 +28,15 @@ if (Boolean(process.env.SERVER_CERT_PATH) !== Boolean(process.env.SERVER_KEY_PAT
 const server = process.env.SERVER_CERT_PATH
     ? createSecureServer({ cert: await readFile(process.env.SERVER_CERT_PATH), key: await readFile(process.env.SERVER_KEY_PATH) }, listener)
     : createServer(listener);
+let stopping = false;
+const shutdown = () => {
+    if (stopping) return;
+    stopping = true;
+    // Containers send SIGTERM to PID 1; drain requests before the orchestrator's kill deadline.
+    const deadline = setTimeout(() => { server.closeAllConnections(); process.exit(1); }, 10000);
+    deadline.unref();
+    server.close(() => { clearTimeout(deadline); process.exit(0); });
+};
+process.once("SIGTERM", shutdown);
+process.once("SIGINT", shutdown);
 server.listen(port, process.env.HOST ?? "127.0.0.1");
