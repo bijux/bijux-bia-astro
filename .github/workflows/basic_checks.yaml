@@ -31,10 +31,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run check
-      - run: npm test
       - run: PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --with-deps --only-shell chromium
-      - run: npm run test:e2e
+      - run: make verify
       - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
         with:
           version: v3.18.3
