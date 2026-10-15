@@ -1,6 +1,6 @@
 ---
-import { navigationURL } from "../security/urls.mjs";
-import { getFromAPI } from "../components/SharedJSFunctions.js"
+import { navigationURL } from "../../security/urls.mjs";
+import { getFromAPI } from "../../components/SharedJSFunctions.js"
 const { accessionID } = Astro.props;
 const dirNumber = accessionID.replace("S-BIAD", "").replace("EMPIAR-", "");
 const ftpLink = accessionID.includes("EMPIAR")

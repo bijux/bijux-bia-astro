@@ -1,11 +1,11 @@
 ---
 import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcrumbs.astro";
-import StudyTitleInfo from "../../../../components/study-page/StudyTitleInfo.astro";
+import StudyTitleInfo from "../../../../features/studies/StudyTitleInfo.astro";
 import { getThumbnail, getTaxons, getSimpleAttributeValue, formatBytesToHumanSize, getAnnotationType, getStudyFromApiByAccession, generateSourceAnnotatedImageMap } from "../../../../components/SharedJSFunctions"
 import { type Study } from "../../../../components/SharedInterface.astro"
 import collection from '../../../../data/collections/ai-ready-datasets.json';
-import StudyContentsSummary from "../../../../components/study-page/StudyContentsSummary.astro"
-import StudyFiles from "../../../../components/StudyFiles.astro";
+import StudyContentsSummary from "../../../../features/studies/StudyContentsSummary.astro"
+import StudyFiles from "../../../../features/studies/StudyFiles.astro";
 import StudyComponents from "../../../../components/ai-gallery/StudyComponents.astro";
 import "../../../../styles/image_slider.css"
 

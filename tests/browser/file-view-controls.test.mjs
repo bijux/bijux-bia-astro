@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 
-const source = await readFile(new URL('../../src/components/FileListTable.astro',import.meta.url),'utf8');
+const source = await readFile(new URL('../../src/features/studies/FileListTable.astro',import.meta.url),'utf8');
 const script = source.match(/<script>([\s\S]*?)<\/script>/)[1];
 const javascript = ts.transpileModule(script,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
 function controls() {

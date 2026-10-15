@@ -13,7 +13,7 @@
     "scripts/markup/worker.*js",
     "tests/dead-code/*.test.mjs",
     "tests/metadata/fixtures/dataset-metadata.*js",
-    "src/components/ViewableImageTable.js",
+    "src/features/studies/viewable-images.js",
     "src/features/search/search-results.js",
     "src/layouts/HelpLayout.astro",
     "src/layouts/PoliciesLayout.astro",

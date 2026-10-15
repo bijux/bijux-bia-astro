@@ -1,4 +1,4 @@
-import { resourceURL } from "../security/urls.mjs";
+import { resourceURL } from "../../security/urls.mjs";
 
 const tableEl = document.querySelector("#viewable_images_table");
 
@@ -321,35 +321,49 @@ if (tableEl) {
           url += `&cursor=${encodeURIComponent(fetchCursor)}`;
         }
 
-        const res = await fetch(url);
-        const json = await res.json();
+        const status = document.querySelector('#viewable-images-status');
+        if (status) status.hidden = true;
+        try {
+          const res = await fetch(url);
+          if (res.ok === false) throw new Error('Image table request failed.');
+          const json = await res.json();
 
-        const images = (json.hits?.hits || []).map((hit) => hit._source);
+          if (!Array.isArray(json.hits?.hits)) throw new Error('Invalid image table response.');
+          const images = json.hits.hits.map((hit) => hit._source);
 
-        const total =
-          json.hits?.total?.value ||
-          json.pagination?.total_results ||
-          images.length;
+          const total =
+            json.hits?.total?.value ||
+            json.pagination?.total_results ||
+            images.length;
 
-        displayPage = requestedPage;
-        totalPages = Math.max(1, Math.ceil(total / pageSize));
-        currentHasNextCursor = Boolean(json.pagination?.next_cursor);
+          displayPage = requestedPage;
+          totalPages = Math.max(1, Math.ceil(total / pageSize));
+          currentHasNextCursor = Boolean(json.pagination?.next_cursor);
 
-        if (fetchCursor) {
-          pageCursorMap.set(requestedPage, fetchCursor);
+          if (fetchCursor) {
+            pageCursorMap.set(requestedPage, fetchCursor);
+          }
+          if (json.pagination?.next_cursor) {
+            pageCursorMap.set(requestedPage + 1, json.pagination.next_cursor);
+          }
+          pruneCursorHistory(displayPage);
+          pendingDisplayPage = null;
+
+          callback({
+            draw: dtParams.draw,
+            recordsTotal: total,
+            recordsFiltered: total,
+            data: images,
+          });
+        } catch {
+          pendingDisplayPage = null;
+          currentHasNextCursor = false;
+          if (status) {
+            status.textContent = 'Images are temporarily unavailable. Please try again.';
+            status.hidden = false;
+          }
+          callback({ draw: dtParams.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
         }
-        if (json.pagination?.next_cursor) {
-          pageCursorMap.set(requestedPage + 1, json.pagination.next_cursor);
-        }
-        pruneCursorHistory(displayPage);
-        pendingDisplayPage = null;
-
-        callback({
-          draw: dtParams.draw,
-          recordsTotal: total,
-          recordsFiltered: total,
-          data: images,
-        });
       },
 
       columns: [

@@ -1,8 +1,8 @@
 ---
-import imageFallback from "../assets/bioimage-archive/image_fallback.png";
+import imageFallback from "../../assets/bioimage-archive/image_fallback.png";
 import { PUBLIC_SEARCH_API } from "astro:env/client";
-import { studyHasSpecimenTracks } from "./SharedJSFunctions.js";
-import "../styles/toggle.css";
+import { studyHasSpecimenTracks } from "../../components/SharedJSFunctions.js";
+import "../../styles/toggle.css";
 const SEARCH_API = PUBLIC_SEARCH_API === "http://localhost:8081/v1" || PUBLIC_SEARCH_API.includes("alpha.bioimage")? PUBLIC_SEARCH_API: "/search/v1";
 const { study, images, imagePageRoot } = Astro.props;
 
@@ -18,6 +18,7 @@ const hasSpecimenTracks = hasImages ? await studyHasSpecimenTracks(study.accessi
       </h2>
     </div>
     {hasImages ? (
+      <p id="viewable-images-status" role="alert" hidden></p>
       <div class="bia-table-controls">
       {hasSpecimenTracks && (
         <div class="display-images-switch">
@@ -69,4 +70,4 @@ const hasSpecimenTracks = hasImages ? await studyHasSpecimenTracks(study.accessi
 }
 </style>
 
-<script src="./ViewableImageTable.js"></script>
+<script src="./viewable-images.js"></script>

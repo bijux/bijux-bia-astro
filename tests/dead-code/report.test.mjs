@@ -42,7 +42,7 @@ test('Script entry contracts use parsed attributes rather than tag formatting', 
 
 test('Knip preserves scripts loaded by live study and search components', async () => {
   const browserScripts = [
-    ['src/components/ViewableImageTable.astro', './ViewableImageTable.js', 'src/components/ViewableImageTable.js'],
+    ['src/features/studies/ViewableImageTable.astro', './viewable-images.js', 'src/features/studies/viewable-images.js'],
     ['src/features/search/Search.astro', './search-results.js', 'src/features/search/search-results.js'],
   ];
   for (const [component, source] of browserScripts) {
