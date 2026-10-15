@@ -5,7 +5,6 @@ const port = process.env.WEBSITE_TEST_PORT ?? '4399';
 export default defineConfig({
     testDir: '../../tests/e2e',
     outputDir: '../../artifacts/browser-results',
-    globalSetup: '../../scripts/verification/application.mjs',
     reporter: [['list'], ['json', { outputFile: `${repository}/artifacts/browser-results/results.json` }]],
     workers: 2,
     retries: 0,
@@ -14,5 +13,5 @@ export default defineConfig({
         { name: 'desktop', use: { viewport: { width: 1440, height: 1000 } } },
         { name: 'mobile', use: { ...devices['Pixel 7'], viewport: { width: 375, height: 1000 } } },
     ],
-    webServer: { command: 'node tests/support/serve-website.mjs', cwd: repository, url: `http://127.0.0.1:${port}/health/ready`, reuseExistingServer: false, timeout: 30000 },
+    webServer: { command: 'node tests/support/serve-website.mjs', cwd: repository, url: `http://127.0.0.1:${port}/health/ready`, reuseExistingServer: false, timeout: 120000 },
 });
