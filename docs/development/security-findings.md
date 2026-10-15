@@ -45,6 +45,6 @@ CodeQL completed its JavaScript/TypeScript and workflow profiles. It retained th
 
 A complete live-catalogue build is **not verified**: the fail-closed build stopped on an upstream API timeout. The earlier stopped build must not be presented as successful evidence. Do not bypass the failure or publish a partial catalogue. A full container startup and remote deployment still need verification.
 
-The branch starts from the recorded main revision and works independently of the markup/dead-code PRs. It follows the shared root-Makefile/`makes/` convention and single recursive test entry. However, the current companion heads have real textual conflicts in shared source, package and Makefile changes. Neither conflict-free integration nor arbitrary merge order is claimed. Reconcile the accepted heads and rerun the affected checks before integration.
+The security checks follow the shared root-Makefile/`makes/` convention and single recursive test entry. Shared controls retain the accepted metadata, numeric-filter, button and annotation behaviour alongside security validation. Future changes to these shared surfaces require reconciliation and affected checks; arbitrary merge order is not guaranteed.
 
 Generated reports, raw payloads, scanner logs, exact revision/hash manifests and compatibility simulations stay under ignored `artifacts/security/`. Reviewers can regenerate the maintained audit with [the documented commands](security.md).

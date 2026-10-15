@@ -39,9 +39,6 @@ const fileListUrls = getMetadataValue(study?.additional_metadata, "file_list_vis
 const hasFileList = Boolean(fileListUrls?.table_view && fileListUrls?.tree_view);
 const browseFilesLink = hasFileList ? "#file_list" : ftpHttpsLink;
 
-// Read EMPIAR XML header to get dataset summary
-const datasetFileSummaryString = isEMPIAR ? null: null; //await buildDatasetFileSummary(accessionID, study?.dataset) : null;
-
 if (hasFileList) {
   tableOfContents["Browse All Files"] = "file_list";
 }
@@ -131,7 +128,7 @@ const breadcrumbs = [
     <div slot="browse-files">
       {browseFilesLink && (
         <a
-          class="vf-button vf-button--primary vf-button--sm"
+          class="vf-button vf-button--primary vf-button--sm bia-button"
           href={navigationURL(browseFilesLink) ?? undefined}
           target={hasFileList ? undefined : "_blank"}
           rel={hasFileList ? undefined : "noopener noreferrer"}
@@ -139,7 +136,7 @@ const breadcrumbs = [
       )}
       {!hasFileList && globusLink && (
         <a
-          class="vf-button vf-button--primary vf-button--sm"
+          class="vf-button vf-button--primary vf-button--sm bia-button"
           href={navigationURL(globusLink) ?? undefined}
           target="_blank"
           rel="noopener noreferrer"
@@ -149,7 +146,7 @@ const breadcrumbs = [
     {
       isEMPIAR && (
         <div slot="download-metadata">
-          <a target="_blank" href={`https://ftp.ebi.ac.uk/pub/databases/emtest/empiar/headers/${accessionID.replace("EMPIAR-", "")}.xml`} class="vf-button vf-button--primary vf-button--sm">
+          <a target="_blank" href={`https://ftp.ebi.ac.uk/pub/databases/emtest/empiar/headers/${accessionID.replace("EMPIAR-", "")}.xml`} class="vf-button vf-button--primary vf-button--sm bia-button">
             Download Metadata
           </a>
         </div>
@@ -297,7 +294,7 @@ const breadcrumbs = [
       <div>
         {
           study.dataset.map((dataset) => (
-            <DatasetInfo dataset={dataset} isEMPIAR={isEMPIAR} datasetFileSummaryString={datasetFileSummaryString}/>
+            <DatasetInfo dataset={dataset}/>
           ))
         }
       </div>

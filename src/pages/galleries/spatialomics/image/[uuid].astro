@@ -116,10 +116,8 @@ const breadcrumbs = [
                       <WebsiteStateButton/>
                   </h1>
                   <h2 class="vf-intro__subheading">{imageStudy.title}</h2>
-                  <p class="studytitle">{imageDataset.title}</p>
-                  <a href={ "/bioimage-archive/galleries/spatialomics/study/" + imageStudy.accession_id}>
-                      <button class="vf-button vf-button--primary vf-button--sm">Study Page</button>
-                  </a> 
+                  <p class="studytitle">{imageDataset?.title}</p>
+                  <a href={ "/bioimage-archive/galleries/spatialomics/study/" + imageStudy.accession_id} class="vf-button vf-button--primary vf-button--sm bia-button">Study Page</a>
               </div>
           </section>
           <section class="vf-content | embl-grid embl-grid--has-centered-content">
@@ -169,7 +167,7 @@ const breadcrumbs = [
                   <br/>
                   {
                       interactiveImageRepresentation && (
-                          <button class="vf-button vf-button--primary vf-button--sm" id="CopyURLButton" data-url={viewerSourceURI ?? interactiveImageRepresentation.file_uri[0]}>Copy OME-Zarr URI</button>
+                          <button class="vf-button vf-button--primary vf-button--sm bia-button" id="CopyURLButton" data-url={viewerSourceURI ?? interactiveImageRepresentation.file_uri[0]}>Copy OME-Zarr URI</button>
                       )
                   }
                   {
@@ -179,23 +177,17 @@ const breadcrumbs = [
                   }
                   {
                       vizarrIFrameSource && (
-                          <a target="_blank" href={vizarrIFrameSource}>
-                              <button class="vf-button vf-button--primary vf-button--sm">Open in Vizarr viewer</button>
-                          </a>
+                          <a target="_blank" href={vizarrIFrameSource} class="vf-button vf-button--primary vf-button--sm bia-button">Open in Vizarr viewer</a>
                       )
                   }
                   {
                       itkLink && (
-                          <a target="_blank" href={itkLink}>
-                              <button class="vf-button vf-button--primary vf-button--sm">Open in ITK viewer</button>
-                          </a>
+                          <a target="_blank" href={itkLink} class="vf-button vf-button--primary vf-button--sm bia-button">Open in ITK viewer</a>
                       )
                   }
                   {
                       ng_link && (
-                          <a target="_blank" href={navigationURL(ng_link) ?? undefined}>
-                              <button class="vf-button vf-button--primary vf-button--sm">Open in neuroglancer</button>
-                          </a>
+                          <a target="_blank" href={navigationURL(ng_link) ?? undefined} class="vf-button vf-button--primary vf-button--sm bia-button">Open in neuroglancer</a>
                       )
                   }
                   <script>
@@ -218,7 +210,7 @@ const breadcrumbs = [
               </div>
           </section>
   
-          <!-- TODO: Include links to source images using  <SourceImage image={ image}/> for derived images -->
+          <!-- TODO: Include links to source images for derived images. -->
   
           <hr/>
   
@@ -240,7 +232,7 @@ const breadcrumbs = [
                   <h3>Dataset</h3>
               </div>
               <div>
-                  <b>Title</b>: {imageDataset.title}<br/>
+                  <b>Title</b>: {imageDataset?.title}<br/>
                   <b>Description:</b> {imageDataset.description}<br/>
               </div> 
           </section>
@@ -256,28 +248,28 @@ const breadcrumbs = [
                   specimen != null && "sample_of" in specimen &&
                       specimen.sample_of.length > 0 && (
                           <b>Biosamples:</b>
-                          <ul>
+                          <div class="metadata-fields">
                               {specimen.sample_of.map((biosample) => (
                                   <DatasetDetail
                                       data={biosample}
                                       fieldMap={biosampleMap}
                                   />
                               ))}
-                          </ul>
+                          </div>
                       )
               }
               {
                   specimen != null && "imaging_preparation_protocol" in specimen &&
                       specimen.imaging_preparation_protocol.length > 0 && (
                           <b>Specimen Preparation Protocols:</b>
-                          <ul>
+                          <div class="metadata-fields">
                               {specimen.imaging_preparation_protocol.map((sipp) => (
                                   <DatasetDetail
                                       data={sipp}
                                       fieldMap={sippMap}
                                   />
                               ))}
-                          </ul>
+                          </div>
                       )
               }
               </div>
@@ -294,7 +286,7 @@ const breadcrumbs = [
                       "acquisition_process" in creation_process &&
                           creation_process.acquisition_process.length > 0 && (
                               <b>Image Acquisition Protocols:</b>
-                              <ul>
+                              <div class="metadata-fields">
                                   {creation_process.acquisition_process.map(
                                       (image_acquisition) => (
                                           <DatasetDetail
@@ -303,14 +295,14 @@ const breadcrumbs = [
                                           />
                                       ),
                                   )}
-                              </ul>
+                              </div>
                           )
                   }
                   {
                       "annotation_method" in creation_process &&
                           creation_process.annotation_method.length > 0 && (
                               <b>Image Acquisition Protocols:</b>
-                              <ul>
+                              <div class="metadata-fields">
                                   {creation_process.annotation_method.map(
                                       (annotation_method) => (
                                           <DatasetDetail
@@ -319,14 +311,14 @@ const breadcrumbs = [
                                           />
                                       ),
                                   )}
-                              </ul>
+                              </div>
                           )
                   }
                   {
                       "protocol" in creation_process &&
                           creation_process.protocol.length > 0 && (
                               <b>Image Acquisition Protocols:</b>
-                              <ul>
+                              <div class="metadata-fields">
                                   {creation_process.protocol.map(
                                       (protocol) => (
                                           <DatasetDetail
@@ -335,7 +327,7 @@ const breadcrumbs = [
                                           />
                                       ),
                                   )}
-                              </ul>
+                              </div>
                           )
                   }
               </div>
@@ -344,3 +336,7 @@ const breadcrumbs = [
     </Fragment>
   </BaseLayoutWithBreadcrumbs>
   
+
+<style>
+  .metadata-fields { padding-left: 20px; }
+</style>
