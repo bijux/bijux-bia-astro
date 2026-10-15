@@ -24,7 +24,8 @@ export default async function prepareWebsite() {
     await rm(root, { recursive: true, force: true });
     await mkdir(root, { recursive: true });
     for (const name of ['src', 'public', 'scripts', 'tests/fixtures', 'package.json', 'package-lock.json', 'tsconfig.json']) await cp(path.join(repository, name), path.join(root, name), { recursive: true });
-    const pages = ['index.astro', 'images.astro', 'studies.astro', 'study/[accessionID].astro', 'projects/spora/dataset.astro', 'projects/spora.astro', 'help/downloading-data.mdx', 'help/search.mdx', 'contact-us.md', 'case-studies.astro', 'image/[uuid].astro', 'galleries/volumeem.astro', 'galleries/ai/image/[uuid].astro', 'galleries/spatialomics/image/[uuid].astro', 'galleries/ai/model/[modelName].astro'];
+    const contract = JSON.parse(await readFile(path.join(repository, 'tests/fixtures/website/production-contract.json'), 'utf8'));
+    const pages = contract.pageSources;
     await rm(path.join(root, 'src/pages'), { recursive: true });
     for (const page of pages) {
         await mkdir(path.dirname(path.join(root, 'src/pages', page)), { recursive: true });
@@ -34,7 +35,7 @@ export default async function prepareWebsite() {
     await writeFile(path.join(root, 'astro.config.mjs'), `import config from ${JSON.stringify(pathToFileURL(path.join(repository, 'astro.config.mjs')).href)};\nexport default {...config,root:${JSON.stringify(root)}};\n`);
     await run(['scripts/deployment/build.mjs']);
     const html = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/quality/htmlvalidate.markup.json'), 'utf8')));
-    let generated = 0;
+    const generated = [];
     async function validate(directory) {
         for (const entry of await readdir(directory, { withFileTypes: true })) {
             const file = path.join(directory, entry.name);
@@ -42,12 +43,16 @@ export default async function prepareWebsite() {
             else if (entry.name.endsWith('.html')) {
                 const result = await html.validateFile(file);
                 assert(result.valid, JSON.stringify(result.results));
-                generated++;
+                generated.push(path.relative(path.join(root, 'artifacts/dist/bioimage-archive/client'), file).split(path.sep).join('/'));
             }
         }
     }
     await validate(path.join(root, 'artifacts/dist/bioimage-archive/client'));
-    assert(generated >= 4, 'Representative static routes were not generated.');
+    assert.deepEqual(generated.sort(), [...contract.generatedHtml].sort(), 'Generated routes differ from the production contract.');
+    for (const route of contract.serverRoutes) {
+        const pathname = new URL(route, 'http://local').pathname;
+        assert(!generated.includes(`${pathname.slice(1)}/index.html`), `Server route was unexpectedly prerendered: ${pathname}`);
+    }
 
-    await writeFile(path.join(output, 'report.json'), JSON.stringify({ generatedHtml: generated, externalExclusions: ['EMBL chrome/styles', 'analytics', 'images/fonts', 'external file-browser document'] }, null, 2) + '\n');
+    await writeFile(path.join(output, 'report.json'), JSON.stringify({ generatedHtml: generated.length, generatedRoutes: generated, serverRoutes: contract.serverRoutes, externalExclusions: ['EMBL chrome/styles', 'analytics', 'images/fonts', 'external file-browser document'] }, null, 2) + '\n');
 }

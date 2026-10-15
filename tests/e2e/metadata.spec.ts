@@ -1,8 +1,18 @@
 import assert from 'node:assert/strict';
 import { test, expect } from '../support/browser';
+import contract from '../fixtures/website/production-contract.json' with { type: 'json' };
 
 test('metadata preserves production behaviour', async ({ page }) => {
-assert((await page.goto('/bioimage-archive/study/S-BIAD3335')).ok());
+        assert((await page.goto(`/bioimage-archive${contract.study.path}`)).ok());
+        const datasets = page.locator('.dataset-metadata');
+        await expect(datasets.locator('.dataset-metadata__title')).toHaveText(contract.study.datasets.map(dataset => dataset.title));
+        for (const [index, expected] of contract.study.datasets.entries()) {
+            const dataset = datasets.nth(index);
+            await expect(dataset.locator('.dataset-metadata__overview')).toContainText(`Number of images/files: ${expected.count}`);
+            await expect(dataset.locator('.dataset-metadata__record > summary')).toHaveText(expected.records);
+            await expect(dataset.locator('.dataset-metadata__record[open]')).toHaveCount(expected.openRecords);
+        }
+        await expect(datasets.first().locator(`a[href="${contract.study.taxonomyHref}"]`).first()).toBeAttached();
         const disclosure = page.locator('.dataset-metadata__record summary').first();
         const details = disclosure.locator('..');
         const before = await details.getAttribute('open');
