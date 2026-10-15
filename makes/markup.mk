@@ -8,7 +8,7 @@ quality-markup-test:
 	npm run test:markup
 
 quality-markup-check:
-	npm run quality:markup:check
+	npm run check
 
 quality-markup-report:
 	npm run audit:markup -- --report-only

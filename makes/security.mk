@@ -10,7 +10,7 @@ security-test:
 	npm test
 
 security-check:
-	npm run astro -- check
+	npm run check
 
 security-code:
 	npm run audit:security -- code

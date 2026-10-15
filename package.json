@@ -6,7 +6,6 @@
     "dev": "astro dev",
     "audit:markup": "node scripts/markup/audit.mjs",
     "test:markup": "node --test tests/functional/audits/markup/*.test.mjs",
-    "quality:markup:check": "astro check --tsconfig configs/quality/tsconfig.markup.json",
     "start": "astro dev",
     "build": "node scripts/catalogue/build.mjs",
     "build:deployment": "node scripts/deployment/build.mjs",
@@ -15,10 +14,7 @@
     "audit:dead-code": "node scripts/dead-code/audit.mjs",
     "audit:dead-code:knip": "knip --config configs/quality/knip.json --reporter json",
     "test:dead-code": "node --test tests/functional/audits/dead-code/*.test.mjs",
-    "quality:check": "astro check --tsconfig configs/quality/tsconfig.check.json",
-    "verify:website": "PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers node scripts/verification/website.mjs",
-    "test:galleries": "node --test tests/functional/galleries/*.test.mjs",
-    "test:browser": "node --test tests/functional/studies/*.test.mjs tests/functional/images/*.test.mjs",
+    "test:galleries": "node --test \"tests/functional/galleries/**/*.test.mjs\"",
     "prod": "NODE_ENV=production node src/server/host.mjs",
     "local": "npm run build && astro preview",
     "test": "node --test \"tests/**/*.test.mjs\"",
@@ -27,7 +23,9 @@
     "test:news": "node --test tests/unit/news/*.test.mjs tests/functional/news/*.test.mjs",
     "audit:security": "node scripts/security/audit.mjs",
     "postinstall": "node scripts/build/artifacts.mjs",
-    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers playwright test --config configs/testing/playwright.config.ts"
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers playwright test --config configs/testing/playwright.config.ts",
+    "check": "astro check --tsconfig configs/typescript/check.json",
+    "test:controls": "node --test tests/functional/studies/*.test.mjs tests/functional/images/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "0.9.10",

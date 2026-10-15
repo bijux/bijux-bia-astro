@@ -21,7 +21,7 @@
     "scripts/catalogue/preload.mjs",
     "src/features/projects/spora/dataset-browser.ts",
     "src/features/projects/spora/project-controls.js",
-    "tests/support/serve-website.mjs"
+    "tests/support/website/server.mjs"
   ],
   "ignore": [
     "**/node_modules/**",

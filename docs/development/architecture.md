@@ -9,9 +9,13 @@ stays in `src/layouts`. Feature-specific styles stay with their owner.
 presentation, and shared UI does not import features. The architecture tests check
 runtime import resolution, cycles and direct server dependencies in browser graphs.
 
+`make verify` runs source checking, all Node tests and the production browser
+suite in order. CI uses the same command. Static audit inventories run separately
+and retain their own findings and failure semantics.
+
 `npm test` runs every Node unit/functional suite in `tests/unit` and
 `tests/functional`. Production browser journeys live in `tests/e2e` and run through
-`npm run verify:website` (or `npm run test:e2e`). The fixture application builds
+`npm run test:e2e`. The fixture application builds
 once before its server starts; browser cases use isolated storage.
 
 Captured API responses and their provenance stay unchanged in `tests/fixtures/api`.

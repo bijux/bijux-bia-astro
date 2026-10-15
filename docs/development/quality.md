@@ -32,7 +32,7 @@ The root `Makefile` imports `makes/quality.mk`; quality configuration lives in `
 
 `make quality` keeps its check order under parallel Make invocation. It fails when the audit cannot analyze a file or active candidates remain; a completed scan can therefore still fail the strict candidate gate. A passing source check and build do not override an incomplete static inventory.
 
-`configs/quality/tsconfig.check.json` scopes the normal check to source, quality scripts/configuration and tests, excluding generated evidence. The root `tsconfig.json` and existing build command are unchanged. The stricter audit tsconfig is opt-in because it exposes existing source issues beyond the regular check.
+`configs/typescript/check.json` scopes the normal check to source, quality scripts/configuration and tests, excluding generated evidence. The root `tsconfig.json` and existing build command are unchanged. The stricter audit tsconfig is opt-in because it exposes existing source issues beyond the regular check.
 
 `npm test` discovers every `tests/**/*.test.mjs` file, including the dead-code regression tests and the installed Astro analyzer integration probe. CI uses this same command. `npm run test:dead-code` remains available for focused checks; it runs every test file directly in `tests/functional/audits/dead-code/`. The standalone `scripts/dead-code/verify-tools.mjs` probe also remains available to the audit runner.
 
@@ -44,7 +44,7 @@ Run from the repository root after `npm ci`:
 npm run test:dead-code
 npm run test:metadata
 npm run test:galleries
-npm run test:browser
+npm run test:controls
 npm run audit:dead-code
 npm run audit:dead-code -- --report-only
 ```

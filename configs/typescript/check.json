@@ -2,9 +2,10 @@
   "extends": "../../tsconfig.json",
   "include": [
     "../../src/**/*",
-    "../../scripts/dead-code/**/*",
+    "../../scripts/**/*",
+    "../../configs/**/*",
     "../../tests/**/*",
-    "./eslint.config.mjs",
+    "../../astro.config.mjs",
     "../../.astro/types.d.ts"
   ],
   "exclude": [

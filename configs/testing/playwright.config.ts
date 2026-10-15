@@ -13,5 +13,5 @@ export default defineConfig({
         { name: 'desktop', use: { viewport: { width: 1440, height: 1000 } } },
         { name: 'mobile', use: { ...devices['Pixel 7'], viewport: { width: 375, height: 1000 } } },
     ],
-    webServer: { command: 'node tests/support/serve-website.mjs', cwd: repository, url: `http://127.0.0.1:${port}/health/ready`, reuseExistingServer: false, timeout: 120000 },
+    webServer: { command: 'node tests/support/website/server.mjs', cwd: repository, url: `http://127.0.0.1:${port}/health/ready`, reuseExistingServer: false, timeout: 120000 },
 });

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { HtmlValidate } from 'html-validate';
 
-const repository = fileURLToPath(new URL('../../', import.meta.url));
+const repository = fileURLToPath(new URL('../../../', import.meta.url));
 const output = path.join(repository, 'artifacts/website-verification');
 export const root = path.join(output, 'application');
 const preload = pathToFileURL(path.join(root, 'tests/fixtures/website/preload.mjs')).href;
