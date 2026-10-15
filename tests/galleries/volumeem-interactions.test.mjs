@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import { parse } from '@astrojs/compiler';
 
-const source = await readFile(new URL('../../src/pages/galleries/volumeem.astro', import.meta.url), 'utf8');
+const source = await readFile(new URL('../../src/features/galleries/volume-em/VolumeEMPage.astro', import.meta.url), 'utf8');
 const { ast } = await parse(source);
 const scripts = ast.children.filter(node => node.type === 'element' && node.name === 'script'
     && node.attributes.some(attribute => attribute.name === 'is:inline'));
