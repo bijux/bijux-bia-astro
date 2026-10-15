@@ -14,7 +14,7 @@
     "tests/dead-code/*.test.mjs",
     "tests/metadata/fixtures/dataset-metadata.*js",
     "src/components/ViewableImageTable.js",
-    "src/components/search/search-results.js",
+    "src/features/search/search-results.js",
     "src/layouts/HelpLayout.astro",
     "src/layouts/PoliciesLayout.astro",
     "src/layouts/MarkdownLayoutLeftAlign.astro",
