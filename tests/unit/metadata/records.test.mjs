@@ -20,3 +20,26 @@ test('annotation categories combine legacy nested metadata and protocol terms on
     assert.deepEqual(getAnnotationType([]), []);
     assert.deepEqual(datasets, before);
 });
+
+test('optional metadata accepts missing containers and null entries without losing zero or false', () => {
+    for (const additional_metadata of [undefined, null, {}, [null], [{ name: 'summary', value: null }]]) {
+        assert.equal(getSimpleAttributeValue({ additional_metadata }, 'summary'), null);
+        assert.equal(getMetadataValue(additional_metadata, 'absent'), undefined);
+    }
+    const metadata = [null, { name: 'zero', value: 0 }, { name: 'flag', value: false },
+        { name: 'ids', value: { id: ['first', 'second'] } }];
+    assert.equal(getMetadataValue(metadata, 'zero'), 0);
+    assert.equal(getMetadataValue(metadata, 'flag'), false);
+    assert.equal(getMetadataValue(metadata, 'ids', 'id'), 'first');
+});
+
+test('annotation labels retain legacy wrapped/scalar values and skip incomplete optional records', () => {
+    const datasets = [null, {}, { additional_metadata: [null, { name: 'annotation_type', value: ' Cell_Boundary,POINT ' }] },
+        { additional_metadata: [{ name: 'annotation_type', value: { annotation_type: 'Weak_Labels' } }] },
+        { additional_metadata: [{ name: 'annotation_type', value: { annotation_type: [['POINT', null, ' '], 'Polygon'] } }],
+          annotation_process: [null, { method_type: ['expert_annotated', null] }] }];
+    const before = structuredClone(datasets);
+    assert.deepEqual(getAnnotationType(datasets), ['cell boundary', 'expert annotated', 'point', 'polygon', 'weak labels']);
+    assert.deepEqual(getAnnotationType(null), []);
+    assert.deepEqual(datasets, before);
+});
