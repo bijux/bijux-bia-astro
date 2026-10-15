@@ -1,0 +1,84 @@
+---
+import DatasetDetail from "../../metadata/DatasetDetail.astro";
+import fieldMap from "../../../data/metadata-field-name-mapping.json";
+import { formatListItem } from "../../../components/SharedJSFunctions";
+
+const { dataset } = Astro.props;
+const biosampleMap = fieldMap["biosample"];
+const annotationMethodMap = fieldMap["annotation_method"];
+
+
+function getImagingType(dataset) {
+    var imagingTypeList = new Array()
+    for (var ia of dataset.acquisition_process) {
+        for (var method_names of ia.imaging_method_name) {
+            if (!imagingTypeList.includes(method_names)) {
+                imagingTypeList.push(method_names)
+            }
+        }
+    }
+    return imagingTypeList
+}
+
+function displayImagingType(dataset) {
+    const imageTypeList = getImagingType(dataset)
+    const imgTypeDisplay = imageTypeList.reduce(formatListItem, "")
+    if (imgTypeDisplay.length > 50 * imageTypeList.length) {
+        // Avoid displaying full method text on dataset cards.
+        return 'See details of study'
+    } else {
+        return imgTypeDisplay
+    }
+}
+
+---
+
+<div style="margin-bottom: 1rem;">
+    <div>
+        <b style="font-size: 14pt;">{dataset.title}</b>
+    </div>
+    <div class="metadata-fields">
+        {
+            "biological_entity" in dataset &&
+                dataset.biological_entity &&
+                dataset.biological_entity.length > 0 && (
+                    <b>Biosamples:</b>
+                    <div class="metadata-fields">
+                        {dataset.biological_entity.map((biosample) => (
+                            <DatasetDetail
+                                data={biosample}
+                                fieldMap={biosampleMap}
+                            />
+                        ))}
+                    </div>
+                )
+        }
+        {
+            dataset.acquisition_process && dataset.acquisition_process.length > 0 &&
+                (
+                    <div>
+                    <b>Imaging Method:</b> {displayImagingType(dataset)}
+                    </div>
+                )
+        }
+        {
+            "annotation_process" in dataset && dataset.annotation_process && dataset.annotation_process.length > 0 && (
+                <b>Annotation Methods:</b>
+                <div class="metadata-fields">
+                    {dataset.annotation_process.map((annotation_method) => (
+                        <DatasetDetail
+                            data={annotation_method}
+                            fieldMap={annotationMethodMap}
+                        />
+                    ))}
+                </div>
+            )
+        }
+    </div>
+</div>
+
+<style>
+    .metadata-fields {
+        padding-left: 20px;
+    }
+</style>

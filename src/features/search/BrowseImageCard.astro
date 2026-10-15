@@ -1,0 +1,204 @@
+---
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import HighlightedTaxa from "../../components/HighlightedTaxa.astro";
+import HighlightedFields from "../../components/HighlightedFields.astro";
+import { getHighlightTextString, highlightOrganism, formatListItem, getThumbnail, getSimpleAttributeValue, formatPhysicalDimensions, formatPixelDimensions, applyHighlight, highlightLinks, getLicenceLogo, formatHighlightedList } from "../../components/SharedJSFunctions.js";
+import "../../styles/dataset_card.css"
+import  HighlightedText  from "../../components/HighlightedText.astro";
+import imageFallback from "../../assets/bioimage-archive/image_fallback.png"
+
+const { image, imagePageRoot, taglist, annotationType, highlight, query} = Astro.props;
+const highlightedTextString = getHighlightTextString(highlight);
+const vizarrRepUuid = getSimpleAttributeValue(image, "recommended_vizarr_representation");
+const interactiveImageRepresentation = (image.representation.find(
+    (rep) => rep.uuid == vizarrRepUuid
+) ?? image.representation.find( (rep) => rep.image_format === ".ome.zarr") )
+
+const organism = highlightOrganism(image, query);
+
+const imagingMethod = formatHighlightedList(image?.imaging_method, query, {
+  sort: false,
+});
+const annotationMethod = formatHighlightedList(annotationType ?? image?.annotation_type?.map((at: string) => at.replace(/_/g, " ")) ?? [], query, {
+  sort: false,
+})
+
+const imageFormat = [
+  ...new Set(
+    (image?.representation ?? [])
+      .flatMap(rep => rep?.image_format.replace("\.", "") ?? [])
+      .filter(Boolean).sort()
+  )
+];
+const highLightedImageFormat = imageFormat.flatMap(imf=> query && imf? applyHighlight(imf, query): imf)
+
+const accessionId = image?.accession_id || "";
+
+const isNonZeroNumber = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) && n !== 0;
+};
+
+const hasPhysical =
+  isNonZeroNumber(image?.total_physical_size_x) ||
+  isNonZeroNumber(image?.total_physical_size_y) ||
+  isNonZeroNumber(image?.total_physical_size_z);
+
+const hasPixel =
+  isNonZeroNumber(interactiveImageRepresentation?.size_x) ||
+  isNonZeroNumber(interactiveImageRepresentation?.size_y) ||
+  isNonZeroNumber(interactiveImageRepresentation?.size_z);
+
+const showSizeBar = hasPhysical || hasPixel;
+const thumbnail_uri =  getThumbnail(image);
+const isFallback = thumbnail_uri === imageFallback.src;
+const fallbackMessage = isFallback ? "Preview not available yet." : "";
+const licenceURL = navigationURL(image?.licence_details?.uri || image?.licence);
+const logoURL = resourceURL(image?.licence_details?.logo_uri) || getLicenceLogo(licenceURL);
+const logoAlt = image?.licence_details?.label || "";
+const base = `/bioimage-archive/${imagePageRoot}/${image.uuid}`;
+const highlightedImageLink = highlightLinks(base, highlight, query);
+---
+<article class="vf-card vf-card--brand vf-card--bordered custom-card" style="max-width:400px" data-message={image.uuid}>
+
+    <div class="image-container ">
+        <img src={thumbnail_uri } alt={fallbackMessage} title={fallbackMessage} class="vf-card__image" loading="lazy" style="aspect-ratio: 1/1;">
+        {isFallback && (
+            <div class="image-overlay" role="note" aria-label={fallbackMessage}>
+                <span>{fallbackMessage}</span>
+            </div>
+        )}
+        {
+            showSizeBar && (
+            <div class="size-bar">
+                {
+                    hasPhysical && (
+                        <span class="physical-size">
+                            <code>{ formatPhysicalDimensions(image)}</code>
+                        </span>
+                    )
+                }
+                {
+                    hasPixel && (
+                        <span class="image-size">
+                            <code>{ formatPixelDimensions(interactiveImageRepresentation)}</code>
+                        </span>
+                    )
+                }
+                </div>
+            )
+        }
+        <div class="study-link">
+            { accessionId }
+        </div>
+        <div class="license-badge">
+            {licenceURL && logoURL && (
+                <a href={licenceURL} class="vf-link"><img src={logoURL} alt={logoAlt}/></a>
+            )}
+
+        </div>
+    </div>
+    {highlightedTextString && (
+            <div class="tooltip">
+                <span class="tooltiptext" style="margin-top: -0.25em;">
+                    <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
+                    <HighlightedFields highlights={highlight} />
+                </span>
+            </div>
+        )}
+    <div class="vf-card__content">
+        <p class="vf-card__text">
+            {imagingMethod.length>0 && (<b>Imaging method: </b><HighlightedText text={imagingMethod} /><br>)}
+            {organism && (<b>Organism: </b><HighlightedTaxa record={image} query={query} /><br>)}
+            <b>Image format: </b><HighlightedText text={highLightedImageFormat.join(", ")} /><br>
+            {interactiveImageRepresentation?.size_c && (<><b>Number of channels:</b> {interactiveImageRepresentation?.size_c}<br /></>)}
+            {interactiveImageRepresentation?.size_t && (<><b>Number of timesteps:</b> {interactiveImageRepresentation?.size_t}</>)}
+        </p>
+
+        {taglist && taglist.length > 0 && (
+            <p class="vf-card__text">
+                <b>Tags:</b> {taglist.reduce(formatListItem, "")}
+            </p>
+        )}
+
+        {annotationMethod && annotationMethod.length > 0 && (
+            <p class="vf-card__text">
+                <b>Annotation Type:</b> <HighlightedText text={annotationMethod || "No information available"} />
+            </p>
+        )}
+        <h3 class="vf-card__heading"><a class="vf-card__link" href={highlight? highlightedImageLink : base} ></a></h3>
+    </div>
+</article>
+<style>
+    button {
+        padding: 6px 12px;
+        border: 1px solid #666;
+        border-radius: 4px;
+        background: #f5f5f5;
+        transition: all 0.2s ease;
+    }
+    button:hover {
+        background: #e0e0e0;
+        transform: translateY(-1px);
+    }
+    .image-container {
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+    .size-bar {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(243, 243, 243, 0.9);
+        padding: 8px 12px;
+        font-size: 0.9em;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border-radius: 4px;
+        max-width: 80%;
+    }
+    .physical-size, .image-size {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .study-link {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        background: rgba(243, 243, 243, 0.9);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    .license-badge {
+        position: absolute;
+        top: 7px;
+        left: 7px;
+        background: rgba(243, 243, 243, 0.9);
+        padding: 0px;
+        z-index: 999;
+    }
+    .license-badge img {
+        display: block;
+        height: var(--license-badge-height, 28px);
+        width: auto;
+    }
+    .image-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+        opacity: 1;
+        pointer-events: none;
+    }
+</style>

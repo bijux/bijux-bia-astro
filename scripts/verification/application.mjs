@@ -24,7 +24,7 @@ export default async function prepareWebsite() {
     await rm(root, { recursive: true, force: true });
     await mkdir(root, { recursive: true });
     for (const name of ['src', 'public', 'scripts', 'tests/fixtures', 'package.json', 'package-lock.json', 'tsconfig.json']) await cp(path.join(repository, name), path.join(root, name), { recursive: true });
-    const pages = ['index.astro', 'images.astro', 'studies.astro', 'study/[accessionID].astro', 'projects/spora/dataset.astro'];
+    const pages = ['index.astro', 'images.astro', 'studies.astro', 'study/[accessionID].astro', 'projects/spora/dataset.astro', 'image/[uuid].astro', 'galleries/volumeem.astro', 'galleries/ai/image/[uuid].astro', 'galleries/spatialomics/image/[uuid].astro', 'galleries/ai/model/[modelName].astro'];
     await rm(path.join(root, 'src/pages'), { recursive: true });
     for (const page of pages) {
         await mkdir(path.dirname(path.join(root, 'src/pages', page)), { recursive: true });

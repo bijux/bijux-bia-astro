@@ -59,8 +59,8 @@ const markup = ${JSON.stringify(markup)};
     for (const record of [image, study]) record.licence_details = {uri:'javascript:window.probe=1', logo_uri:'http://127.0.0.1/private.svg'};
     study.example_image_uri = ['javascript:window.probe=1'];
     await writeFile(path.join(root, 'src/pages/cards.astro'), `---
-import StudyCard from '../components/cards/BrowseStudyCard.astro';
-import ImageCard from '../components/cards/BrowseImageCard.astro';
+import StudyCard from '../features/search/BrowseStudyCard.astro';
+import ImageCard from '../features/search/BrowseImageCard.astro';
 import { getStudyImage, getLicenceLogo } from '../components/SharedJSFunctions.js';
 const study = ${JSON.stringify(study)};
 const image = ${JSON.stringify(image)};

@@ -4,9 +4,9 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { resourceURL } from '../../src/security/urls.mjs';
-import { imageSizeMicrometres } from '../../src/components/ai-gallery/image-dimensions.mjs';
+import { imageSizeMicrometres } from '../../src/features/galleries/ai/image-dimensions.mjs';
 
-const source = await readFile(new URL('../../src/components/ai-gallery/SourceAnnotatedImage.astro', import.meta.url), 'utf8');
+const source = await readFile(new URL('../../src/features/galleries/ai/SourceAnnotatedImage.astro', import.meta.url), 'utf8');
 const body = source.match(/<script>([\s\S]*?)<\/script>/)[1];
 const script = ts.transpileModule(body, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
 
@@ -34,7 +34,7 @@ function runViewer({ missingProtocol = false, protocolDescription = '', slides =
     class Anchor { removeAttribute(name) { delete this[name]; } }
     for (const id of ['OpenAnnotationInVizarr','OpenAnnotationInITK']) nodes.set(id,new Anchor());
     const window = {};
-    vm.runInNewContext(script, { window, URL, HTMLAnchorElement: Anchor, exports: {}, require: name => { if (name === './image-dimensions.mjs') return { imageSizeMicrometres }; assert.equal(name, '../../security/urls.mjs'); return { resourceURL }; }, document: {
+    vm.runInNewContext(script, { window, URL, HTMLAnchorElement: Anchor, exports: {}, require: name => { if (name === './image-dimensions.mjs') return { imageSizeMicrometres }; assert.equal(name, '../../../security/urls.mjs'); return { resourceURL }; }, document: {
         getElementById: id => nodes.get(id),
         querySelectorAll: selector => { if (selector === '.imageslider') return []; assert.equal(selector, '[data-annotation-dataset]'); return panels; },
         createElement: tag => ({ tag, children: [], textContent: '', append(...children) { this.children.push(...children); } }),

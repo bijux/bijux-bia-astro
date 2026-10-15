@@ -1,0 +1,117 @@
+---
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import HighlightedTaxa from "../../components/HighlightedTaxa.astro";
+import HighlightedFields from "../../components/HighlightedFields.astro";
+import { getHighlightTextString, highlightOrganism, renderTaxonList, formatListItem, getStudyImage, highlightLinks, getLicenceLogo, formatHighlightedList } from "../../components/SharedJSFunctions.js";
+import  HighlightedText  from "../../components/HighlightedText.astro";
+import "../../styles/dataset_card.css"
+const { study, studyPageRoot, taglist, annotationType, cardImageOverride, highlight, query} = Astro.props;
+
+function getDataForCardFilter(study) {
+    var hasImage = study?.image?.length > 0 || false;
+    const dataString = `${study.accession_id}; ${study.release_date}; ${study.title}; ${renderTaxonList(study)}; ${study?.imaging_method?.reduce(formatListItem, "")}; has_img: ${hasImage}`
+    return dataString
+}
+const highlightedTextString = getHighlightTextString(highlight);
+const studyCardImage = getStudyImage(study, cardImageOverride);
+const isFallback = String(studyCardImage).includes("placeholder");
+const fallbackMessage = isFallback ? "We cannot display images for this study yet." : "";
+const imagingMethod = formatHighlightedList(study?.imaging_method, query, {
+  sort: false,
+});
+const organism = highlightOrganism(study, query);
+const annotationMethod = formatHighlightedList(annotationType ?? study?.annotation_type?.map((at: string) => at.replace(/_/g, " ")) ?? [], query, {
+  sort: false,
+});
+const licenceURL = navigationURL(study?.licence_details?.uri || study?.licence);
+const logoURL = resourceURL(study?.licence_details?.logo_uri) || getLicenceLogo(licenceURL);
+const logoAlt = study?.licence_details?.label || "";
+
+const base = `/bioimage-archive/${studyPageRoot}/${study.accession_id}`;
+const highlightedStudyLink = highlightLinks(base, highlight, query);
+---
+<article class="vf-card vf-card--brand vf-card--bordered custom-card" data-message={getDataForCardFilter(study)}>
+    <div class="image-container">
+        <img src={  studyCardImage} alt={fallbackMessage} title={fallbackMessage} class="vf-card__image" loading="lazy" style="aspect-ratio: 1/1;">
+        {isFallback && (
+                <div class="image-overlay" role="note" aria-label={fallbackMessage}>
+                    <span>{fallbackMessage}</span>
+                </div>
+            )}
+        <div class="license-badge">
+            {licenceURL && logoURL && (
+                <a href={licenceURL} class="vf-link"><img src={logoURL} alt={logoAlt}/></a>
+            )}
+        </div>
+    </div>
+    {highlightedTextString && (
+            <div class="tooltip">
+                <span class="tooltiptext">
+                    <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
+                    <HighlightedFields highlights={highlight} />
+                </span>
+            </div>
+        )}
+    <div class="vf-card__content | vf-stack vf-stack--400">
+        <h3 class="vf-card__heading">
+            <a class="vf-card__link" href={highlight? highlightedStudyLink : base} >
+                { study.accession_id }
+                <svg aria-hidden="true" class="vf-card__heading__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="currentColor" fill-rule="nonzero"></path></svg>
+            </a>
+        </h3>
+        <p class="vf-card__text">
+        <HighlightedText text={highlight?.title?.[0] ?? study.title} /> <br />
+        <b>Release date: </b>{ study.release_date }<br>
+        {imagingMethod && (<><b>Imaging method: </b><HighlightedText text={imagingMethod} /><br /></>)}
+        {organism && (<><b>Organism: </b><HighlightedTaxa record={study} query={query} /> </>)}
+        </p>
+
+        {taglist && taglist.length > 0 && (
+            <p class="vf-card__text">
+                <b>Tags:</b> {taglist.reduce(formatListItem, "")}
+            </p>
+        )}
+
+        {annotationMethod && annotationMethod.length > 0 && (
+            <p class="vf-card__text">
+                <b>Annotation Method:</b><HighlightedText text={annotationMethod || "No information available"} />
+            </p>
+        )}
+    </div>
+</article>
+<style>
+    .image-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+        opacity: 1;
+        pointer-events: none;
+        z-index: 999;
+    }
+
+    .image-container {
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+    .license-badge {
+        position: absolute;
+        top: 7px;
+        left: 7px;
+        background: rgba(243, 243, 243, 0.9);
+        padding: 0px;
+        border-radius: 4px;
+        z-index: 999;
+    }
+    .license-badge img {
+        display: block;
+        height: var(--license-badge-height, 28px);
+        width: auto;
+    }
+</style>

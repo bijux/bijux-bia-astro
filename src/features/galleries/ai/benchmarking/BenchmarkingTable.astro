@@ -1,0 +1,124 @@
+---
+import { escapeHtml } from "../../../../security/html.mjs";
+import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json"
+import { getStudyFromApiByAccession } from "../../../../components/SharedJSFunctions";
+
+const { tableRows, studyOrModelPageMode } = Astro.props;
+
+export async function getDatasetUUIDNameMap(tableRows) {
+    var studyIDs: Set<string> = new Set()
+    for (var row of tableRows) {
+        studyIDs.add(row.study)
+    }
+    const datasetUUIDNameMap = new Map();
+    for (var accessionID of studyIDs) {
+        const study = await getStudyFromApiByAccession(accessionID);
+        for (var dataset of study.dataset) {
+            datasetUUIDNameMap.set(dataset.uuid, dataset.title)
+        }
+    }
+    return datasetUUIDNameMap
+}
+
+const datasetUUIDNameMap = await getDatasetUUIDNameMap(tableRows)
+
+export function formatSingleParameter(acc, key_value) {
+    return `${acc}${escapeHtml(key_value[0])}: ${escapeHtml(key_value[1])}<br/>`
+}
+
+export function formatRowAnalysisParameters(analysisParameters) {
+    return Object.entries(analysisParameters).filter(([, value]) => value != null).reduce(formatSingleParameter, "")
+}
+
+const filtered_table_rows = tableRows.filter(row => row.precision != null)
+const hasReferenceImage = tableRows.filter(row => row.annotation_data_set_uuid != null).length > 0 ? true : false
+
+---
+
+<section class="vf-intro | embl-grid | embl-grid--has-centered-content | section-spacing">
+
+    <div class="vf-section-header">
+      <h2 class="vf-section-header__heading" id="benchmarking">
+        Benchmarking
+      </h2>
+    </div>
+
+    <div class="bia-table-controls">
+        {
+            hasReferenceImage && (
+                <table id="benchmarking_table" class="display">
+                    <thead class="vf-table__header">
+                        <tr class="vf-table__header">
+                            {
+                                studyOrModelPageMode == 'model' && (
+                                    <th class="vf-table__heading" >Study</th>
+                                )
+                            }
+                            <th class="vf-table__heading" >Dataset</th>
+                            {
+                                studyOrModelPageMode == 'study' && (
+                                    <th class="vf-table__heading" >Model</th>
+                                    <th class="vf-table__heading" >Task</th>
+                                )
+                            }
+                            <th class="vf-table__heading" >Precision</th>
+                            <th class="vf-table__heading" >Recall</th>
+                            <th class="vf-table__heading" >IoU</th>
+                            <th class="vf-table__heading" >Dice</th>
+                            <th class="vf-table__heading" >Analysis parameters</th>
+                        </tr>
+                    </thead>
+                    <tbody class="vf_table__body">
+                    {
+                        filtered_table_rows.map((row) => (
+                        <tr>
+                            {
+                                studyOrModelPageMode == 'model' && (
+
+                                    <td style="white-space: nowrap;"> <a href={"/bioimage-archive/galleries/ai/analysed-study/" + row.study}>{row.study}</a> </td>
+
+                                )
+                            }
+                            <td>{datasetUUIDNameMap.get(row.dataset_uuid)}</td>
+                            {
+                                studyOrModelPageMode == 'study' && (
+                                    <td> <a href={"/bioimage-archive/galleries/ai/model/" + row.model}>{row.model}</a></td>
+                                    <td>{modelMetadata[row.model].task}</td>
+                                )
+                            }
+                            <td>{row.precision}</td>
+                            <td>{row.recall}</td>
+                            <td>{row.IoU}</td>
+                            <td>{row.dice}</td>
+                            <td style="white-space: nowrap;"> <Fragment set:html={formatRowAnalysisParameters(row.analysis_parameters)}/></td>
+                        </tr>
+                        ))
+                    }
+                    </tbody>
+                </table>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                    $("#benchmarking_table").DataTable({
+                        scrollX: true,
+                        columnDefs: [{ type: "natural", targets: 0 }],
+                    });
+                    });
+                </script>
+            )
+        }
+        {
+            (!hasReferenceImage) && (
+                <div>
+                    {studyOrModelPageMode == 'model' &&
+                        (<p> This model was not tested on datasets with reference annotations, so we cannot produce benchmarking metrics.</p>)
+                    }
+                    {studyOrModelPageMode == 'study' &&
+                        (<p> This dataset does not have reference annotations, so we cannot produce benchmarking metrics.</p>)
+                    }
+                </div>
+
+            )
+        }
+    </div>
+</section>

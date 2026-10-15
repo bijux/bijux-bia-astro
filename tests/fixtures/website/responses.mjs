@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs';
+import { benchmarkStudies } from '../scenarios/benchmark-datasets.mjs';
+import { annotationStudy, sourceImage, annotationImages } from '../scenarios/annotations.mjs';
 
 const saved = name => JSON.parse(readFileSync(new URL(`../api/${name}-response.json`, import.meta.url)));
 const studies = ['study-s-biad3335', 'study-empiar12104'].map(name => saved(name).hits.hits[0]._source);
@@ -11,10 +13,17 @@ export function fixtureResponse(value) {
     if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/biostudies/api/v1/studies/S-BIAD3335/info') return { httpLink: 'https://www.ebi.ac.uk/biostudies/files/S-BIAD3335/' };
     if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
+    if (url.pathname === '/search/v1/website/image' && url.searchParams.get('query') === sourceImage.uuid) {
+        const images = url.searchParams.get('includeDerivedImages') === 'true' ? [sourceImage, ...annotationImages] : [sourceImage];
+        return { hits: { hits: images.map(_source => ({ _source })) } };
+    }
     if (url.pathname === '/search/v1/website/study') {
-        const study = studies.find(item => item.accession_id === url.searchParams.get('facet.accession_id'));
+        const accession = url.searchParams.get('facet.accession_id');
+        const study = [...studies, annotationStudy].find(item => item.accession_id === accession) ?? benchmarkStudies.get(accession);
         if (study) return { hits: { hits: [{ _source: study }] } };
     }
+    // Explicit synthetic boundary: this representative internal image has no returned terminal descendants.
+    if (url.pathname === '/search/v1/website/image' && url.searchParams.get('facet.downstream_of') === image.uuid && url.searchParams.get('facet.specimen_track_position') === 'terminal') return { hits: { hits: [] } };
     if (url.pathname === '/search/v1/website/image' && url.searchParams.get('query') === image.uuid) return { hits: { hits: [{ _source: image }] } };
     if (url.pathname === '/search/v1/website/browse/study' && url.searchParams.get('pagination.page_size') === '100') return {
         hits: { total: { value: studies.length, relation: 'eq' }, hits: studies.map(_source => ({ _source })) },

@@ -4,9 +4,9 @@ export const prerender = false;
 import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import WebsiteStateButton from '../../../../components/WebsiteStateButton.astro';
 import { getTaxons, getAnnotationType, getImageFromAPI, getStudyFromApiByAccession, getAnnotationFromDerivedImages } from "../../../../components/SharedJSFunctions.js";
-import SourceAnnotatedImage from '../../../../components/ai-gallery/SourceAnnotatedImage.astro';
+import SourceAnnotatedImage from '../../../../features/galleries/ai/SourceAnnotatedImage.astro';
 import { type Study } from "../../../../components/SharedInterface.astro"
-import StudyComponents from "../../../../components/ai-gallery/StudyComponents.astro";
+import StudyComponents from "../../../../features/galleries/ai/StudyComponents.astro";
 import "../../../../styles/image_slider.css";
 
 const { uuid } = Astro.params;

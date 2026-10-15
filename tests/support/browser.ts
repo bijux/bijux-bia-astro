@@ -13,6 +13,7 @@ export const test = base.extend<{ expectedHTTPFailures: string[] }>({
             }
             if (url.hostname === 'www.googletagmanager.com') return route.fulfill({ body: '', contentType: 'text/javascript' });
             if (url.origin === 'https://livingobjects.ebi.ac.uk' && url.pathname === '/bioimaging-01-pub/bia-filelist/bff/index.html') return route.fulfill({ body: '<!doctype html><title>External file browser excluded</title>', contentType: 'text/html' });
+            if (url.origin === 'https://livingobjects.ebi.ac.uk' && url.pathname === '/bioimaging-01-pub/bia-zarr-test/vizarr/index.html') return route.fulfill({ body: '<!doctype html><title>External viewer excluded</title>', contentType: 'text/html' });
             if (['image', 'font'].includes(request.resourceType())) return route.fulfill({ status: 204 });
             if (['assets.emblstatic.net', 'ebi.emblstatic.net', 'www.embl.org'].includes(url.hostname)) return route.fulfill({ body: '', contentType: request.resourceType() === 'stylesheet' ? 'text/css' : 'text/javascript' });
             unexpected.push(request.url()); return route.abort();
