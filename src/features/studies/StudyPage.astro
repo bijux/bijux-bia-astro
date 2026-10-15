@@ -1,5 +1,5 @@
 ---
-import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import { navigationURL } from "../../security/urls.mjs";
 import { generateHowToCiteText } from "../../formatting/citation.mjs";
 import BaseLayoutWithBreadcrumbs from "../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import StudyTitleInfo from "./StudyTitleInfo.astro";
@@ -8,9 +8,13 @@ import DatasetInfo from "../metadata/DatasetInfo.astro";
 import ViewableImageTable from "./ViewableImageTable.astro";
 import FileListTable from "./FileListTable.astro";
 import Citation from "../../components/ui/Citation.astro";
-import { buildPDBandEMDBLinks, getMetadataValue, multilineTextRender, formatBytesToHumanSize, getStudyImage} from "../../components/SharedJSFunctions.js"
+import { buildPDBandEMDBLinks } from "./related-entries.mjs";
+import { getMetadataValue } from "../metadata/records.mjs";
+import { multilineTextRender } from "../../formatting/plain-text.js";
+import { formatBytesToHumanSize } from "../../formatting/units.mjs";
+import { getStudyImage } from "../images/study-image.mjs";
 import { getFromAPI, getStudyFromApiByAccession } from "../../api/client.mjs";
-import { type Study } from "../../components/SharedInterface.astro"
+import { type Study } from "../../api/types.ts"
 
 const tableOfContents = {
   "Viewable Images": "viewable_images",

@@ -6,8 +6,8 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { HtmlValidate } from 'html-validate';
 
-export const repository = fileURLToPath(new URL('../../', import.meta.url));
-export const output = path.join(repository, 'artifacts/website-verification');
+const repository = fileURLToPath(new URL('../../', import.meta.url));
+const output = path.join(repository, 'artifacts/website-verification');
 export const root = path.join(output, 'application');
 const preload = pathToFileURL(path.join(root, 'tests/fixtures/website/preload.mjs')).href;
 export const env = { ...process.env, NETLIFY: 'false', NETLIFY_DEV: 'false', AWS_LAMBDA_FUNCTION_NAME: '', PUBLIC_SEARCH_API: 'https://alpha.bioimagearchive.org/search/v1', PUBLIC_MONGO_API: 'https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2', PUBLIC_GTAG: '', PUBLIC_WEBSITE_STATE: 'PROD', PUBLIC_ALLOW_LOCAL_VIEWERS: 'false', SITE_URL: 'http://localhost', NODE_OPTIONS: `--import=${preload}`, ASTRO_TELEMETRY_DISABLED: '1' };

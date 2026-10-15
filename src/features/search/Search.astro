@@ -9,8 +9,8 @@ import PaginationControl from './PaginationControl.astro';
 import  "../../styles/toggle.css"
 import "../../styles/browse_controls.css"
 import "../../styles/filter_cards.css"
-import { generateParamString } from "../../components/SharedJSFunctions.js"
-import {type SelectedFacets, type SearchHits, type FacetData, type PaginationData} from "./SearchInterface.astro"
+import { generateParamString } from "./query.mjs";
+import {type SelectedFacets, type SearchHits, type FacetData, type PaginationData} from "./types.ts"
 import SearchResultsTable  from "./SearchResultsTable.astro"
 import SearchResultsCompactCards  from "./SearchCompactCards.astro"
 import { PUBLIC_SEARCH_API } from "astro:env/client";

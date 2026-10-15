@@ -3,7 +3,7 @@ import { constants } from 'node:fs';
 import { readdir, lstat, open } from 'node:fs/promises';
 import { resolve, relative, extname, isAbsolute } from 'node:path';
 
-export const codeExtensions = new Set(['.astro', '.js', '.mjs', '.cjs', '.jsx', '.ts', '.mts', '.cts', '.tsx']);
+const codeExtensions = new Set(['.astro', '.js', '.mjs', '.cjs', '.jsx', '.ts', '.mts', '.cts', '.tsx']);
 const generated = new Set(['node_modules', '.git', '.astro', '.netlify', 'dist', 'coverage', 'artifacts']);
 export const sha256 = value => createHash('sha256').update(value).digest('hex');
 export const slash = value => value.replaceAll('\\', '/');

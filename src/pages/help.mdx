@@ -4,7 +4,8 @@ layout: ../layouts/HelpLayout.astro
 ---
 import onlineImage from '/src/assets/bioimage-archive/online_tutorial_image.png';
 import TrainingSection from "../features/training/TrainingSection.astro";
-import {getTutorialURLs} from '../components/SharedJSFunctions.js';
+import { getTutorialURLs } from '../features/training/links.mjs';
+
 
 export const tutorial_url = await getTutorialURLs("quick-tour");
 

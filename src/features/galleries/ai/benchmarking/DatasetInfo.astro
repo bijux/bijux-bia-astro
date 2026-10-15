@@ -1,5 +1,9 @@
 ---
-import { formatListItem, taxonRender, multilineTextRender, getStudyFromApiByAccession } from "../../../../components/SharedJSFunctions";
+import { formatListItem } from "../../../../formatting/lists.mjs";
+import { taxonRender } from "../../../metadata/taxonomy.mjs";
+import { multilineTextRender } from "../../../../formatting/plain-text.js";
+import { getStudyFromApiByAccession } from "../../../../api/client.mjs";
+
 import { getOrganismClassifications, getBiologicalEntityDescriptions } from "../../../metadata/biological-entities.js";
 
 const { dataset, datasetAIInfo, studyAccessionID } = Astro.props;

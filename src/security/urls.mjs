@@ -27,7 +27,7 @@ export function resourceURL(value, { allowLocal = false } = {}) {
     return approved;
 }
 
-export function isLocalHostname(hostname) {
+function isLocalHostname(hostname) {
     const host = hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
     if (host.includes(":")) {
         // WHATWG URL parsing canonicalizes IPv4-mapped literals to hexadecimal IPv6.

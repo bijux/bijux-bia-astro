@@ -1,7 +1,13 @@
 ---
 import HighlightedTaxa from "./HighlightedTaxa.astro";
 const { results, resultType, query, cardImageOverride } = Astro.props;
-import { highlightOrganism,  getStudyImage, getThumbnail, formatPhysicalDimensions, formatPixelDimensions, getSimpleAttributeValue, highlightLinks, applyHighlight, formatHighlightedList } from "../../components/SharedJSFunctions.js";
+import { highlightLinks, applyHighlight, formatHighlightedList } from "./highlights.mjs";
+import { getStudyImage } from "../images/study-image.mjs";
+import { getThumbnail } from "../images/thumbnails.mjs";
+import { formatPhysicalDimensions } from "../../formatting/physical-dimensions.js";
+import { formatPixelDimensions } from "../../formatting/units.mjs";
+import { getSimpleAttributeValue } from "../metadata/records.mjs";
+
 import  HighlightedText  from "./HighlightedText.astro";
 
 export function getImageRep(image){

@@ -1,7 +1,8 @@
 ---
 import imageFallback from "../../assets/bioimage-archive/image_fallback.png";
 import { PUBLIC_SEARCH_API } from "astro:env/client";
-import { studyHasSpecimenTracks } from "../../components/SharedJSFunctions.js";
+import { studyHasSpecimenTracks } from "../../api/client.mjs";
+
 import "../../styles/toggle.css";
 const SEARCH_API = PUBLIC_SEARCH_API === "http://localhost:8081/v1" || PUBLIC_SEARCH_API.includes("alpha.bioimage")? PUBLIC_SEARCH_API: "/search/v1";
 const { study, images, imagePageRoot } = Astro.props;

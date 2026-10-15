@@ -1,10 +1,12 @@
 ---
-import { navigationURL, resourceURL } from "../../../../security/urls.mjs";
+import { navigationURL } from "../../../../security/urls.mjs";
 import BenchmarkingTable from "./BenchmarkingTable.astro"
 import ModelPredictionTable from "./ModelPredictionTable.astro"
 import WebsiteStateButton from "../../../../components/ui/WebsiteStateButton.astro";
 
-import { formatListItem, multilineTextRender } from "../../../../components/SharedJSFunctions";
+import { formatListItem } from "../../../../formatting/lists.mjs";
+import { multilineTextRender } from "../../../../formatting/plain-text.js";
+
 
 
 const { modelName, modelMetadata, tableInfo, aiProjectLogosBasepath} = Astro.props;

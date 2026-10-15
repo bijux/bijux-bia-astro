@@ -2,9 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import BrowseDatasetHeading from '../../features/search/BrowseStudiesHeading.astro';
 import DatasetCard from '../../features/search/BrowseStudyCard.astro';
-import {getStudyFromApiByAccession} from "../../components/SharedJSFunctions.js"
+import { getStudyFromApiByAccession } from "../../api/client.mjs";
 import collection from '../../data/collections/spatialomics.json';
-import { type Studies } from "../../components/SharedInterface.astro"
+import { type Studies } from "../../api/types.ts"
 
 const studiesEntries = await Promise.all(
   Object.values(collection.accession_ids).map(async (accessionID) => {

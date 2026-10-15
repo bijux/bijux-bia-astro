@@ -2,8 +2,8 @@
 import { resourceURL } from "../../../security/urls.mjs";
 import { scriptData } from "../../../security/html.mjs";
 import ImageInfo from "./ImageInfo.astro";
-import { buildVizarrViewerURL, getPublicVisualisationURI, getSimpleAttributeValue } from "../../../components/SharedJSFunctions"
-
+import { buildVizarrViewerURL, getPublicVisualisationURI } from "../../images/viewers.mjs";
+import { getSimpleAttributeValue } from "../../metadata/records.mjs";
 const { annotatedImages, sourceImage } = Astro.props;
 
 function getAttributes(image) {

@@ -15,7 +15,7 @@ related_issue_url: https://embl.atlassian.net/browse/BIOIM-347
 
 # Source-audit findings and runtime contracts
 
-[BIOIM-322](https://embl.atlassian.net/browse/BIOIM-322) delivers the audit tooling together with the reviewed source corrections and removals tracked by [BIOIM-347](https://embl.atlassian.net/browse/BIOIM-347). This document records the source decisions and preserved runtime contracts.
+[BIOIM-322](https://embl.atlassian.net/browse/BIOIM-322) delivers the audit tooling together with the reviewed source corrections and removals tracked by [BIOIM-347](https://embl.atlassian.net/browse/BIOIM-347). This document records the original source decisions and preserved runtime contracts. Its dated counts are historical; run the audit for the current inventory.
 
 The initial audit reported 80 candidates and 21 parser diagnostics. These counts describe analyzer observations, not 101 unused resources. Review the configured graph, source context and affected behavior before changing code. The audit commands and failure semantics are documented in [repository quality checks](quality.md).
 
@@ -40,7 +40,7 @@ The source corrections balance mismatched layout/HTML closing tags, complete typ
 
 Unused local tuple elements use destructuring elisions so the second element stays in its original position. The spatialomics file table still initializes DataTables and attaches copy handlers; only its unused return handle and trailing callback argument are removed. Bare DataTables imports preserve module initialization. Removing a local asset import does not remove the asset itself.
 
-Six functions in `SharedJSFunctions.js` have callers within that module. Their implementations remain, with unnecessary exports removed. Only helpers with no active caller are removed. The CC0 licence-logo branch returns the same concatenated URL without assigning it back to an unread local.
+The six formerly internal shared helpers retain their callers in feature-owned modules and `src/formatting/`. Only helpers with no active caller are removed. The CC0 licence-logo branch returns the same concatenated URL without assigning it back to an unread local.
 
 The benchmarking biological-entity helpers formerly assigned an empty fallback and then unconditionally called `flatMap` on the original value. The pure helpers in `components/ai-benchmarking/biological-entities.js` normalize missing/non-array collections, preserve valid object identity, ordering and authored descriptions, and omit null/non-object taxon entries before rendering. Metadata regression tests cover these contracts.
 
@@ -80,8 +80,8 @@ CaseStudy's `img :global(img)` required an image inside another image, while its
 | Volume-EM `copyURI` | Child-card inline handlers call the browser-global function. |
 | jQuery and DataTables type dependencies | Runtime table integrations and automatically loaded ambient browser types need a separate dependency review. |
 | Announcement collection loading | The result is unused by active markup, but the awaited content operation remains; deciding to retire the feature is separate work. |
-| `buildDatasetFileSummary` | Its only study-page call is currently commented out. Removing the unused import exposes the helper as a new candidate; retiring that feature and its related XML helpers is a separate decision. |
-| `getRelatedEntryLinks` export | Accepted main uses this function inside `SharedJSFunctions.js`; its export is a separate API-surface decision. Preserve the function and its callers. |
+| `buildDatasetFileSummary` | The uncalled EMPIAR XML adapter was retired after removing the shared barrel and verifying that no application or test caller remained. Dataset summaries retain their current API-backed rendering. |
+| `getRelatedEntryLinks` export | The uncalled compatibility wrapper was retired; `loadRelatedEntries` preserves the active PDB/EMDB lookup contract. |
 | `html-validate` development dependency | Reserved companion analyzer in the shared locked audit profile. Its usage is supplied by the independently reviewed markup audit; keep the standalone observation visible rather than suppressing it. |
 | SPORA `sporaData`, `sporaIO` and `sporaBench` bindings | Four binding observations across the SPORA landing/dataset pages come from accepted main. Preserve the accepted imports and page implementations pending an initializer/feature review; this integration does not retire them. |
 

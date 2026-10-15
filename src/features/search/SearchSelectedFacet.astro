@@ -1,6 +1,8 @@
 ---
-import { generateParamString, formatBytes, formatFieldName } from "../../components/SharedJSFunctions.js";
-import {type SelectedFacets} from "./SearchInterface.astro";
+import { generateParamString } from "./query.mjs";
+import { formatBytes, formatFieldName } from "../../formatting/units.mjs";
+
+import {type SelectedFacets} from "./types.ts";
 import { capitalizeFirstLetter } from "./SearchFacet.astro"
 
 const { selectedList, key, url, text, query, selectedFacets = {}, kind, minVal, maxVal, pageSize = 12, sortBy = "", sortOrder = "", sortSource = ""} = Astro.props;

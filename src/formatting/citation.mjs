@@ -1,11 +1,11 @@
 import { escapeHtml } from "../security/html.mjs";
 import { navigationURL } from "../security/urls.mjs";
 
-export function formatAuthor(name = "") {
+function formatAuthor(name = "") {
     return String(name).trim().replace(/\s+/g, " ").replace(/\b\, PhD\b.*$/i, "").replace(", ", " ");
 }
 
-export function doiToTag(doi) {
+function doiToTag(doi) {
     const href = navigationURL(doi);
     return href ? `<a class="vf-link" href="${escapeHtml(href)}">doi:${escapeHtml(doi.trim().replace(/^https?:\/\/doi\.org\//i, ""))}</a>` : "";
 }

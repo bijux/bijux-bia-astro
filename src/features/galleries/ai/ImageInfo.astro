@@ -1,6 +1,7 @@
 ---
 import ImageMetadata from "./ImageMetadata.astro";
-import { buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI } from "../../../components/SharedJSFunctions.js";
+import { buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI } from "../../images/viewers.mjs";
+
 
 const { url, imageRep, imageAtrributes, text, btnID} = Astro.props;
 const publicUrl = getPublicVisualisationURI(url);

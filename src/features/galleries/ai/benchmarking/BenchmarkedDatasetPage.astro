@@ -1,12 +1,14 @@
 ---
-import { navigationURL, resourceURL } from "../../../../security/urls.mjs";
+import { navigationURL } from "../../../../security/urls.mjs";
 import StudyTitleInfo from "../../../studies/StudyTitleInfo.astro";
 import StudyContentsSummary from "../../../studies/StudyContentsSummary.astro";
 import DatasetInfo from "./DatasetInfo.astro"
 import BenchmarkingTable from "./BenchmarkingTable.astro"
 import ModelPredictionTable from "./ModelPredictionTable.astro"
 
-import { formatListItem, multilineTextRender } from "../../../../components/SharedJSFunctions";
+import { formatListItem } from "../../../../formatting/lists.mjs";
+import { multilineTextRender } from "../../../../formatting/plain-text.js";
+
 
 const { accessionID, studyMetadata, additionalStudyMetadata, tableInfo} = Astro.props;
 

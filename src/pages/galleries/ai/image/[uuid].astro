@@ -3,9 +3,12 @@ import { scriptData } from "../../../../security/html.mjs";
 export const prerender = false;
 import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import WebsiteStateButton from '../../../../components/ui/WebsiteStateButton.astro';
-import { getTaxons, getAnnotationType, getImageFromAPI, getStudyFromApiByAccession, getAnnotationFromDerivedImages } from "../../../../components/SharedJSFunctions.js";
+import { getTaxons } from "../../../../features/metadata/taxonomy.mjs";
+import { getAnnotationType } from "../../../../features/metadata/records.mjs";
+import { getImageFromAPI, getStudyFromApiByAccession, getAnnotationFromDerivedImages } from "../../../../api/client.mjs";
+
 import SourceAnnotatedImage from '../../../../features/galleries/ai/SourceAnnotatedImage.astro';
-import { type Study } from "../../../../components/SharedInterface.astro"
+import { type Study } from "../../../../api/types.ts"
 import StudyComponents from "../../../../features/galleries/ai/StudyComponents.astro";
 import "../../../../features/galleries/ai/image-slider.css";
 

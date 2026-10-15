@@ -34,7 +34,7 @@ The root `Makefile` imports `makes/quality.mk`; quality configuration lives in `
 
 `configs/quality/tsconfig.check.json` scopes the normal check to source, quality scripts/configuration and tests, excluding generated evidence. The root `tsconfig.json` and existing build command are unchanged. The stricter audit tsconfig is opt-in because it exposes existing source issues beyond the regular check.
 
-`npm test` discovers every `tests/**/*.test.mjs` file, including the dead-code regression tests and the installed Astro analyzer integration probe. CI uses this same command. `npm run test:dead-code` remains available for focused checks; it runs every test file directly in `tests/dead-code/`. The standalone `scripts/dead-code/verify-tools.mjs` probe also remains available to the audit runner.
+`npm test` discovers every `tests/**/*.test.mjs` file, including the dead-code regression tests and the installed Astro analyzer integration probe. CI uses this same command. `npm run test:dead-code` remains available for focused checks; it runs every test file directly in `tests/functional/audits/dead-code/`. The standalone `scripts/dead-code/verify-tools.mjs` probe also remains available to the audit runner.
 
 ## Audit commands
 

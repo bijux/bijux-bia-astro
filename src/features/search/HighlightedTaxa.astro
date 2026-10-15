@@ -1,6 +1,7 @@
 ---
 import HighlightedText from "./HighlightedText.astro";
-import { applyHighlight } from "../../components/SharedJSFunctions.js";
+import { applyHighlight } from "./highlights.mjs";
+
 const { record, query } = Astro.props;
 const highlight = value => query && value ? applyHighlight(value, query) : value;
 const taxa = [];
