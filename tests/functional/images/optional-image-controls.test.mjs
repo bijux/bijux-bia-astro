@@ -23,8 +23,18 @@ const copyScripts = findScripts(ast).map(node => node.children.map(child => chil
     .filter(script => script.includes('"CopyURLButton"'));
 assert.equal(copyScripts.length, 1);
 const copyScript = ts.transpileModule(copyScripts[0], {
-    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
+
+const clipboardSource = await readFile(new URL('../../../src/components/ui/clipboard.mjs', import.meta.url), 'utf8');
+const clipboardScript = ts.transpileModule(clipboardSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+function runCopy(context) {
+    const exports = {};
+    vm.runInNewContext(clipboardScript, { ...context, exports, clearTimeout });
+    vm.runInNewContext(copyScript, { ...context, exports: {}, require: name => {
+        assert.equal(name, '../../components/ui/clipboard.mjs'); return exports;
+    } });
+}
 
 test('an absent viewable-image table registers no handlers and needs no jQuery', () => {
     const events = [];
@@ -82,24 +92,24 @@ test('a present table retains initialization, image destinations and its API req
 });
 
 test('an image without an OME-Zarr copy button needs no clipboard API', () => {
-    vm.runInNewContext(copyScript, { document: { getElementById: () => null } });
+    runCopy({ document: { getElementById: () => null } });
 });
 
 test('an image copy button copies its supplied URI and restores its label', async () => {
-    const button = { innerText: 'Copy OME-Zarr URI', dataset: { url: 'https://example.org/image.ome.zarr' } };
+    const button = { textContent: 'Copy OME-Zarr URI', disabled: false, dataset: { url: 'https://example.org/image.ome.zarr' } };
     const copied = [];
     const timers = [];
-    vm.runInNewContext(copyScript, {
+    runCopy({
         document: { getElementById: () => button },
         navigator: { clipboard: { writeText: async text => copied.push(text) } },
         setTimeout: (callback, duration) => timers.push({ callback, duration }),
     });
     await button.onclick();
     assert.deepEqual(copied, [button.dataset.url]);
-    assert.equal(button.innerText, 'URI Copied');
+    assert.equal(button.textContent, 'URI Copied');
     assert.equal(timers[0].duration, 700);
     timers[0].callback();
-    assert.equal(button.innerText, 'Copy OME-Zarr URI');
+    assert.equal(button.textContent, 'Copy OME-Zarr URI');
 });
 
 test('the shared browser loader establishes blocking local jQuery before DataTables', async () => {

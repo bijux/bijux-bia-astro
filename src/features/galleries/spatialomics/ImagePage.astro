@@ -187,24 +187,12 @@ const breadcrumbs = [
                       )
                   }
                   <script>
-
-                      const copyUrlButton = document.getElementById("CopyURLButton");
-                      if (copyUrlButton) {
-                          const originalText = copyUrlButton.innerText;
-                          copyUrlButton.onclick = async () => {
-                              await copyUrl(copyUrlButton.dataset.url, copyUrlButton, originalText);
-                          };
-                      }
-
-                      async function copyUrl(url, button, originalText) {
-                          await navigator.clipboard.writeText(url);
-                          button.innerText = "URI Copied";
-                          setTimeout(() => {
-                              button.innerText = originalText;
-                          }, 700);
-                      }
-
-                  </script>
+                    import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
+                    const copyUrlButton = document.getElementById("CopyURLButton");
+                    if (copyUrlButton) {
+                        copyUrlButton.onclick = () => copyWithFeedback(copyUrlButton, copyUrlButton.dataset.url);
+                    }
+                </script>
               </div>
           </section>
 

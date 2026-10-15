@@ -55,7 +55,7 @@ export default defineConfig({
 import Layout from '../layouts/${layout}.astro';
 import News from '../features/news/News.astro';
 import SearchBar from '../features/search/SearchBar.astro';
-import CodeDialog from '../components/ui/CodeDialog.astro';
+import CodeDialog from '../features/projects/spora/CodeDialog.astro';
 import FileListTable from '../features/studies/FileListTable.astro';
 import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
 import ViewableImageTable from '../features/studies/ViewableImageTable.astro';

@@ -37,3 +37,24 @@ test('SPORA filters regenerate working download actions and clear to the origina
     await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
     await expect(rows).toHaveCount(initial);
 });
+
+test('clipboard rejection leaves the SPORA dialog usable and a retry copies the same command', async ({ page }) => {
+    await page.goto('/bioimage-archive/projects/spora/dataset');
+    await page.evaluate(() => Object.defineProperty(navigator.clipboard, 'writeText', {
+        configurable: true, value: async () => { throw new DOMException('Denied for this check', 'NotAllowedError'); },
+    }));
+    const opener = page.getByRole('button', { name: 'Download', exact: true }).first();
+    await opener.click();
+    const dialog = page.locator('.globus-dialog[open]');
+    const command = await dialog.locator('code').textContent();
+    const copy = dialog.locator('.copy-commands');
+    await copy.click();
+    await expect(copy).toHaveText('Copy unavailable');
+    await expect(copy).toBeEnabled(); await expect(dialog).toBeVisible();
+    await expect(dialog.locator('code')).toHaveText(command!);
+    await page.evaluate(() => Reflect.deleteProperty(navigator.clipboard, 'writeText'));
+    await copy.click();
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
+    await page.keyboard.press('Escape');
+    await expect(opener).toBeFocused();
+});

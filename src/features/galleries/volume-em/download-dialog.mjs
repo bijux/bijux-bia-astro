@@ -1,3 +1,4 @@
+import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
 import { resourceURL } from "../../../security/urls.mjs";
 
 /** Quote one POSIX shell argument; generated commands are displayed/copied, never run. */
@@ -60,8 +61,7 @@ export function copyURI(opener) {
         element("p", "You can copy this URI. An anonymous AWS CLI command is not available for this address.");
     }
     async function copy(value, control) {
-        try { await navigator.clipboard.writeText(value); dialog.close(); }
-        catch { control.textContent = "Copy unavailable"; }
+        if (await copyWithFeedback(control, value, { success: "Copied" })) dialog.close();
     }
     const copyLocation = button("Copy S3 URI", () => copy(uri, copyLocation));
     if (command) {
