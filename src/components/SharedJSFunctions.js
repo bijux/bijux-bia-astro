@@ -1,7 +1,8 @@
 import { PUBLIC_SEARCH_API } from "astro:env/client";
 import imageFallback from "../assets/bioimage-archive/image_fallback.png"
+import { parseNumericRange } from "./formatting/numeric-ranges.mjs";
 
-export function getPlaceholderHeroImage(accessionID) {
+function getPlaceholderHeroImage(accessionID) {
     const match = (accessionID.match(/(\d{1,5})$/)) || ['0','1'];
     const accessionIDNumber = parseInt(match[1]);
     const imageNumber = (accessionIDNumber % 45) + 1;
@@ -37,10 +38,7 @@ export function taxonRender(taxon) {
  }
 
 
-export function multilineTextRender(value) {
-    const output = value.toString().trim().replace(/(?:[\r\n|\r|\n]+)/g, "<br/><br/>")
-    return output
-}
+export { multilineTextRender } from "./formatting/plain-text.js";
 
 
 export function formatBytesToHumanSize(sizeBytes) {
@@ -48,7 +46,7 @@ export function formatBytesToHumanSize(sizeBytes) {
   return `${Number(sizeBytes / Math.pow(1000, i)).toFixed(2)} ${['B', 'kB', 'MB', 'GB', 'TB', 'PB'][i]}`
 }
 
-export function formatMetresToHumanSize(metres) {
+function formatMetresToHumanSize(metres) {
   var i = metres == 0 ? 0 : Math.floor(Math.log(metres) / Math.log(1000)) * -1;
   var formatted = `${Number(metres / Math.pow(1000, i*-1)).toFixed(0)} ${['mm', 'µm', 'nm', "pm"][i-1]}`
   return formatted;
@@ -72,7 +70,7 @@ function formatValueHumanReadable(fieldName, value) {
 
 export function formatFieldName(fieldName, fieldValue) {
   const bIsCompared = fieldValue.startsWith(">") || fieldValue.startsWith("<") || fieldValue.startsWith("≤") || fieldValue.startsWith("≥");
-  const bIsRange = fieldValue.includes("-");
+  const range = parseNumericRange(fieldValue);
   if(Number.isFinite(fieldValue)) {
     return formatValueHumanReadable(fieldName, fieldValue);
   }
@@ -80,8 +78,8 @@ export function formatFieldName(fieldName, fieldValue) {
     const fieldValueNumeric = fieldValue.slice(1);
     return `${fieldValue[0]} ${formatValueHumanReadable(fieldName, fieldValueNumeric)}`;
   }
-  else if (bIsRange) {
-    const [start, end] = fieldValue.split("-");
+  else if (range) {
+    const { start, end } = range;
     return `${formatValueHumanReadable(fieldName, start)} - ${formatValueHumanReadable(fieldName, end)}`;
   }
   else {
@@ -138,7 +136,7 @@ export function getLicenceLogo(licenceURL){
     if (isCreativeCommons){
       var logoURL = "http://mirrors.creativecommons.org/presskit/buttons/88x31/svg/";
       if (licenceURL.includes("publicdomain/zero")){
-        return logoURL+= "cc-zero.svg"
+        return logoURL + "cc-zero.svg"
       }
       const licenceImage = licenceURL.split("licenses")[1].split("/")[1]
       logoURL += `${licenceImage}.svg`;
@@ -154,22 +152,12 @@ export function getDatasetStatsByUUID(study) {
     return aggregateDatasetStats(study?.dataset || []);
 }
 
-export function aggregateDatasetStats(datasets) {
+function aggregateDatasetStats(datasets) {
     const dataset_uuids = []
     for (var dataset of datasets) {
       dataset_uuids.push([dataset.uuid,dataset.file_reference_count,dataset.title])
     }
     return dataset_uuids
-}
-
-export function getImagingMethodType(study) {
-    const imagingTypeList = []
-    for (var methodNames in study?.imaging_method){
-      if (!imagingTypeList.includes(methodNames)) {
-                    imagingTypeList.push(methodNames)
-                }
-    }
-    return imagingTypeList
 }
 
 export function getTaxons(study) {
@@ -340,19 +328,6 @@ export function generateParamString(baseURL, query, page, selectedFacets, pageSi
       if (isPageURL) {
         url.searchParams.append(facetKey, stringValue);
       }
-      else if (stringValue.includes("-")) {
-        const [start, end] = stringValue.split("-");
-        
-        if(
-          start !== "" && !Number.isNaN(Number(start)) &&
-          end !== "" && !Number.isNaN(Number(end))) {
-            url.searchParams.append(`${facetKey}.gte`, start);
-            url.searchParams.append(`${facetKey}.lte`, end);
-          }
-        else {
-          url.searchParams.append(`${facetKey}.eq`, stringValue);
-        }
-      }
       else if (stringValue[0] === ">") {
         url.searchParams.append(`${facetKey}.gt`, stringValue.slice(1));
       }
@@ -369,7 +344,13 @@ export function generateParamString(baseURL, query, page, selectedFacets, pageSi
         url.searchParams.append(url.pathname.endsWith("image") ? "has.converted_image" : "has.thumbnail", "true");
       }
       else {
-        url.searchParams.append(`${facetKey}.eq`, stringValue);
+        const range = parseNumericRange(stringValue);
+        if (range) {
+          url.searchParams.append(`${facetKey}.gte`, range.start);
+          url.searchParams.append(`${facetKey}.lte`, range.end);
+        } else {
+          url.searchParams.append(`${facetKey}.eq`, stringValue);
+        }
       }
     }
   }
@@ -385,13 +366,6 @@ export async function getFromAPI(url){
         console.warn(`Failed to fetch ${url}`, err);
         return null
     }
-}
-
-export async function getStudyFromApiByUUID(uuid){
-    // This can work with dataset uuid or study uuid.
-    const response = await getFromAPI(`${PUBLIC_SEARCH_API}/website/study?query=${uuid}`);
-    const study = response?.hits?.hits?.[0]?._source; 
-    return study
 }
 
 export async function getStudyFromApiByAccession(accessionID){
@@ -550,11 +524,11 @@ export function getTutorialURLs(urlType){
     return urlType === "submission"? `${quickTourURL}/submitting-data-to-bioimage-archive-2/submission/` : quickTourURL
 }
 
-export function highlightText(text, query) {
+function highlightText(text, query) {
   return query && text ? applyHighlight(text, query) : text;
 }
 
-export function formatUniqueList(values = [], { sort = true, transform = value => value } = {}) {
+function formatUniqueList(values = [], { sort = true, transform = value => value } = {}) {
   if(values == null){
     return ""
   }
@@ -593,7 +567,7 @@ export function applyHighlight(text, query) {
     .join("");
 }
 
-export function textFragmentLink(baseUrl, highlightStr, query) {
+function textFragmentLink(baseUrl, highlightStr, query) {
   const clean = highlightStr.replace(/__HIT__|__\/HIT__/g, "").trim();
   if (!clean || !clean.toLowerCase().includes(query.toLowerCase()) ) return baseUrl;
   return `${baseUrl}#:~:text=${encodeURIComponent(clean)}`;

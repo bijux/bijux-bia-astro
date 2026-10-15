@@ -26,7 +26,7 @@ export function formatSingleParameter(acc, key_value) {
 }
 
 export function formatRowAnalysisParameters(analysisParameters) {
-    return Object.entries(analysisParameters).filter(([key, value]) => value != null).reduce(formatSingleParameter, "")
+    return Object.entries(analysisParameters).filter(([, value]) => value != null).reduce(formatSingleParameter, "")
 }
 
 const filtered_table_rows = tableRows.filter(row => row.precision != null)
@@ -42,7 +42,7 @@ const hasReferenceImage = tableRows.filter(row => row.annotation_data_set_uuid !
       </h2>
     </div>
 
-    <div>
+    <div class="bia-table-controls">
         {
             hasReferenceImage && (
                 <table id="benchmarking_table" class="display">
@@ -108,14 +108,14 @@ const hasReferenceImage = tableRows.filter(row => row.annotation_data_set_uuid !
         }
         {
             (!hasReferenceImage) && (
-                <span>
+                <div>
                     {studyOrModelPageMode == 'model' &&
                         (<p> This model was not tested on datasets with reference annotations, so we cannot produce benchmarking metrics.</p>)
                     }
                     {studyOrModelPageMode == 'study' &&
                         (<p> This dataset does not have reference annotations, so we cannot produce benchmarking metrics.</p>)
                     }
-                </span>
+                </div>
                 
             )
         }
