@@ -52,7 +52,7 @@ import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard
 import BenchmarkingTable from '../features/galleries/ai/benchmarking/BenchmarkingTable.astro';
 import News from '../features/news/News.astro';
 import response from '../data/study-response.json';
-import fieldMap from '../data/metadata-field-name-mapping.json';
+import fieldMap from '../features/metadata/field-labels.json';
 const specimen = imageResponse.hits.hits[0]._source.creation_process.subject;
 const study = response.hits.hits.find(hit => hit._source.accession_id === 'S-BIAD3335')._source;
 // Minimal props isolate repeated rendering contracts; the study remains a reusable API snapshot.

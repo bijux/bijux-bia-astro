@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getFbbiSearchLink, renderFbbiTermsHtml } from "../../../src/formatting/fbbi-terms.mjs";
+import { getFbbiSearchLink, renderFbbiTermsHtml } from "../../../src/features/metadata/formatting/fbbi-terms.mjs";
 
 test("normalize supported forms to a full-ID, defining-ontology search", () => {
     for (const value of [

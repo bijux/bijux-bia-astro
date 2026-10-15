@@ -1,4 +1,4 @@
-import { escapeHtmlText, multilineTextRender } from "./plain-text.js";
+import { escapeHtmlText, multilineTextRender } from "../../../formatting/plain-text.js";
 import { renderFbbiTermsHtml } from "./fbbi-terms.mjs";
 
 const text = value => escapeHtmlText(value).replace(/"/g, "&quot;").replace(/'/g, "&#39;");

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { renderMetadataValue } from "../../../src/formatting/metadata-values.js";
+import { renderMetadataValue } from "../../../src/features/metadata/formatting/render-values.js";
 
 const render = (key, value, preserve = false) => renderMetadataValue(key, value, '/external.png', preserve);
 
