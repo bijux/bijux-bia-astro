@@ -1,14 +1,12 @@
+import { createAstroFixture, buildAstroFixture } from '../../support/astro/fixture.mjs';
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
-import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { after, before, test } from 'node:test';
 
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
-const output = path.join(repository, 'artifacts/search-rendering');
 let root;
 let server;
 const pages = {};
@@ -73,14 +71,7 @@ before(async () => {
         response.end(JSON.stringify(data));
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    await mkdir(output, { recursive: true });
-    root = await mkdtemp(path.join(output, 'application-'));
-    await cp(path.join(repository, 'src'), path.join(root, 'src'), {
-        recursive: true, filter: source => !['pages', 'content'].includes(path.relative(path.join(repository, 'src'), source).split(path.sep)[0]),
-    });
-    await mkdir(path.join(root, 'src/pages'), { recursive: true });
-    await symlink(path.join(repository, 'node_modules'), path.join(root, 'node_modules'), 'dir');
-    await writeFile(path.join(root, 'package.json'), '{"type":"module"}\n');
+    root = await createAstroFixture('search-rendering', ['src']);
     await writeFile(path.join(root, 'astro.config.mjs'), `
 import { defineConfig, envField } from 'astro/config';
 export default defineConfig({
@@ -97,15 +88,7 @@ const url = new URL(${JSON.stringify('http://local/bioimage-archive/' + (['study
 <Search url={url} query=${JSON.stringify(name)} searchType=${JSON.stringify(['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'study' : 'image')} />
 `);
     }
-    await promisify(execFile)(process.execPath, [path.join(repository, 'node_modules/astro/bin/astro.mjs'), 'build', '--root', root],
-        {
-            cwd: repository,
-            // A developer's API override must not redirect fixture tests to a
-            // live service. The child build owns this server-reachable endpoint.
-            env: { ...process.env, PUBLIC_SEARCH_API: `http://127.0.0.1:${server.address().port}` },
-            timeout: 120000,
-            maxBuffer: 2 * 1024 * 1024,
-        });
+    await buildAstroFixture(root, { PUBLIC_SEARCH_API: `http://127.0.0.1:${server.address().port}` });
     for (const name of Object.keys(cases)) pages[name] = await readFile(path.join(root, `dist/${name}/index.html`), 'utf8');
 });
 

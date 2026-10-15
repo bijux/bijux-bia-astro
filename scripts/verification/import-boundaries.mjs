@@ -1,11 +1,13 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isBuiltin } from 'node:module';
 import ts from 'typescript';
 import { parse } from '@astrojs/compiler';
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 const extensions = ['', '.mjs', '.js', '.ts', '.astro', '.json', '.css', '/index.mjs', '/index.ts'];
+const serverOnly = specifier => isBuiltin(specifier) || specifier.startsWith('node:') || specifier === 'astro:env/server';
 
 /** Verify ownership, runtime cycles and server-only dependencies reachable from browser scripts. */
 export function boundaryIssues(graph, clients = []) {
@@ -30,7 +32,7 @@ export function boundaryIssues(graph, clients = []) {
         if (browser.has(file)) return;
         browser.add(file);
         const entry = graph.get(file);
-        for (const specifier of entry?.specifiers ?? []) if (specifier.startsWith('node:') || specifier === 'astro:env/server') issues.push(`${file}: browser imports ${specifier}`);
+        for (const specifier of entry?.specifiers ?? []) if (serverOnly(specifier)) issues.push(`${file}: browser imports ${specifier}`);
         for (const target of entry?.targets ?? []) {
             if (target.startsWith('scripts/')) issues.push(`${file}: browser imports build/runtime tool ${target}`);
             client(target);
@@ -56,10 +58,12 @@ export async function inspectImports(root = repository) {
         const found = [];
         function visit(node) {
             if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-                const typeOnly = ts.isImportDeclaration(node) && (node.importClause?.isTypeOnly || node.importClause?.namedBindings && ts.isNamedImports(node.importClause.namedBindings) && !node.importClause.name && node.importClause.namedBindings.elements.every(element => element.isTypeOnly));
+                // With verbatimModuleSyntax, named type-only specifiers still leave
+                // an empty runtime import/export. Only whole type declarations erase it.
+                const typeOnly = ts.isImportDeclaration(node) ? node.importClause?.isTypeOnly : node.isTypeOnly;
                 if (!typeOnly) found.push(node.moduleSpecifier.text);
             }
-            if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) found.push(node.arguments[0].text);
+            if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments.length === 1 && ts.isStringLiteralLike(node.arguments[0])) found.push(node.arguments[0].text);
             ts.forEachChild(node, visit);
         }
         visit(ast);
@@ -67,7 +71,7 @@ export async function inspectImports(root = repository) {
             graph.get(file).specifiers.push(specifier);
             const target = await resolve(file, specifier);
             if (target) { graph.get(file).targets.push(target); if (client) clients.push(target); }
-            if (client && (specifier.startsWith('node:') || specifier === 'astro:env/server')) issues.push(`${file}: browser imports ${specifier}`);
+            if (client && serverOnly(specifier)) issues.push(`${file}: browser imports ${specifier}`);
         }
     }
     async function scan(directory) {

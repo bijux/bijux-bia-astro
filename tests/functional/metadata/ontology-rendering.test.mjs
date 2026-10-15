@@ -1,13 +1,11 @@
+import { createAstroFixture, buildAstroFixture } from '../../support/astro/fixture.mjs';
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { after, before, test } from "node:test";
 
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
-const output = path.join(repository, "artifacts/ontology-rendering");
 let sections;
 let root;
 
@@ -18,20 +16,9 @@ after(async () => {
 });
 
 before(async () => {
-    await mkdir(output, { recursive: true });
-    root = await mkdtemp(path.join(output, "application-"));
-    await mkdir(path.join(root, "src/pages"), { recursive: true });
-    for (const relative of ["src/components", "src/assets", "src/styles", "src/features"]) {
-        await cp(path.join(repository, relative), path.join(root, relative), { recursive: true });
-    }
+    root = await createAstroFixture("ontology-rendering", ["src/components", "src/assets", "src/styles", "src/features", "src/security", "src/api", "src/formatting"]);
     await mkdir(path.join(root, "src/data"), { recursive: true });
     await cp(path.join(repository, "src/data/metadata-field-name-mapping.json"), path.join(root, "src/data/metadata-field-name-mapping.json"));
-    await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
-    await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
-    // Include shared rendering and request dependencies used by the real components.
-    for (const relative of ["src/security", "src/api", "src/formatting"]) {
-        await cp(path.join(repository, relative), path.join(root, relative), { recursive: true });
-    }
     await writeFile(path.join(root, "astro.config.mjs"), `
 import { defineConfig, envField } from 'astro/config';
 export default defineConfig({
@@ -77,9 +64,7 @@ const unsupported = { title: 'Unsupported identifiers', fbbi_id: ['<img src=x on
 <article id="unsupported"><DatasetDetail data={unsupported} fieldMap={fieldMap.image_acquisition} /></article>
 <article id="identifier-only"><DatasetDetail data={{ title: 'Identifier only', fbbi_id: ['FBbi:00000256'] }} fieldMap={fieldMap.image_acquisition} /></article>
 `);
-    await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root],
-        { cwd: repository, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
+    await buildAstroFixture(root);
     const html = await readFile(path.join(root, "dist/index.html"), "utf8");
     sections = Object.fromEntries([...html.matchAll(/<article id="([^"]+)">([\s\S]*?)<\/article>/g)]
         .map((match) => [match[1], match[2].replace(/<\/dt>\s*<dd>/g, "&nbsp; ").replace(/<\/?(?:dt|dd)\b[^>]*>/g, "")]));

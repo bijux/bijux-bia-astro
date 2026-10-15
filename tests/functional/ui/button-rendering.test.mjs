@@ -1,10 +1,9 @@
+import { createAstroFixture, buildAstroFixture } from '../../support/astro/fixture.mjs';
 import assert from "node:assert/strict";
 import { parse } from "@astrojs/compiler";
-import { execFile } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 import { createServer } from "node:http";
 import { once } from "node:events";
 import { after, before, test } from "node:test";
@@ -22,16 +21,7 @@ after(async () => {
 });
 
 before(async () => {
-    const output = path.join(repository, "artifacts/button-rendering");
-    await mkdir(output, { recursive: true });
-    root = await mkdtemp(path.join(output, "application-"));
-    await cp(path.join(repository, "src"), path.join(root, "src"), {
-        recursive: true,
-        filter: (source) => source !== path.join(repository, "src/pages"),
-    });
-    await mkdir(path.join(root, "src/pages"), { recursive: true });
-    await writeFile(path.join(root, "package.json"), '{"type":"module"}\n');
-    await symlink(path.join(repository, "node_modules"), path.join(root, "node_modules"), "dir");
+    root = await createAstroFixture("button-rendering", ["src"]);
     // Reuse complete API snapshots so these component checks stay offline.
     const responses = new Map(await Promise.all([
         ["study", "study-s-biad3335-response.json"],
@@ -113,9 +103,7 @@ import Search from '../features/search/Search.astro';
 </Layout>
 `);
     }
-    await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root],
-        { cwd: repository, env: { ...process.env, PUBLIC_SEARCH_API: apiURL }, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
+    await buildAstroFixture(root, { PUBLIC_SEARCH_API: apiURL });
     for (const layout of ["BaseLayout", "MinimalLayout", "EMPIARLayout", "ProjectsLayout"]) {
         const html = await readFile(path.join(root, "dist", layout, "index.html"), "utf8");
         pages.set(layout, html);

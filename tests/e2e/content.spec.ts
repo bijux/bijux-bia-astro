@@ -1,11 +1,17 @@
 import { test, expect } from '../support/browser';
+import contract from '../fixtures/website/production-contract.json' with { type: 'json' };
 
-test('help, contact and editorial routes retain their headings and base-path links', async ({ page }) => {
+test('public routes retain their rendering mode, headings, redirects and base-path links', async ({ page, request }) => {
+    for (const route of contract.serverRoutes) {
+        expect((await request.get(`/bioimage-archive${route}`)).status(), route).toBe(200);
+    }
     for (const [path, heading] of [['/help/downloading-data', 'Downloading data'], ['/help/search', 'Searching the BioImage Archive'], ['/contact-us', 'Contact us'], ['/case-studies', 'Case Studies']]) {
         expect((await page.goto(`/bioimage-archive${path}`))?.status()).toBe(200);
         await expect(page.getByRole('heading', { name: heading, exact: true }).first()).toBeVisible();
         await expect(page.locator('a[href="/bioimage-archive/"]').first()).toBeAttached();
     }
+    await page.goto(`/bioimage-archive${contract.redirect.path}`);
+    await expect(page).toHaveURL(new RegExp(`${contract.redirect.destination}/?$`));
 });
 
 test('news navigation changes the visible article and training failures stay readable', async ({ page }) => {
