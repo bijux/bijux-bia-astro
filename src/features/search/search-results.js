@@ -1,3 +1,5 @@
+import { changedSearchURL } from './state.ts';
+import { formSearchURL } from './query.mjs';
 import { cleanHistoryURL } from './navigation.mjs';
 const SHELL_ID = "search-results-shell";
 let activeSearchNavigation = 0;
@@ -206,32 +208,7 @@ async function navigateSearch(url, { push = true, state = {} } = {}) {
 }
 
 function getSearchURLFromForm(form) {
-    const url = new URL(form.action, window.location.origin);
-    const formData = new FormData(form);
-
-    url.search = "";
-    for (const [key, value] of formData.entries()) {
-      if (value === "") continue;
-      url.searchParams.append(key, value.toString());
-    }
-
-    const hasCriteria = [...url.searchParams.entries()].some(([key, value]) => (
-      value !== "" &&
-      key !== "pagination.page" &&
-      key !== "pagination.page_size" &&
-      key !== "cursor" &&
-      key !== "sort_by" &&
-      key !== "sort_order" &&
-      key !== "sort_source"
-    ));
-
-    if (!hasCriteria && url.searchParams.get("sort_by") === "relevance" && url.searchParams.get("sort_source") !== "user") {
-      url.searchParams.delete("sort_by");
-      url.searchParams.delete("sort_order");
-      url.searchParams.delete("sort_source");
-    }
-
-    return url;
+    return formSearchURL(form.action, new FormData(form).entries(), window.location.origin);
 }
 
 function submitFacetsForm() {
@@ -491,11 +468,7 @@ function initFacetSections(root) {
 
 function initPageSize(root) {
     root.querySelector("#pageSize")?.addEventListener("change", (event) => {
-      const url = new URL(window.location.href);
-      url.searchParams.set("pagination.page_size", event.target.value);
-      url.searchParams.delete("pagination.page");
-      url.searchParams.delete("cursor");
-      navigateSearch(url);
+      navigateSearch(changedSearchURL(window.location.href, { pageSize: event.target.value }));
     });
 }
 
@@ -503,25 +476,9 @@ function initSortOptions(root) {
     const sortBy = root.querySelector("#sortBy");
     const sortOrder = root.querySelector("#sortOrder");
     const updateSort = (event) => {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("sortBy");
-      url.searchParams.delete("sortOrder");
-      url.searchParams.delete("sort_by");
-      url.searchParams.delete("sort_order");
-      url.searchParams.delete("sort_source");
-
-      const selectedSortBy = sortBy?.value || "";
-      const selectedSortOrder = sortOrder?.value || "";
-      const shouldResetSort = event?.target?.value === "";
-      if (!shouldResetSort && (selectedSortBy || selectedSortOrder)) {
-        url.searchParams.set("sort_by", selectedSortBy || "relevance");
-        url.searchParams.set("sort_order", selectedSortOrder || "desc");
-        url.searchParams.set("sort_source", "user");
-      }
-
-      url.searchParams.delete("pagination.page");
-      url.searchParams.delete("cursor");
-      navigateSearch(url);
+      navigateSearch(changedSearchURL(window.location.href, {
+        sortBy: sortBy?.value || '', sortOrder: sortOrder?.value || '', reset: event?.target?.value === '',
+      }));
     };
 
     sortBy?.addEventListener("change", updateSort);

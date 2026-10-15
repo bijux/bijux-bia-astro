@@ -79,3 +79,16 @@ export function generateParamString(baseURL, query, page, selectedFacets, pageSi
 
   return isPageURL ? `${url.pathname}${url.search}` : url.toString()
 }
+
+/** Serialize successful native form controls while omitting incidental default sort. */
+export function formSearchURL(action, entries, origin) {
+    const url = new URL(action, origin);
+    url.search = '';
+    for (const [key, value] of entries) if (value !== '') url.searchParams.append(key, value.toString());
+    const controls = new Set(['pagination.page', 'pagination.page_size', 'cursor', 'sort_by', 'sort_order', 'sort_source']);
+    const hasCriteria = [...url.searchParams].some(([key, value]) => value !== '' && !controls.has(key));
+    if (!hasCriteria && url.searchParams.get('sort_by') === 'relevance' && url.searchParams.get('sort_source') !== 'user') {
+        for (const key of ['sort_by', 'sort_order', 'sort_source']) url.searchParams.delete(key);
+    }
+    return url;
+}

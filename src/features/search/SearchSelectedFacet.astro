@@ -3,7 +3,7 @@ import { generateParamString } from "./query.mjs";
 import { formatBytes, formatFieldName } from "../../formatting/units.mjs";
 
 import {type SelectedFacets} from "./types.ts";
-import { capitalizeFirstLetter } from "./SearchFacet.astro"
+import { facetTitle } from "./facet-options.mjs"
 
 const { selectedList, key, url, text, query, selectedFacets = {}, kind, minVal, maxVal, pageSize = 12, sortBy = "", sortOrder = "", sortSource = ""} = Astro.props;
 
@@ -45,7 +45,7 @@ const label = `${minVal && minVal !== "" ? formatBytes(minVal, key) : "…" } �
     <a href={generateParamString(url, query, page, removeFacetValue(selectedFacets, key, selected), pageSize, sortBy, sortOrder, sortSource)}
         class="facet-remove-btn" aria-label={`Remove ${text}: ${selected}`}
       >
-        <span class="facet-value">{formatFieldName(text, capitalizeFirstLetter(selected.replaceAll("_", " ")))}</span>
+        <span class="facet-value">{formatFieldName(text, facetTitle(selected.replaceAll("_", " ")))}</span>
         <span class="facet-x" aria-hidden="true">×</span></a>
     )
     }
