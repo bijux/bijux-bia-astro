@@ -20,13 +20,21 @@ async function inventory(root, directory = join(root, 'artifacts/dist')) {
     return files;
 }
 
+async function catalogueProvenance(root) {
+    let value;
+    try { value = JSON.parse(await readFile(join(root, 'artifacts/deployment/catalogue.json'), 'utf8')); }
+    catch (error) { if (error.code === 'ENOENT') return undefined; throw error; }
+    if (!value || !/^[a-f0-9]{64}$/.test(value.snapshotHash) || ![value.studies, value.responses].every(count => Number.isSafeInteger(count) && count >= 0)) throw new Error('Invalid catalogue deployment provenance.');
+    return value;
+}
+
 /** Seal only a completed Node build; the manifest is outside the public document root. */
 export async function sealDeployment(root, configuration) {
     const files = await inventory(root);
     for (const name of ['bioimage-archive/server/entry.mjs', 'bioimage-archive/client/index.html', 'index.html', 'robots.txt']) {
         if (!files[`artifacts/dist/${name}`]) throw new Error(`Deployment is missing ${name}.`);
     }
-    const manifest = { configuration, files };
+    const manifest = { configuration, files, catalogue: await catalogueProvenance(root) };
     await mkdir(dirname(manifestPath(root)), { recursive: true });
     await writeFile(manifestPath(root), JSON.stringify(manifest, null, 2) + '\n');
     return manifest;
@@ -36,6 +44,7 @@ export async function sealDeployment(root, configuration) {
 export async function verifyDeployment(root = repository) {
     const manifest = JSON.parse(await readFile(manifestPath(root), 'utf8'));
     await deploymentConfiguration(manifestPath(root), {});
+    if (JSON.stringify(manifest.catalogue) !== JSON.stringify(await catalogueProvenance(root))) throw new Error('Catalogue provenance differs from the verified deployment.');
     const files = await inventory(root);
     if (!manifest.files || JSON.stringify(files) !== JSON.stringify(manifest.files)) throw new Error('Deployment files differ from the verified build.');
     return manifest;

@@ -68,6 +68,8 @@ export async function GET({url}){
     const manifest = await verifyDeployment(root);
     const manifestFile = path.join(root, 'artifacts/deployment/manifest.json');
     assert.equal(manifest.configuration.PUBLIC_SEARCH_API, api);
+    assert.equal(manifest.catalogue.studies, 0);
+    assert.equal(manifest.catalogue.responses, 1);
     assert.equal(manifest.configuration.PUBLIC_WEBSITE_STATE, 'PROD');
     await assert.rejects(deploymentConfiguration(manifestFile, { PUBLIC_SEARCH_API: 'https://different.example.org' }), /fixed at build time/);
     const htmlFile = path.join(root, 'artifacts/dist/bioimage-archive/client/index.html');
@@ -120,6 +122,11 @@ export async function GET({url}){
     child.kill('SIGTERM');
     assert.deepEqual(await (await response).json(), { api });
     assert.deepEqual(await closed, [0, null]);
+    const provenanceFile = path.join(root, 'artifacts/deployment/catalogue.json');
+    const provenance = await readFile(provenanceFile);
+    await writeFile(provenanceFile, JSON.stringify({ ...manifest.catalogue, studies: 999 }));
+    await assert.rejects(verifyDeployment(root), /Catalogue provenance differs/);
+    await writeFile(provenanceFile, provenance);
     await writeFile(htmlFile, html + '\nchanged');
     await assert.rejects(verifyDeployment(root), /differ from the verified build/);
     await mkdir(path.join(root, 'src/pages'));
