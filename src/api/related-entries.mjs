@@ -85,10 +85,6 @@ function getRelatedEntries(study, linkType) {
   return uniqueRelatedEntries([...apiEntries, ...legacyEntries]);
 }
 
-export function getRelatedEntryLinks(study, linkType) {
-  return getRelatedEntries(study, linkType).map(({ accession }) => accession);
-}
-
 /** Fetch optional resolution metadata separately from HTML generation. */
 export async function loadRelatedEntries(study) {
   const pdb = getRelatedEntries(study, "pdb");

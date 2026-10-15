@@ -1,4 +1,4 @@
-export const searchLimits = Object.freeze({ pageSize: 100, page: 1000000, query: 2048, cursor: 8192, parameters: 100, value: 8192 });
+const searchLimits = Object.freeze({ pageSize: 100, page: 1000000, query: 2048, cursor: 8192, parameters: 100, value: 8192 });
 
 /** Reject hostile numeric/resource inputs before constructing any upstream request. */
 export function searchRequest(url) {
@@ -24,7 +24,7 @@ export function searchRequest(url) {
 }
 
 /** Fixed/configured API origins stay fixed across redirects, with bounded bodies and time. */
-export async function fetchText(value, { timeout = 15000, maxBytes = 8 * 1024 * 1024, signal: callerSignal } = {}) {
+async function fetchText(value, { timeout = 15000, maxBytes = 8 * 1024 * 1024, signal: callerSignal } = {}) {
     if (![timeout, maxBytes].every(number => Number.isSafeInteger(number) && number > 0)) throw new RangeError("Invalid API request limits.");
     const first = new URL(value);
     if (!["http:", "https:"].includes(first.protocol) || first.username || first.password) throw new TypeError("Unsupported API destination.");

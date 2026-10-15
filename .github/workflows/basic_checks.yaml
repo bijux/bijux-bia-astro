@@ -45,7 +45,7 @@ jobs:
           name: website-verification
           path: |
             artifacts/website-verification/report.json
-            artifacts/website-verification/*.png
+            artifacts/browser-results/
             artifacts/website-verification/application/artifacts/deployment/
           retention-days: 7
           if-no-files-found: ignore

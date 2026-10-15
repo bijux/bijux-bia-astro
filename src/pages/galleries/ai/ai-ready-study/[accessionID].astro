@@ -1,8 +1,12 @@
 ---
 import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import StudyTitleInfo from "../../../../features/studies/StudyTitleInfo.astro";
-import { getThumbnail, getTaxons, getSimpleAttributeValue, formatBytesToHumanSize, getAnnotationType, getStudyFromApiByAccession, generateSourceAnnotatedImageMap } from "../../../../components/SharedJSFunctions"
-import { type Study } from "../../../../components/SharedInterface.astro"
+import { getThumbnail } from "../../../../features/images/thumbnails.mjs";
+import { getTaxons } from "../../../../features/metadata/taxonomy.mjs";
+import { getSimpleAttributeValue, getAnnotationType } from "../../../../features/metadata/records.mjs";
+import { formatBytesToHumanSize } from "../../../../formatting/units.mjs";
+import { getStudyFromApiByAccession, generateSourceAnnotatedImageMap } from "../../../../api/client.mjs";
+import { type Study } from "../../../../api/types.ts"
 import collection from '../../../../data/collections/ai-ready-datasets.json';
 import StudyContentsSummary from "../../../../features/studies/StudyContentsSummary.astro"
 import StudyFiles from "../../../../features/studies/StudyFiles.astro";

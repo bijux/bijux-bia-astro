@@ -1,7 +1,8 @@
 ---
 import DatasetDetail from "../../metadata/DatasetDetail.astro";
 import fieldMap from "../../../data/metadata-field-name-mapping.json";
-import { formatListItem } from "../../../components/SharedJSFunctions";
+import { formatListItem } from "../../../formatting/lists.mjs";
+
 
 const { dataset } = Astro.props;
 const biosampleMap = fieldMap["biosample"];

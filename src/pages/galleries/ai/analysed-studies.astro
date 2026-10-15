@@ -4,7 +4,7 @@ import BrowseDatasetHeading from '../../../features/search/BrowseStudiesHeading.
 import StudyCard from '../../../features/search/BrowseStudyCard.astro';
 
 import collection from '../../../data/collections/ai-benchmark-datasets.json';
-import {getStudyFromApiByAccession} from "../../../components/SharedJSFunctions.js"
+import { getStudyFromApiByAccession } from "../../../api/client.mjs";
 import additionalStudyInfo from '../../../data/ai-dataset-benchmarking/additional-study-metadata.json'
 
 const studiesEntries = await Promise.all(

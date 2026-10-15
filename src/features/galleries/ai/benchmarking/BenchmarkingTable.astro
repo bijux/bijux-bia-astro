@@ -1,7 +1,8 @@
 ---
 import { escapeHtml } from "../../../../security/html.mjs";
 import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json"
-import { getStudyFromApiByAccession } from "../../../../components/SharedJSFunctions";
+import { getStudyFromApiByAccession } from "../../../../api/client.mjs";
+
 
 const { tableRows, studyOrModelPageMode } = Astro.props;
 

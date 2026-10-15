@@ -8,8 +8,10 @@ import WebsiteStateButton from '../../../../components/ui/WebsiteStateButton.ast
 import fieldMap from "../../../../data/metadata-field-name-mapping.json";
 
 import fallbackImage from "../../../../assets/bioimage-archive/image_fallback.png"
-import {buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI, getSimpleAttributeValue, getImageFromAPI, getStudyFromApiByAccession } from "../../../../components/SharedJSFunctions.js"
-import { type Study, type ImageCreationProcess, type ImageRep, type Image } from "../../../../components/SharedInterface.astro"
+import { buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI } from "../../../../features/images/viewers.mjs";
+import { getSimpleAttributeValue } from "../../../../features/metadata/records.mjs";
+import { getImageFromAPI, getStudyFromApiByAccession } from "../../../../api/client.mjs";
+import { type Study, type ImageCreationProcess, type ImageRep, type Image } from "../../../../api/types.ts"
 
 const biosampleMap = fieldMap["biosample"];
 const sippMap = fieldMap["specimen_imaging_preparation_protocol"];

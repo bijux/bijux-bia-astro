@@ -12,8 +12,12 @@ import ImageTable from './ImageTable.astro';
 
 import fieldMap from "../../data/metadata-field-name-mapping.json";
 import fallbackImage from "../../assets/bioimage-archive/image_fallback.png"
-import {buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI, getSimpleAttributeValue, getImageFromAPI, getImagesFromAPI, getDownstreamDisplayImages, getStudyFromApiByAccession, formatPhysicalVoxelDimensions, formatPhysicalDimensions, formatPixelDimensions } from "../../components/SharedJSFunctions.js"
-import { type Study, type Image, type ImageCreationProcess, type SpecimenInfo } from "../../components/SharedInterface.astro"
+import { buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI } from "./viewers.mjs";
+import { getSimpleAttributeValue } from "../metadata/records.mjs";
+import { getImagesFromAPI, getDownstreamDisplayImages, getStudyFromApiByAccession } from "../../api/client.mjs";
+import { formatPhysicalVoxelDimensions, formatPhysicalDimensions } from "../../formatting/physical-dimensions.js";
+import { formatPixelDimensions } from "../../formatting/units.mjs";
+import { type Study, type Image, type ImageCreationProcess, type SpecimenInfo } from "../../api/types.ts"
 
 const imageAcquisitionMap = fieldMap["image_acquisition"];
 const annotationMethodMap = fieldMap["annotation_method"];

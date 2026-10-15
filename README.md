@@ -9,7 +9,8 @@ the dependency-directory link. Tests and audit probes execute the installed tool
 The document layouts share their head/footer and serve pinned jQuery/DataTables
 assets locally, in dependency order. EMBL chrome remains externally maintained.
 Search clients and response contracts live in `src/api/`; HTML formatters consume
-data without making requests. Existing shared-helper exports remain compatible.
+data without making requests. Feature callers import their owned modules directly.
+[Architecture and testing](docs/development/architecture.md) describes the boundaries.
 
 ## 🧞 Commands
 

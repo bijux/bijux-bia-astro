@@ -1,0 +1,65 @@
+export interface Study {
+  dataset?: any[];
+  accession_id?: string;
+  title?: string;
+  grant?: any[];
+  funding_statement?: string;
+  doi?: string; 
+  release_date?: string; 
+  author?: any[]; 
+  related_publication?: any[];
+  see_also?: any[];
+  acknowledgement?: string;
+  additional_metadata?: any;
+  description?: string;
+  licence?: string;
+  licence_details: Licence;
+  keyword?: any[]
+  image?: any[]
+  annotation_type?: any[]
+  pdb_accession?: string[];
+  emdb_accession?: string[];
+}
+export interface Studies {
+    accession_id: Study;
+}
+
+export interface Licence {
+  uri: string;
+  log_uri: string;
+  label: string;
+}
+
+export interface ImageCreationProcess {
+  input_image_uuid?: string[];
+  subject?: any;
+  acquisition_process?: any[];
+  annotation_method?: any[];
+  protocol?: any[];
+}
+
+export interface Image {
+  representation: any[];
+  uuid: string;
+  additional_metadata?: any[];
+  file_path?: string[];
+  total_size_in_bytes?: number;
+  submission_dataset_uuid: string;
+  creation_process?: ImageCreationProcess;
+  licence_details: Licence;
+  accession_id: string;
+  file_list_attributes: any[];
+  specimen_track_position?: "internal" | "terminal" | "segmentation";
+  upstream_image_uuids?: string[];
+  segmentation_image_uuids?: string[];
+}
+
+export interface SpecimenInfo {
+  uuid: string;
+  [key: string]: any;
+}
+
+export interface ImageRep {
+  uuid: string;
+  [key: string]: any;
+}
