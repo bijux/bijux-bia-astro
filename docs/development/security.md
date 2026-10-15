@@ -47,4 +47,4 @@ Netlify static headers are declared in the root `netlify.toml`; application midd
 
 ## Remaining work
 
-See [the security findings](security-findings.md) for changes, retained risks and verification limits. Framework/adapter major upgrades are deliberately separate. Image transformation is disabled as a mitigation while that migration is reviewed; this does not patch the installed framework or eliminate its advisory matches.
+See [the security findings](security-findings.md) for changes, retained risks and verification limits. Framework and adapter versions are upgraded together. Image transformation remains disabled; remaining transitive advisories are tracked independently of that application policy.
