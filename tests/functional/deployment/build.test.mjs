@@ -33,6 +33,8 @@ test('a Node deployment builds once, serves offline, preserves its configuration
     await cp(path.join(repository, 'package-lock.json'), path.join(root, 'package-lock.json'));
     await cp(path.join(repository, 'scripts/server.mjs'), path.join(root, 'scripts/server.mjs'));
     await cp(path.join(repository, 'src/security'), path.join(root, 'src/security'), { recursive: true });
+    await mkdir(path.join(root, 'src/api'), { recursive: true });
+    await cp(path.join(repository, 'src/api/http.mjs'), path.join(root, 'src/api/http.mjs'));
     await cp(path.join(repository, 'src/observability'), path.join(root, 'src/observability'), { recursive: true });
     await symlink(path.join(repository, 'node_modules'), path.join(root, 'node_modules'), 'dir');
     const { scripts } = JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8'));
@@ -44,7 +46,7 @@ export default { ...config, root: ${JSON.stringify(root)}, integrations: [] };
 `);
     await writeFile(path.join(root, 'src/pages/index.astro'), `---
 import { PUBLIC_SEARCH_API, PUBLIC_WEBSITE_STATE } from 'astro:env/client';
-import { fetchJSON } from '../security/requests.mjs';
+import { fetchJSON } from '../api/http.mjs';
 const catalogue = await fetchJSON(PUBLIC_SEARCH_API);
 ---
 <html><body><h1>{catalogue.title}</h1><p>{PUBLIC_WEBSITE_STATE}</p></body></html>`);

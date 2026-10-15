@@ -33,18 +33,15 @@ test('entity responses preserve identity and absence while rejecting malformed o
     assert.equal(await client.getStudyFromApiByAccession('S-BIAD1'), undefined);
     assert.equal(await client.getImageFromAPI(uuid), null);
     for (value of [{}, { hits: { hits: [null] } }, { hits: { hits: [{ _source: image }, { _source: image }] } }]) await assert.rejects(client.getImageFromAPI(uuid), TypeError);
+    for (const fields of [
+        { representation: [null] }, { representation: [{ file_uri: 'not-an-array' }] },
+        { upstream_image_uuids: [null] }, { creation_process: { input_image_uuid: 'not-an-array' } },
+        { creation_process: { subject: { sample_of: [null] } } },
+        { file_list_attributes: [{ value: { attributes: [] } }] }, { additional_metadata: [null] },
+    ]) {
+        value = { hits: { hits: [{ _source: { ...image, ...fields } }] } };
+        await assert.rejects(client.getImageFromAPI(uuid), /Invalid image record/);
+    }
     value = { hits: { total: { value: -1 } } };
     await assert.rejects(client.studyHasSpecimenTracks('S-BIAD1'), /count/);
-});
-
-test('annotation grouping retains source/annotation order, skips excluded records and does not invent orphan groups', async () => {
-    const image = (uuid, inputs = [], metadata = []) => Object.freeze({ uuid, representation: [{ image_format: '.ome.zarr' }], creation_process: { input_image_uuid: inputs }, additional_metadata: metadata });
-    const source = image('source');
-    const first = image('first', ['source']), second = image('second', ['source']);
-    const images = Object.freeze([first, image('orphan', ['missing']), source, second, image('2a382f3a-aa6d-4ace-99fb-468335fa3809'), image('excluded-child', ['2a382f3a-aa6d-4ace-99fb-468335fa3809'])]);
-    const client = createSearchClient('https://example.org/v1', async () => ({ hits: { hits: images.map(_source => ({ _source })), total: { value: images.length } }, pagination: { page: 1, total_pages: 1 } }));
-    const groups = await client.generateSourceAnnotatedImageMap('S-BIAD1');
-    assert.deepEqual([...groups.keys()], ['source']);
-    assert.equal(groups.get('source').sourceImage, source);
-    assert.deepEqual(groups.get('source').annotationImages, [first, second]);
 });

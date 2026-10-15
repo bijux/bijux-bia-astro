@@ -22,7 +22,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
 
     <script>
       import { escapeHtml } from "../../../security/html.mjs";
-      import { fetchJSON, boundedMap } from "../../../security/requests.mjs";
+      import { fetchJSON, boundedMap } from "../../../api/http.mjs";
 
       document.addEventListener("DOMContentLoaded", function () {
         const dropdown = document.getElementById("sotables_dataset_selector") as HTMLSelectElement; // Get the dropdown element

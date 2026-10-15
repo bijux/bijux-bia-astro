@@ -1,4 +1,5 @@
 ---
+import Specimen from "../../../src/features/images/Specimen.astro";
 import DatasetInfo from "../../../src/features/metadata/DatasetInfo.astro";
 import DatasetDetail from "../../../src/features/metadata/DatasetDetail.astro";
 import fieldMap from "../../../src/data/metadata-field-name-mapping.json";
@@ -43,5 +44,7 @@ inputs.forEach(deepFreeze);
             ))}
         </article>
         {JSON.stringify(inputs) !== before && (() => { throw new Error("Metadata render mutated source data"); })()}
+        <article id="partial-specimen"><Specimen specimen={{ sample_of: [{ title: "Partial specimen biosample" }] }} /></article>
+        <article id="prepared-specimen"><Specimen specimen={{ imaging_preparation_protocol: [{ title: "Preparation without a biosample" }] }} /></article>
     </body>
 </html>

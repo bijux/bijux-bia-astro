@@ -1,11 +1,12 @@
 ---
+import { groupSourceAnnotations } from "../../../../features/galleries/ai/annotations.mjs";
 import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import StudyTitleInfo from "../../../../features/studies/StudyTitleInfo.astro";
 import { getThumbnail } from "../../../../features/images/thumbnails.mjs";
 import { getTaxons } from "../../../../features/metadata/taxonomy.mjs";
 import { getSimpleAttributeValue, getAnnotationType } from "../../../../features/metadata/records.mjs";
 import { formatBytesToHumanSize } from "../../../../formatting/units.mjs";
-import { getStudyFromApiByAccession, generateSourceAnnotatedImageMap } from "../../../../api/client.mjs";
+import { getStudyFromApiByAccession, getImagesByAccessionID } from "../../../../api/client.mjs";
 import { type Study } from "../../../../api/types.ts"
 import collection from '../../../../data/collections/ai-ready-datasets.json';
 import StudyContentsSummary from "../../../../features/studies/StudyContentsSummary.astro"
@@ -20,7 +21,7 @@ export function getStaticPaths() {
 const { accessionID } = Astro.params;
 
 const study = await getStudyFromApiByAccession(accessionID) as Study;
-const annotatedImagesMap = await generateSourceAnnotatedImageMap(study.accession_id);
+const annotatedImagesMap = groupSourceAnnotations(await getImagesByAccessionID(study.accession_id));
 
 const allSourceImages = Array.from(annotatedImagesMap.values())
   .filter(({ annotationImages }) => annotationImages.length > 0);

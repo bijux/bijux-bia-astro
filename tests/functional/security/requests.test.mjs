@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { once } from "node:events";
 import test from "node:test";
-import { searchRequest, fetchJSON, boundedMap, browseResponse } from "../../../src/security/requests.mjs";
+import { fetchJSON, boundedMap } from "../../../src/api/http.mjs";
+import { browseResponse } from "../../../src/api/contracts.mjs";
+import { searchRequest } from "../../../src/features/search/request.mjs";
 
 test("search limits reject ambiguous or nonintegral controls while preserving repeated scientific facets", () => {
     for (const query of ["pagination.page_size=&pagination.page_size=100000", "pagination.page=0", "pagination.page=-1", "pagination.page=1.1", "pagination.page=Infinity", "pagination.page_size=101", "query=a&query=b", "cursor=a&cursor=b", `query=${"x".repeat(2049)}`]) {
