@@ -1,4 +1,4 @@
-import { fetchJSON, boundedMap } from '../security/requests.mjs';
+import { fetchJSON, boundedMap } from './http.mjs';
 import { hitRecords, selectedEntity, cataloguePage, imageRecord, imageCount } from './contracts.mjs';
 
 /** Endpoint-specific validation over the shared bounded HTTP transport. No presentation imports. */

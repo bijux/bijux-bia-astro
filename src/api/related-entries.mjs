@@ -1,4 +1,4 @@
-import { fetchJSON, boundedMap } from "../security/requests.mjs";
+import { fetchJSON, boundedMap } from "./http.mjs";
 
 function asArray(value) {
   if (!value) return [];

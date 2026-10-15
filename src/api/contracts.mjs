@@ -1,3 +1,5 @@
+export const searchLimits = Object.freeze({ pageSize: 100, page: 1000000, query: 2048, cursor: 8192, parameters: 100, value: 8192 });
+
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const integer = value => Number.isSafeInteger(value) && value >= 0;
 
@@ -29,4 +31,13 @@ export function imageRecord(value) {
 export function imageCount(value) {
     if (!integer(value?.hits?.total?.value)) throw new TypeError('Invalid image count.');
     return value.hits.total.value;
+}
+
+/** Validate the browse contract before pagination arithmetic or component rendering. */
+export function browseResponse(value) {
+    const object = item => item !== null && typeof item === "object" && !Array.isArray(item);
+    const integer = (item, minimum) => Number.isSafeInteger(item) && item >= minimum;
+    const pagination = value?.pagination;
+    if (!object(value) || !object(value.hits) || !Array.isArray(value.hits.hits) || value.hits.hits.length > searchLimits.pageSize || !value.hits.hits.every(hit => object(hit) && object(hit._source)) || !integer(value.hits.total?.value, 0) || !object(value.facets) || !object(pagination) || !integer(pagination.total_pages, 0) || !integer(pagination.page_size, 1) || pagination.page_size > searchLimits.pageSize || pagination.page != null && !integer(pagination.page, 0) || pagination.next_cursor != null && (typeof pagination.next_cursor !== "string" || pagination.next_cursor.length > searchLimits.cursor)) throw new TypeError("Invalid browse response.");
+    return value;
 }

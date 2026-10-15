@@ -1,5 +1,7 @@
 ---
-import { searchRequest, fetchJSON, browseResponse } from "../../security/requests.mjs";
+import { searchRequest } from "./request.mjs";
+import { fetchJSON } from "../../api/http.mjs";
+import { browseResponse } from "../../api/contracts.mjs";
 import "./search.css";
 import StudyCard from './BrowseStudyCard.astro';
 import ImageCard from './BrowseImageCard.astro';
