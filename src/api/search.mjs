@@ -1,5 +1,5 @@
 import { fetchJSON, boundedMap } from './http.mjs';
-import { hitRecords, selectedEntity, cataloguePage, imageRecord, imageCount } from './contracts.mjs';
+import { hitRecords, selectedEntity, cataloguePage, imageRecord, imageCount, studyRecord } from './contracts.mjs';
 
 /** Endpoint-specific validation over the shared bounded HTTP transport. No presentation imports. */
 export function createSearchClient(baseURL, requestJSON = fetchJSON) {
@@ -10,8 +10,7 @@ export function createSearchClient(baseURL, requestJSON = fetchJSON) {
     async function getStudyFromApiByAccession(accessionID) {
         const value = await getFromAPI(`${baseURL}/website/study?facet.accession_id=${encodeURIComponent(accessionID)}`);
         const study = selectedEntity(value, 'accession_id', accessionID);
-        if (study && !Array.isArray(study.dataset)) throw new TypeError('Invalid study datasets.');
-        return study;
+        return study ? studyRecord(study) : undefined;
     }
     async function getImageFromAPI(uuid) {
         if (typeof uuid !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(uuid)) return null;

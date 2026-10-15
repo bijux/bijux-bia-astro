@@ -53,3 +53,33 @@ export async function boundedMap(values, mapper, concurrency = 4) {
     }));
     return results;
 }
+
+/** Share identical JSON requests within one page load, with bounded concurrency and cache size. */
+export function createRequestJSON({ request = fetchJSON, signal, concurrency = 4, maxCached = 256 } = {}) {
+    if (!Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 32 || !Number.isSafeInteger(maxCached) || maxCached < 0 || maxCached > 10000) throw new RangeError('Invalid request-session limits.');
+    const cache = new Map(), waiting = [];
+    let active = 0;
+    async function perform(url) {
+        signal?.throwIfAborted();
+        await new Promise(resolve => {
+            if (active < concurrency) { active++; resolve(); }
+            else waiting.push(resolve);
+        });
+        try {
+            signal?.throwIfAborted();
+            return await request(url, { signal });
+        } finally {
+            const next = waiting.shift();
+            if (next) next();
+            else active--;
+        }
+    }
+    return value => {
+        signal?.throwIfAborted();
+        const url = new URL(value).href;
+        if (cache.has(url)) return cache.get(url);
+        const result = perform(url);
+        if (cache.size < maxCached) cache.set(url, result);
+        return result;
+    };
+}

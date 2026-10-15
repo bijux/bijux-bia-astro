@@ -1,8 +1,9 @@
 ---
 import ImagePage from '../../features/images/ImagePage.astro';
-import { getImageFromAPI } from '../../api/client.mjs';
+import { createRequestClient } from '../../api/client.mjs';
+import { loadImagePage } from '../../features/images/load-image.ts';
 export const prerender = false;
-const image = await getImageFromAPI(Astro.params.uuid);
-if (!image) return new Response('Image not found.', { status: 404 });
+const data = await loadImagePage(Astro.params.uuid, createRequestClient(Astro.request.signal));
+if (!data) return new Response('Image not found.', { status: 404 });
 ---
-<ImagePage image={image} />
+<ImagePage data={data} />

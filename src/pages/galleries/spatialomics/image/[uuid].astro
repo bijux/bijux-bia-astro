@@ -49,7 +49,7 @@ if ("subject" in creation_process && creation_process.subject != null) {
 }
 
 
-function formatPhysicalDimension(value: string, text: string) {
+function formatPhysicalDimension(value: number | string, text: string) {
     if (text === "") {
         if (value != null) {
             return value + "m"
@@ -66,16 +66,16 @@ function formatPhysicalDimension(value: string, text: string) {
 }
 
 function formatPhysicalDimensions(imageRepresentation: ImageRep) {
-    const fields = [ "voxel_physical_size_x", "voxel_physical_size_y", "voxel_physical_size_z"]
+    const fields = [ "voxel_physical_size_x", "voxel_physical_size_y", "voxel_physical_size_z"] as const
     const formattedStr =  fields.reduce((text, field) => formatPhysicalDimension(imageRepresentation[field], text), "")
     return formattedStr != "" ? formattedStr : 'Unknown'
 }
 
 
-function formatPixelDimension(value: string, text: string) {
+function formatPixelDimension(value: number | string, text: string) {
     if (text === "") {
         if (value != null) {
-            return value
+            return String(value)
         } else {
             return text
         }
@@ -89,7 +89,7 @@ function formatPixelDimension(value: string, text: string) {
 }
 
 function formatPixelDimensions(img_rep: ImageRep) {
-    const fields = [ "size_x", "size_y", "size_z"]
+    const fields = [ "size_x", "size_y", "size_z"] as const
     return fields.reduce((text, field) => formatPixelDimension(img_rep[field], text), "")
 }
 

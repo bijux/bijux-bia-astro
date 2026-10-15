@@ -14,19 +14,23 @@ import fieldMap from "../../data/metadata-field-name-mapping.json";
 import fallbackImage from "../../assets/bioimage-archive/image_fallback.png"
 import { buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI } from "./viewers.mjs";
 import { getSimpleAttributeValue } from "../metadata/records.mjs";
-import { getImagesFromAPI, getDownstreamDisplayImages, getStudyFromApiByAccession } from "../../api/client.mjs";
+import { type ImagePageData } from "./load-image.ts";
 import { formatPhysicalVoxelDimensions, formatPhysicalDimensions } from "../../formatting/physical-dimensions.js";
 import { formatPixelDimensions } from "../../formatting/units.mjs";
-import { type Study, type Image, type ImageCreationProcess, type SpecimenInfo } from "../../api/types.ts"
+import { type ImageCreationProcess, type SpecimenInfo } from "../../api/types.ts"
 
 const imageAcquisitionMap = fieldMap["image_acquisition"];
 const annotationMethodMap = fieldMap["annotation_method"];
 const protocolMap = fieldMap["protocol"];
 
-const { image } = Astro.props as { image: Image };
+const { data } = Astro.props as { data: ImagePageData };
+const { image, study: imageStudy, dataset: imageDataset,
+    inputImages: input_images, upstreamImages: upstream_images,
+    downstreamImages: downstream_display_images, segmentationImages: own_segmentation_images,
+    specimen, inheritedSpecimens: inherited_specimens, hasSpecimenTracks: hasSpecimenTrackContent } = data;
 
-const vizarrRep = image?.additional_metadata?.find(attr => attr.name === "recommended_vizarr_representation" && attr.provenance==="bia_curation")
-      ?.value["attribute_key"] ?? null
+const curatedVizarr = image.additional_metadata?.find(attr => attr.name === "recommended_vizarr_representation" && attr.provenance === "bia_curation")?.value;
+const vizarrRep = curatedVizarr && typeof curatedVizarr === 'object' && !Array.isArray(curatedVizarr) && 'attribute_key' in curatedVizarr ? curatedVizarr.attribute_key : null;
 const vizarrRepUuid = vizarrRep ?? getSimpleAttributeValue(image, "recommended_vizarr_representation");
 const interactiveImageRepresentation = (image.representation.find(
     (rep) => rep.uuid == vizarrRepUuid
@@ -34,8 +38,6 @@ const interactiveImageRepresentation = (image.representation.find(
 
 const accession_id = image ? image.accession_id : "";
 const isEMPIAR = accession_id.startsWith("EMPIAR");
-const imageStudy: Study = await getStudyFromApiByAccession(accession_id);
-const imageDataset = imageStudy.dataset.find(ds => ds.uuid === image.submission_dataset_uuid);
 const viewerSourceURI = getPublicVisualisationURI(interactiveImageRepresentation?.file_uri?.[0]);
 const vizarrIFrameSource = interactiveImageRepresentation ? buildVizarrViewerURL(viewerSourceURI) : null
 const itkRepUuid = getSimpleAttributeValue(image, "recommended_itk_representation");
@@ -48,47 +50,9 @@ const ng_link = pref_ng_image_rep ? getSimpleAttributeValue(pref_ng_image_rep, "
 
 const creation_process: ImageCreationProcess = image?.creation_process || {};
 
-var input_images: Image[] = [];
-if ("input_image_uuid" in creation_process && creation_process.input_image_uuid.length > 0) {
-    input_images = await getImagesFromAPI(creation_process.input_image_uuid)
-}
-
-let upstream_images: Image[] = [];
-if (image.upstream_image_uuids?.length > 0) {
-    upstream_images = await getImagesFromAPI(image.upstream_image_uuids);
-}
-
-let downstream_display_images: Image[] = [];
-if (image.specimen_track_position === "internal") {
-    downstream_display_images = await getDownstreamDisplayImages(image.uuid);
-}
-
-let own_segmentation_images: Image[] = [];
-if (image.segmentation_image_uuids?.length > 0) {
-    own_segmentation_images = await getImagesFromAPI(image.segmentation_image_uuids);
-}
-
-const hasSpecimenTrackContent =
-    (image.specimen_track_position === "terminal" && upstream_images.length > 0) ||
-    (image.specimen_track_position === "segmentation" && input_images.length > 0) ||
-    (image.specimen_track_position === "internal" && downstream_display_images.length > 0) ||
-    own_segmentation_images.length > 0;
-
-let specimen: SpecimenInfo | null = null;
-if ("subject" in creation_process && creation_process.subject != null) {
-    specimen = creation_process.subject
-}
-let inherited_specimens: SpecimenInfo[] = [];
-if (specimen == null) {
-    const initialImage = upstream_images.find(img => img?.upstream_image_uuids?.length === 0);
-    if (initialImage?.creation_process?.subject) {
-        inherited_specimens = [initialImage.creation_process.subject];
-    }
-}
-
 const thumbnail_uri = getSimpleAttributeValue(image, "thumbnail_uri")?.[0];
 
-const userProvidedAttribute = image?.file_list_attributes?.[0]?.value.attributes || [];
+const userProvidedAttribute = image.file_list_attributes?.[0]?.value?.attributes || {};
 const breadcrumbs = [
   "/bioimage-archive",
   "/bioimage-archive/studies",
@@ -194,7 +158,7 @@ const breadcrumbs = [
                 <br/>
                 {
                     interactiveImageRepresentation && (
-                        <button class="vf-button vf-button--primary vf-button--sm bia-button" id="CopyURLButton" data-url={viewerSourceURI ?? interactiveImageRepresentation.file_uri[0]}>Copy OME-Zarr URI</button>
+                        <button class="vf-button vf-button--primary vf-button--sm bia-button" id="CopyURLButton" data-url={viewerSourceURI ?? interactiveImageRepresentation.file_uri?.[0]}>Copy OME-Zarr URI</button>
                     )
                 }
                 {
@@ -298,7 +262,7 @@ const breadcrumbs = [
             <div>
                 {
                     "acquisition_process" in creation_process &&
-                        creation_process.acquisition_process.length > 0 && (
+                        creation_process.acquisition_process?.length > 0 && (
                             <b>Image Acquisition Protocols:</b>
                             <div class="metadata-fields">
                                 {creation_process.acquisition_process.map(
@@ -314,7 +278,7 @@ const breadcrumbs = [
                 }
                 {
                     "annotation_method" in creation_process &&
-                        creation_process.annotation_method.length > 0 && (
+                        creation_process.annotation_method?.length > 0 && (
                             <b>Image Acquisition Protocols:</b>
                             <div class="metadata-fields">
                                 {creation_process.annotation_method.map(
@@ -330,7 +294,7 @@ const breadcrumbs = [
                 }
                 {
                     "protocol" in creation_process &&
-                        creation_process.protocol.length > 0 && (
+                        creation_process.protocol?.length > 0 && (
                             <b>Image Acquisition Protocols:</b>
                             <div class="metadata-fields">
                                 {creation_process.protocol.map(
