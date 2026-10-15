@@ -60,7 +60,7 @@ The general image page renders the OME-Zarr copy button only when an interactive
 
 The Base, EMPIAR and Projects layouts load jQuery before their dependent DataTables 2.1.8 CDN script. Both use [`is:inline`](https://docs.astro.build/en/guides/client-side-scripts/#unprocessed-scripts) to preserve ordinary blocking script tags instead of Astro's module-import processing. Source order alone does not establish execution order for processed scripts. This corrects the previously reproduced `jQuery is not defined` error without changing library versions. Network availability and the volume-EM page's additional legacy CDN scripts remain separate integration concerns.
 
-`npm run test:browser` exercises the actual scripts with absent/present elements, a table API response, clipboard behavior and layout script order. These tests run through `make quality-test`; compiled-browser checks complement the controlled script tests.
+`npm run test:controls` exercises the actual scripts with absent/present elements, a table API response, clipboard behavior and layout script order. These tests run through `make quality-test`; compiled-browser checks complement the controlled script tests.
 
 ## Unreachable components and ineffective styles
 

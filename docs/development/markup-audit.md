@@ -26,7 +26,7 @@ Run from the Git repository root after `npm ci`. This audit reads application fi
 | `make -f makes/markup.mk quality-markup-report` | Same audit, with ordinary findings nonblocking. |
 | `make -f makes/markup.mk quality-markup-html MARKUP_HTML_DIR=dist` | Source plus every discovered raw HTML file in the selected output directory. |
 
-`npm test` discovers every versioned test under `tests/`, including the markup suites. `npm run quality:markup:check` checks application source, markup tools and tests using `configs/quality/tsconfig.markup.json`, excluding generated artifacts. The Make fragment can be called directly without a root Makefile or dead-code targets. No markup CI gate is enabled by this change.
+`npm test` discovers every versioned test under `tests/`, including the markup suites. `npm run check` checks application source, markup tools and tests using `configs/typescript/check.json`, excluding generated artifacts. The Make fragment can be called directly without a root Makefile or dead-code targets. No markup CI gate is enabled by this change.
 
 Build successfully before auditing output. A directory's existence does not prove it belongs to the current source. Keep the build log and source snapshot with the audit evidence:
 
@@ -58,7 +58,7 @@ The [findings and rendering repairs](markup-findings.md) record the baseline, gr
 
 ## Tool compatibility
 
-The audit uses locked ESLint 9.39.5, eslint-plugin-astro 1.3.1 and typescript-eslint 8.48.1 profile. That plugin lacks the upstream omitted-end-tag rule, so the local rule is a compatibility fallback. The legacy `astro/valid-compile` setting is specific to this profile; continue running `npm run quality:markup:check` and the normal build separately. The [current upstream documentation](https://ota-meshi.github.io/eslint-plugin-astro/rules/no-omitted-end-tags/) describes a newer compiler/plugin contract and must not be applied to this installed profile without testing. Replace the fallback when a compatible upstream implementation passes the same valid/invalid fixtures; avoid duplicate checks.
+The audit uses locked ESLint 9.39.5, eslint-plugin-astro 1.3.1 and typescript-eslint 8.48.1 profile. That plugin lacks the upstream omitted-end-tag rule, so the local rule is a compatibility fallback. The legacy `astro/valid-compile` setting is specific to this profile; continue running `npm run check` and the normal build separately. The [current upstream documentation](https://ota-meshi.github.io/eslint-plugin-astro/rules/no-omitted-end-tags/) describes a newer compiler/plugin contract and must not be applied to this installed profile without testing. Replace the fallback when a compatible upstream implementation passes the same valid/invalid fixtures; avoid duplicate checks.
 
 HTML-Validate is locked to 10.17.0, compatible with Node 20.19+, 22.16+ or 24+. Top-level application dependency declarations are unchanged. Adding the analyzers also updates shared transitive lock entries; the lockfile and installation are verified together. The ESLint 9 profile is a maintenance limitation; adding this audit does not resolve its end-of-life status.
 

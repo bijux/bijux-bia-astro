@@ -13,7 +13,7 @@ quality-test:
 	npm test
 
 quality-check:
-	npm run quality:check
+	npm run check
 
 quality-audit:
 	npm run audit:dead-code
