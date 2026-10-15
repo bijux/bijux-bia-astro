@@ -25,6 +25,31 @@ Note that:
 `npm run dev` will update as you change things but may give a false impression of the final result, whereas running `npm run build` and then `npm run preview` will recreate what netlify runs, and will provide an accurate display of the website.
 
 
+## Reproducible catalogue builds
+
+`npm run build` captures public API responses used by the actual prerender into
+`artifacts/catalogue/snapshots/`. A snapshot is published only after successful
+rendering and validation of catalogue totals, full study records, required service
+inputs and generated routes. The build prints its snapshot directory and report.
+
+Replay with the same public configuration, including any `.env` values:
+
+```sh
+CATALOGUE_SNAPSHOT=artifacts/catalogue/snapshots/<capture-id> npm run build
+```
+
+Replay verifies response hashes and never falls back to live APIs. Identical build
+requests share one result; upstream concurrency is bounded. HTTP error responses
+remain visible in the snapshot index; transport failures prevent publication.
+The default renders four pages concurrently with at most four upstream requests;
+set `CATALOGUE_RENDER_CONCURRENCY=1` for serial rendering (allowed range: 1–8).
+Snapshots stay outside public output and are not shipped in the runtime image.
+This freezes captured inputs, not a transaction across independent upstream APIs.
+The capture uses the default single-process prerenderer; concurrent page rendering
+is supported, while experimental parallel-worker capture is rejected.
+Study pages remain static: replay removes upstream build latency without adding
+runtime catalogue requests or an HTML-cache invalidation policy.
+
 ## Container deployment
 
 Build the image once, then start that same image without compilation or catalogue

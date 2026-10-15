@@ -11,6 +11,7 @@ COPY --chown=node:node src ./src
 COPY --chown=node:node public ./public
 COPY --chown=node:node astro.config.mjs tsconfig.json ./
 COPY --chown=node:node scripts/deployment ./scripts/deployment
+COPY --chown=node:node scripts/catalogue ./scripts/catalogue
 ARG PUBLIC_SEARCH_API
 ARG PUBLIC_MONGO_API
 ARG PUBLIC_GTAG

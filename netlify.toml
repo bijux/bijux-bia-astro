@@ -5,7 +5,7 @@
 [build]
   base = "/"
   publish = "artifacts/dist/bioimage-archive"
-  command = "NODE_OPTIONS='--max-old-space-size=4096' npm run astro build"
+  command = "NODE_OPTIONS='--max-old-space-size=4096' npm run build"
 
 [[headers]]
   for = "/*"
