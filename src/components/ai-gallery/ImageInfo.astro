@@ -20,15 +20,16 @@ const metadataIdPrefix = text === "Annotation" ? "annotated" : btnID;
     <button class="vf-button vf-button--primary vf-button--sm bia-button" id={btnID} data-url={publicUrl ?? url}>Copy {text} OME-Zarr URI</button><br/>
     <ImageMetadata idPrefix={metadataIdPrefix} imageRep={imageRep} imageAtrributes={imageAtrributes} />
 </div>
-<script type="module">
+<script>
   window.addEventListener("DOMContentLoaded", () => {
-    const copyButtons = document.querySelectorAll("button[data-url]");
+    const copyButtons = document.querySelectorAll<HTMLButtonElement>("button[data-url]");
     copyButtons.forEach((btn) => {
       btn.addEventListener("click", async () => {
         const url = btn.dataset.url;
+        if (!url) return;
         const originalText = btn.innerText;
-        await navigator.clipboard.writeText(url);
-        btn.innerText = "URI Copied";
+        try { await navigator.clipboard.writeText(url); btn.innerText = "URI Copied"; }
+        catch { btn.innerText = "Copy unavailable"; }
         setTimeout(() => {
           btn.innerText = originalText;
         }, 700);

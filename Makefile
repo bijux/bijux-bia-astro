@@ -1,1 +1,1 @@
-include makes/quality.mk
+include $(sort $(wildcard makes/*.mk))

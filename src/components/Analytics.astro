@@ -1,0 +1,16 @@
+---
+import { PUBLIC_GTAG } from "astro:env/client";
+import { scriptData } from "../security/html.mjs";
+
+const source = new URL("https://www.googletagmanager.com/gtag/js");
+source.searchParams.set("id", PUBLIC_GTAG);
+---
+
+<script is:inline async src={source.href}></script>
+<script type="application/json" id="analytics-configuration" set:html={scriptData({ id: PUBLIC_GTAG })}></script>
+<script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", JSON.parse(document.getElementById("analytics-configuration").textContent).id);
+</script>

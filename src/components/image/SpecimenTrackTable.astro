@@ -68,7 +68,10 @@ const sortedImages = images
               .unique()
               .sort()
               .each(function (positionText: string) {
-                select.append(`<option value="${positionText}">${positionText}</option>`);
+                const option = document.createElement("option");
+                option.value = positionText;
+                option.textContent = positionText;
+                select.append(option);
               });
           });
       },

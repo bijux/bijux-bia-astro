@@ -1,4 +1,5 @@
 ---
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
 import BenchmarkingTable from "./BenchmarkingTable.astro"
 import ModelPredictionTable from "./ModelPredictionTable.astro"
 import WebsiteStateButton from "../WebsiteStateButton.astro";
@@ -76,13 +77,13 @@ const filteredTableInfo = tableInfo.filter( row => row.model === modelName)
     <figure class="vf-figure vf-figure--align vf-figure--align-centered">
       <img
         class="vf-figure__image"
-        src={modelInfo.hero_image}
+        src={navigationURL(modelInfo.hero_image) ?? undefined}
         alt="Example image containing both original image data and after applying the model to it."
       />
     </figure>
   
     <div>
-      <a href={modelInfo.model_link} class="vf-button vf-button--primary vf-button--sm bia-button">Link to model</a>
+      <a href={navigationURL(modelInfo.model_link) ?? undefined} class="vf-button vf-button--primary vf-button--sm bia-button">Link to model</a>
     </div>
   </section>
 

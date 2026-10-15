@@ -1,4 +1,5 @@
 ---
+import { navigationURL, resourceURL } from "../security/urls.mjs";
 const { images } = Astro.props;
 
 interface Image {
@@ -37,7 +38,7 @@ interface Image {
         {Object.entries(images).map(([, image]: [string, Image]) => (
             <tr>
                 <td style="width: 100px;">
-                    <img src={image.thumbnail_src} alt="" style="width: 100px; height: 100px; object-fit: cover;" loading="lazy"/>
+                    <img src={resourceURL(image.thumbnail_src) ?? undefined} alt="" style="width: 100px; height: 100px; object-fit: cover;" loading="lazy"/>
                 </td>
                 <td>
                     <a target="_blank" href={"/bioimage-archive/study/" + image.submitted_in_study_accession}>
@@ -66,7 +67,7 @@ interface Image {
                     {Math.round(image.voxel_size_z * 1e9)}
                 </td>
                 <td>
-                    <a target="_blank" href={image.view_link}>View</a> |
+                    <a target="_blank" href={navigationURL(image.view_link) ?? undefined}>View</a> |
                     <a target="_blank" href={"/bioimage-archive/image/" + image.uuid}>Info</a>
                 </td>
             </tr>

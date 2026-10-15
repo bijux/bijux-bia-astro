@@ -1,4 +1,5 @@
 ---
+import { searchRequest, fetchJSON, browseResponse } from "../../security/requests.mjs";
 import "../../styles/search.css";
 import StudyCard from '../../components/cards/BrowseStudyCard.astro';
 import ImageCard from '../../components/cards/BrowseImageCard.astro';
@@ -40,9 +41,10 @@ const normalizedSortBy =
 const sortBy = ["relevance", "accession_id", releaseDateSortField].includes(normalizedSortBy) ? normalizedSortBy : "relevance";
 const normalizedSortOrder = requestedSortOrder === "ascending" ? "asc" : requestedSortOrder === "descending" ? "desc" : requestedSortOrder;
 const sortOrder = ["asc", "desc"].includes(normalizedSortOrder) ? normalizedSortOrder : "desc";
-const page = Number(url.searchParams.get('pagination.page')) || 1;
-const pageSize = Number(url.searchParams.get('pagination.page_size')) || 12;
-const cursor = url.searchParams.get('cursor');
+let requestError = "";
+let parameters = { page: 1, pageSize: 12, cursor: null };
+try { parameters = searchRequest(url); } catch { requestError = "Search parameters exceed the supported limits or are invalid."; Astro.response.status = 400; }
+const { page, pageSize, cursor } = parameters;
 const maxResultWindow = 10000;
 const cappedPage = Math.max(1, Math.floor(maxResultWindow / pageSize));
 const displayPage = cursor ? Math.max(cappedPage + 1, page) : page;
@@ -113,7 +115,7 @@ let paginationData = {} as PaginationData;
 let hasFacetResponse = false;
 
 const hasQueryParam = query || query ==="";
-if (hasQueryParam) {
+if (hasQueryParam && !requestError) {
   const searchURL = generateParamString(
     searchEndpoint,
     query,
@@ -131,13 +133,15 @@ if (hasQueryParam) {
     requestURL.searchParams.delete("pagination.page");
   }
 
-  const res = await fetch(requestURL.toString());
-  if (res.ok) {
-    const data = await res.json();
+  try {
+    const data = browseResponse(await fetchJSON(requestURL.toString()));
     hits = data.hits;
     facetData = data.facets;
     hasFacetResponse = !!facetData && typeof facetData === "object" && !Array.isArray(facetData);
     paginationData = data.pagination;
+  } catch {
+    requestError = "Search is temporarily unavailable. Please try again later.";
+    Astro.response.status = 502;
   }
 }
 
@@ -253,6 +257,7 @@ const facets = facetEntries.reduce((acc, [facetKey, data]) => {
 }, {} as Record<string, any>);
 ---
 <script src="./search-results.js"></script>
+{requestError && <p role="alert">{requestError}</p>}
 <section
   id="search-results-shell"
   class="vf-content | vf-u-grid-example | vf-grid vf-grid__col-5"

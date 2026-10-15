@@ -1,4 +1,7 @@
 ---
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import HighlightedTaxa from "../HighlightedTaxa.astro";
+import HighlightedFields from "../HighlightedFields.astro";
 import { getHighlightTextString, highlightOrganism, renderTaxonList, formatListItem, getStudyImage, highlightLinks, getLicenceLogo, formatHighlightedList } from "../SharedJSFunctions.js";
 import  HighlightedText  from "../HighlightedText.astro";
 import "../../styles/dataset_card.css"
@@ -20,8 +23,8 @@ const organism = highlightOrganism(study, query);
 const annotationMethod = formatHighlightedList(annotationType ?? study?.annotation_type?.map((at: string) => at.replace(/_/g, " ")) ?? [], query, {
   sort: false,
 });
-const licenceURL = study?.licence_details?.uri || study?.licence;
-const logoURL = study?.licence_details?.logo_uri || getLicenceLogo(licenceURL);
+const licenceURL = navigationURL(study?.licence_details?.uri || study?.licence);
+const logoURL = resourceURL(study?.licence_details?.logo_uri) || getLicenceLogo(licenceURL);
 const logoAlt = study?.licence_details?.label || "";
 
 const base = `/bioimage-archive/${studyPageRoot}/${study.accession_id}`;
@@ -45,7 +48,7 @@ const highlightedStudyLink = highlightLinks(base, highlight, query);
             <div class="tooltip">
                 <span class="tooltiptext">
                     <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
-                    <HighlightedText text={highlightedTextString} />
+                    <HighlightedFields highlights={highlight} />
                 </span>
             </div>
         )}
@@ -60,7 +63,7 @@ const highlightedStudyLink = highlightLinks(base, highlight, query);
         <HighlightedText text={highlight?.title?.[0] ?? study.title} /> <br />
         <b>Release date: </b>{ study.release_date }<br>
         {imagingMethod && (<><b>Imaging method: </b><HighlightedText text={imagingMethod} /><br /></>)}
-        {organism && (<><b>Organism: </b><HighlightedText text={organism} /> </>)}
+        {organism && (<><b>Organism: </b><HighlightedTaxa record={study} query={query} /> </>)}
         </p>
 
         {taglist && taglist.length > 0 && (

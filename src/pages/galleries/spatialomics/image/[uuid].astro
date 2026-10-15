@@ -1,4 +1,5 @@
 ---
+import { navigationURL, resourceURL } from "../../../../security/urls.mjs";
 export const prerender = false;
 import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import DatasetDetail from '../../../../components/DatasetDetail.astro';
@@ -19,6 +20,7 @@ const protocolMap = fieldMap["protocol"];
 const { uuid } = Astro.params;
 
 const image = await getImageFromAPI(uuid) as Image;
+if (!image) return new Response("Image not found.", { status: 404 });
 const accession_id = image ? image.accession_id : "";
 const imageStudy: Study = await getStudyFromApiByAccession(accession_id);
 const vizarrRepUuid = getSimpleAttributeValue(image, "recommended_vizarr_representation");
@@ -114,7 +116,7 @@ const breadcrumbs = [
                       <WebsiteStateButton/>
                   </h1>
                   <h2 class="vf-intro__subheading">{imageStudy.title}</h2>
-                  <p class="studytitle">{imageDataset.title}</p>
+                  <p class="studytitle">{imageDataset?.title}</p>
                   <a href={ "/bioimage-archive/galleries/spatialomics/study/" + imageStudy.accession_id} class="vf-button vf-button--primary vf-button--sm bia-button">Study Page</a>
               </div>
           </section>
@@ -147,10 +149,11 @@ const breadcrumbs = [
                           style="width: 100%; height: 500px"
                           name="vizarr"
                           src={vizarrIFrameSource}
+                          allow={import.meta.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true" ? "loopback-network; local-network-access" : undefined}
                           title={`Vizarr viewer for image ${image.uuid}`}
                       ></iframe>
                   ) : thumbnail_uri ? (
-                      <img style="width: 100%; height: 500px" src={thumbnail_uri} alt={`Preview of image ${image.uuid}`} />
+                      <img style="width: 100%; height: 500px" src={resourceURL(thumbnail_uri) ?? undefined} alt={`Preview of image ${image.uuid}`} />
                   ) : (
                       <img style="height: 500px;" src={fallbackImage.src} alt="Fallback image preview" />
                   )}
@@ -158,7 +161,7 @@ const breadcrumbs = [
   
               <div>
                   <h3>Access images</h3>
-                  License: <a href={image.licence_details.uri}>{image.licence_details.label}</a> <br/>
+                  License: <a href={navigationURL(image.licence_details.uri) ?? undefined}>{image.licence_details.label}</a> <br/>
                   <br/>
                   <a href={"/bioimage-archive/help/downloading-data#aws_client_download"}>How to download this image</a><br/>
                   <br/>
@@ -184,7 +187,7 @@ const breadcrumbs = [
                   }
                   {
                       ng_link && (
-                          <a target="_blank" href={ng_link} class="vf-button vf-button--primary vf-button--sm bia-button">Open in neuroglancer</a>
+                          <a target="_blank" href={navigationURL(ng_link) ?? undefined} class="vf-button vf-button--primary vf-button--sm bia-button">Open in neuroglancer</a>
                       )
                   }
                   <script>
@@ -218,7 +221,7 @@ const breadcrumbs = [
               <div style="overflow-wrap: anywhere;">
                   <b>Title</b>: {imageStudy.title}<br/>
                   <b>Description:</b> {imageStudy.description} <br/>
-                  <b>Licence:</b> <a href={imageStudy.licence_details.uri}>{imageStudy.licence_details.label}</a> <br/>
+                  <b>Licence:</b> <a href={navigationURL(imageStudy.licence_details.uri) ?? undefined}>{imageStudy.licence_details.label}</a> <br/>
               </div>
           </section>
   
@@ -229,7 +232,7 @@ const breadcrumbs = [
                   <h3>Dataset</h3>
               </div>
               <div>
-                  <b>Title</b>: {imageDataset.title}<br/>
+                  <b>Title</b>: {imageDataset?.title}<br/>
                   <b>Description:</b> {imageDataset.description}<br/>
               </div> 
           </section>

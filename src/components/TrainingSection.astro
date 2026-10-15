@@ -28,63 +28,19 @@
 </div>
 
 <script>
-    const formatDesc = (content) => {
-        if (!content) return "";
-        let safeContent = content.replace(/(<([^>]+)>)/gi, "");
-        return safeContent.length > 200
-        ? safeContent.slice(0, 200).split(" ").slice(0, -1).join(" ") + "..."
-        : safeContent;
-    };
+    import { fetchJSON } from "../security/requests.mjs";
+    import { renderTutorials } from "./training/tutorials.mjs";
 
     async function fetchTutorials(url, containerId, type = "live") {
-        try {
-        const res = await fetch(url);
-        const data = await res.json();
         const container = document.getElementById(containerId);
-        container.innerHTML = "";
-
-        const tutorials = data.entries || data;
-        if(tutorials.length == 0){
-            container.innerHTML = "<p>Currently there are no upcoming events - please click the below link for more information</p>";
-        }
-        tutorials.forEach((item) => {
-            const html = `
-            <div class="vf-summary vf-summary--event">
-                <p class="vf-summary__date">${item.fields.type}</p>
-                <h3 class="vf-summary__title">
-                <a href="${item.fields.url[0]}" target="_blank" class="vf-link vf-summary__link">
-                    ${item.fields.title}
-                    ${
-                    item.fields.subtitle &&
-                    item.fields.subtitle[0] &&
-                    item.fields.subtitle[0].length > 0 &&
-                    item.fields.subtitle.toString() !== "null"
-                        ? ": " + item.fields.subtitle
-                        : ""
-                    }
-                </a>
-                </h3>
-                <div>
-                <div class="vf-summary__text">
-                    ${formatDesc(item.fields.description[0] || "")}
-                </div>
-                ${
-                    type === "live"
-                    ? `<div class="vf-summary__location">
-                        <div class="vf-u-margin__top--400"></div>
-                        <span>${item.fields.status}</span> |
-                        <span><i class="icon icon-common icon-calendar-alt"></i> ${item.fields.date_time_clean}</span> |
-                        <span><i class="icon icon-common icon-location"></i> ${item.fields.venue.toString() === "null" ? "Online" : item.fields.venue}</span>
-                        </div>`
-                    : ""
-                }
-                </div>
-            </div>
-            `;
-            container.insertAdjacentHTML("beforeend", html);
-        });
-        } catch (error) {
-        console.error("Error fetching tutorials:", error);
+        if (!container) return;
+        try {
+            const data = await fetchJSON(url, { maxBytes: 1024 * 1024 });
+            renderTutorials(container, data.entries ?? data, type);
+        } catch {
+            const message = document.createElement("p");
+            message.textContent = "Training events are temporarily unavailable. Use the link below to view them.";
+            container.replaceChildren(message);
         }
     }
     const PUBLIC_LIVE_TUTORIAL = "https://www.ebi.ac.uk/ebisearch/ws/rest/ebiweb_training_events?format=json&query=domain_source:ebiweb_training_events%20AND%20timeframe:upcoming&start=0&size=2&fieldurl=true&fields=title,description,start_date,end_date,date_time_clean,resource_training_page,type,training_type,url,venue,materials,status,timeframe,resource_training_page,course_image&facetcount=0&sort=start_date&facets=resource_training_page:BioImage%20Archive"

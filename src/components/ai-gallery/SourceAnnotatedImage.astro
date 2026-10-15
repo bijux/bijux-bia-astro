@@ -1,24 +1,29 @@
 ---
+import { resourceURL } from "../../security/urls.mjs";
+import { scriptData } from "../../security/html.mjs";
 import ImageInfo from "./ImageInfo.astro";
 import { buildVizarrViewerURL, getPublicVisualisationURI, getSimpleAttributeValue } from "../../components/SharedJSFunctions"
 
 const { annotatedImages, sourceImage } = Astro.props;
 
 function getAttributes(image) {
-  return image?.additional_metadata.find(meta =>
+  return image?.additional_metadata?.find(meta =>
     meta.name.startsWith("attributes_from_file_reference")
   )?.value?.attributes || {};
 }
 
 function parseNeuroglancerUrl(url: string) {
+  try {
+  if (url.length > 65536) return {};
   const fragment = url.split("#!")[1];
   if (!fragment) return {};
   const decoded = decodeURIComponent(fragment);
   const state = JSON.parse(decoded);
-  const result: Record<string, { order: number; name: string }> = {};
+  const result: Record<string, { order: number; name: string }> = Object.create(null);
+  if (!Array.isArray(state.layers) || state.layers.length > 1000) return result;
   state.layers.forEach((layer: any, index: number) => {
     const source = layer.source?.url ?? layer.source;
-    const uuid = source.match(/\/S-[^\/]+\/([0-9a-f-]{36})\//)?.[1]
+    const uuid = typeof source === "string" ? source.match(/\/S-[^\/]+\/([0-9a-f-]{36})\//)?.[1] : null;
     if (uuid) {
       result[uuid] = {
         order: index + 1,
@@ -27,12 +32,15 @@ function parseNeuroglancerUrl(url: string) {
     }
   });
   return result;
+  } catch { return {}; }
 }
 
 const sourceImageAtrributes = getAttributes(sourceImage)
 const sourceImageRep = sourceImage.representation.find((r) => r.image_format === ".ome.zarr");
 const sourceImgS3Url = getPublicVisualisationURI(sourceImageRep?.file_uri?.[0]) || "";
-const hasNeuroGlancerURL = getSimpleAttributeValue(sourceImage, "neuroglancer_view_link") || "";
+const sourceViewer = buildVizarrViewerURL(sourceImgS3Url);
+const viewerPermissions = import.meta.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true" ? "loopback-network; local-network-access" : undefined;
+const hasNeuroGlancerURL = resourceURL(getSimpleAttributeValue(sourceImage, "neuroglancer_view_link")) || "";
 const ngLayers = parseNeuroglancerUrl(hasNeuroGlancerURL); 
 const sortedAnnotatedImages = annotatedImages
   .filter(img => ngLayers[img.uuid]) 
@@ -47,7 +55,7 @@ const annotatedImgS3Url = getPublicVisualisationURI(annotatedImageRep?.file_uri?
   {hasNeuroGlancerURL.length > 0? (
       <a target="_blank" href={hasNeuroGlancerURL} class="vf-button vf-button--primary vf-button--sm bia-button">Open overlay in Neuroglancer viewer</a>
     <div class="vf-grid">
-      <div class="vf-grid__col--span-2"><iframe src={hasNeuroGlancerURL} style="height: 600px; width: 100%;border: none;"></iframe></div>
+      <div class="vf-grid__col--span-2"><iframe src={hasNeuroGlancerURL} allow={viewerPermissions} style="height: 600px; width: 100%;border: none;"></iframe></div>
     </div>
     <div class="vf-grid">
       <div style="min-width: 48%;">
@@ -70,7 +78,7 @@ const annotatedImgS3Url = getPublicVisualisationURI(annotatedImageRep?.file_uri?
     <>
       <div class="vf-grid" style="display: flex; gap: 1rem;">
         <div style="min-width: 48%"><h3><span>Source Image</span></h3><div>
-            <iframe src={buildVizarrViewerURL(sourceImgS3Url) ?? ""} style="border: none;flex:1;height: 500px;width:100%;min-width:48%" title="Vizarr viewer for source image"></iframe>
+            {sourceViewer ? <iframe src={sourceViewer} allow={viewerPermissions} style="border: none;flex:1;height: 500px;width:100%;min-width:48%" title="Vizarr viewer for source image"></iframe> : <p>Viewer unavailable for this representation.</p>}
           </div>
           <ImageInfo text="Source Image" url={sourceImgS3Url} imageRep={sourceImageRep} imageAtrributes={sourceImageAtrributes} btnID="CopyURLButton"/>
         </div>
@@ -80,16 +88,19 @@ const annotatedImgS3Url = getPublicVisualisationURI(annotatedImageRep?.file_uri?
             <span class="imageslider"><button onclick="slide(-1)" id="image-slider" class="slider-left-button"></button></span>
             <div id="slider">
               {annotatedImages.map((img) => {
-                const rep = img.representation.find((r) => r.image_format === ".ome.zarr");
-                if (!rep || !rep.file_uri?.[0]) return null;
-                const sourceUrl = getPublicVisualisationURI(rep.file_uri[0]);
+                const rep = img.representation?.find((r) => r.image_format === ".ome.zarr");
+                const sourceUrl = getPublicVisualisationURI(rep?.file_uri?.[0]);
+                const viewer = buildVizarrViewerURL(sourceUrl);
                 return (
+                  <div id={img.uuid} style="min-width:100%">
+                  {viewer ?
                   <iframe
-                    src={buildVizarrViewerURL(sourceUrl) ?? ""}
-                    style="height: 500px; border: none;min-width:100%"
-                    id={img.uuid}
+                    src={viewer}
+                    allow={viewerPermissions}
+                    style="height: 500px; border: none;width:100%"
                     title={`Vizarr viewer for annotation ${img.uuid}`}
-                  ></iframe>
+                  ></iframe> : <p>Viewer unavailable for this representation.</p>}
+                  </div>
                 );
               })}
             </div>
@@ -106,26 +117,32 @@ const annotatedImgS3Url = getPublicVisualisationURI(annotatedImageRep?.file_uri?
   ) : (
     <>
       <h3><span>Source Image</span></h3>
-      <iframe src={buildVizarrViewerURL(sourceImgS3Url) ?? ""} style="height: 500px; width: 100%;border: none;" title="Vizarr viewer for source image"></iframe>
+      {sourceViewer ? <iframe src={sourceViewer} allow={viewerPermissions} style="height: 500px; width: 100%;border: none;" title="Vizarr viewer for source image"></iframe> : <p>Viewer unavailable for this representation.</p>}
     </>
   )}
   
 </section>
-<script type="application/json" id="images-json" set:html={JSON.stringify(annotatedImages)} />
-<script type="module">
+<script is:inline type="application/json" id="images-json" data-allow-local-viewers={String(import.meta.env.PUBLIC_ALLOW_LOCAL_VIEWERS === "true")} set:html={scriptData(annotatedImages)} />
+<script>
+    import { imageSizeMicrometres } from './image-dimensions.mjs';
+    import { resourceURL } from "../../security/urls.mjs";
+    declare global { interface Window { slide: (direction: number) => void; } }
+    const allowLocalViewers = document.getElementById("images-json")?.dataset?.allowLocalViewers === "true";
     const getPublicVisualisationURI = (uri) => {
       if (!uri) {
         return null;
       }
 
       try {
-        const url = new URL(uri);
+        const approved = resourceURL(uri, { allowLocal: allowLocalViewers });
+        if (!approved) return null;
+        const url = new URL(approved);
         if (url.hostname === "livingobjects-int.ebi.ac.uk") {
           url.hostname = "livingobjects.ebi.ac.uk";
         }
         return url.toString();
       } catch {
-        return uri;
+        return null;
       }
     };
 
@@ -149,55 +166,64 @@ const annotatedImgS3Url = getPublicVisualisationURI(annotatedImageRep?.file_uri?
       return url.toString();
     };
 
-    const numberOfAnnotatedImages = JSON.parse(document.getElementById("images-length").textContent);
-    if(numberOfAnnotatedImages <= 1){
-      document.getElementsByClassName("imageslider")[0].style.display = "none";
-      document.getElementsByClassName("imageslider")[1].style.display = "none";
+    const slider = document.getElementById("slider");
+    const numberOfAnnotatedImages = slider?.children.length ?? 0;
+    if(!slider || numberOfAnnotatedImages <= 1){
+      document.querySelectorAll<HTMLElement>(".imageslider").forEach(control => { control.style.display = "none"; });
     }else{
       let currentSlide = 0;
-      const slider = document.getElementById("slider");
       const slides = slider.children;
       const updateMetadata = (uuid) => {
           const image = JSON.parse(document.getElementById("images-json").textContent).find(ai => ai.uuid === uuid)
-          const rep = image.representation.find((r) => r.image_format === ".ome.zarr");
-          const attributes = image.additional_metadata.find(meta =>
+          const rep = image.representation?.find((r) => r.image_format === ".ome.zarr") ?? {};
+          const attributes = image.additional_metadata?.find(meta =>
               meta.name.startsWith("attributes_from_file_reference")
           )?.value?.attributes || {};
-          const micronX = (1e6 * rep.voxel_physical_size_x ** 2).toPrecision(2);
-          const micronY = (1e6 * rep.voxel_physical_size_y ** 2).toPrecision(2);
+          const [micronX, micronY] = imageSizeMicrometres(rep);
           document.getElementById("annotated-size").innerText = `${micronX}μm x ${micronY}μm`;
-          document.getElementById("annotated-pixels").innerText = `${rep.size_x} x ${rep.size_y} pixels`;
-          document.getElementById("annotated-channels").innerText = `${rep.size_c} channels`;
-          document.getElementById("annotated-timesteps").innerText = `${rep.size_t} timesteps`;
+          document.getElementById("annotated-pixels").innerText = `${rep.size_x ?? "Not reported"} x ${rep.size_y ?? "Not reported"} pixels`;
+          document.getElementById("annotated-channels").innerText = `${rep.size_c ?? "Not reported"} channels`;
+          document.getElementById("annotated-timesteps").innerText = `${rep.size_t ?? "Not reported"} timesteps`;
           const metaContainer = document.getElementById("annotated-metadata");
-          metaContainer.innerHTML = "<h3>Additional metadata</h3>";
+          const heading = document.createElement("h3");
+          heading.textContent = "Additional metadata";
+          metaContainer.replaceChildren(heading);
           Object.entries(attributes).forEach(([key, value]) => {
               const line = document.createElement("div");
-              line.innerHTML = `<b>${key}:</b> ${value}<br />`;
+              const label = document.createElement("b");
+              label.textContent = `${key}:`;
+              line.append(label, document.createTextNode(` ${value}`), document.createElement("br"));
               metaContainer.appendChild(line);
           });
-          const s3url = getPublicVisualisationURI(rep.file_uri[0]);
+          const s3url = getPublicVisualisationURI(rep.file_uri?.[0]) ?? "";
           const copyBtn = document.getElementById("CopyAnnotationButton");
 
           copyBtn.dataset.url = s3url;
 
-          document.getElementById("OpenAnnotationInVizarr").href = buildVizarrViewerURL(s3url);
-          document.getElementById("OpenAnnotationInITK").href = buildITKViewerURL(s3url);
+          for (const [id, destination] of [["OpenAnnotationInVizarr", buildVizarrViewerURL(s3url)], ["OpenAnnotationInITK", buildITKViewerURL(s3url)]]) {
+            const link = document.getElementById(id);
+            if (link instanceof HTMLAnchorElement) {
+              if (destination) link.href = destination;
+              else link.removeAttribute("href");
+            }
+          }
           const studyInfo = JSON.parse(document.getElementById("study-json").textContent)
-          const annotationTypeMethod = studyInfo.find((d) => d.uuid === image.submission_dataset_uuid)?.annotation_process?.[0];
-          const panel = Array.from(document.querySelectorAll("[data-annotation-dataset]"))
-              .find((element) => element.dataset.annotationDataset === image.submission_dataset_uuid);
+          const annotationTypeMethod = studyInfo.find((dataset) => dataset.uuid === image.submission_dataset_uuid)?.annotation_process?.[0];
+          const panel = Array.from(document.querySelectorAll<HTMLElement>("[data-annotation-dataset]"))
+              .find(element => element.dataset.annotationDataset === image.submission_dataset_uuid);
           if (panel) {
-              panel.querySelector("[data-annotation-type]").innerText = annotationTypeMethod?.title ?? "";
-              panel.querySelector("[data-annotation-method]").innerText = annotationTypeMethod?.annotation_criteria ?? "";
+              const type = panel.querySelector<HTMLElement>("[data-annotation-type]");
+              const method = panel.querySelector<HTMLElement>("[data-annotation-method]");
+              if (type) type.innerText = annotationTypeMethod?.title ?? "";
+              if (method) method.innerText = annotationTypeMethod?.protocol_description || annotationTypeMethod?.annotation_criteria || "";
           }
       };
-      window.slide = function(direction) {
+      window.slide = function(direction: number) {
           const total = slides.length;
           currentSlide = (currentSlide + direction + total) % total;
           slider.style.transform = `translateX(-${currentSlide * 100}%)`;
           const currentUUID = slides[currentSlide].id;
-          document.getElementById("AnnotatedImageLength").innerText = currentSlide+1;
+          document.getElementById("AnnotatedImageLength").innerText = String(currentSlide+1);
           updateMetadata(currentUUID);
       };
       updateMetadata(slides[0].id);

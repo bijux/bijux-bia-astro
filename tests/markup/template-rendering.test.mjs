@@ -19,7 +19,7 @@ before(async () => {
     await mkdir(output, { recursive: true });
     application = await mkdtemp(path.join(output, 'application-'));
     await mkdir(path.join(application, 'src/pages'), { recursive: true });
-    for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content']) {
+    for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content', 'security']) {
         await cp(path.join(repository, 'src', directory), path.join(application, 'src', directory), { recursive: true });
     }
     await symlink(path.join(repository, 'src/assets'), path.join(application, 'src/assets'), 'dir');

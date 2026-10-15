@@ -1,3 +1,5 @@
+import { resourceURL } from "../security/urls.mjs";
+
 const tableEl = document.querySelector("#viewable_images_table");
 
 // Studies without interactive images render a message instead of this table.
@@ -9,19 +11,20 @@ if (tableEl) {
   const hasSpecimenTracks = tableEl.dataset.hasSpecimenTracks === "true";
 
   function imageUrl(image) {
+    if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(image.uuid ?? "")) return "#";
     return imagePageRoot
       ? `/bioimage-archive/${imagePageRoot}/${image.uuid}`
       : `/bioimage-archive/image/${image.uuid}`;
   }
 
   function getMetadataValue(mdArray, key, field = null) {
-    const md = mdArray?.find(md => md.name === key)?.value;
+    const md = Array.isArray(mdArray) ? mdArray.find(md => md?.name === key)?.value : null;
     return field && md ? md[field]?.[0] : md;
   }
 
   function getThumbnail(img) {
       const thumbnail_uri = getMetadataValue(img.additional_metadata, "image_thumbnail_uri")?.["256"]?.["uri"] || imageFallbackSrc;
-      return thumbnail_uri;
+      return resourceURL(thumbnail_uri) ?? imageFallbackSrc;
   }
   function getDownloadSize(image) {
     var i = image?.total_size_in_bytes == 0 ? 0 : Math.floor(Math.log(image?.total_size_in_bytes) / Math.log(1000));
@@ -46,12 +49,9 @@ if (tableEl) {
     return [value].filter(Boolean);
   }
 
-  function formatFilePath(path, every = 40) {
-    return (
-      escapeHtml(path)
-        .match(new RegExp(`.{1,${every}}`, "g"))
-        ?.join("<wbr>") || ""
-    );
+  function formatFilePath(path) {
+    // Break the original text so entities and Unicode code points remain intact.
+    return (String(path).match(/[\s\S]{1,40}/gu) || []).map(escapeHtml).join("<wbr>");
   }
 
   function renderFilePaths(image) {
@@ -118,7 +118,7 @@ if (tableEl) {
         const state = history.state?.viewableImagesTableState?.key === tableStateKey
           ? history.state.viewableImagesTableState.value
           : JSON.parse(sessionStorage.getItem(tableStateKey) || "null");
-        if (!state || Date.now() - state.savedAt > tableStateMaxAgeMs) return null;
+        if (!state || !Number.isSafeInteger(state.savedAt) || state.savedAt > Date.now() + 60000 || Date.now() - state.savedAt > tableStateMaxAgeMs) return null;
         return state;
       } catch {
         return null;
@@ -126,17 +126,18 @@ if (tableEl) {
     }
 
     function getPositiveInteger(value, fallback) {
-      const number = Number.parseInt(value, 10);
-      return Number.isFinite(number) && number > 0 ? number : fallback;
+      const number = Number(value);
+      return Number.isSafeInteger(number) && number > 0 && number <= 1000000 ? number : fallback;
     }
 
     const restoredTableState = loadTableState();
     const toggleEl = document.querySelector("#showDisplayImagesToggle");
-    let showDisplayImages = hasSpecimenTracks && Boolean(restoredTableState?.showDisplayImages);
+    let showDisplayImages = hasSpecimenTracks && restoredTableState?.showDisplayImages === true;
     if (toggleEl) toggleEl.checked = showDisplayImages;
-    const initialPageSize = getPositiveInteger(restoredTableState?.pageSize, 10);
+    const savedPageSize = getPositiveInteger(restoredTableState?.pageSize, 10);
+    const initialPageSize = [10, 25, 50, 100].includes(savedPageSize) ? savedPageSize : 10;
     const initialDisplayPage = getPositiveInteger(restoredTableState?.displayPage, 1);
-    let lastSearch = restoredTableState?.search || "";
+    let lastSearch = typeof restoredTableState?.search === "string" ? restoredTableState.search.slice(0, 2048) : "";
     let lastPageSize = initialPageSize;
     let displayPage = initialDisplayPage;
     let totalPages = getPositiveInteger(restoredTableState?.totalPages, 1);
@@ -144,9 +145,10 @@ if (tableEl) {
     let currentHasNextCursor = Boolean(restoredTableState?.currentHasNextCursor);
     let isRestoringTableState = Boolean(restoredTableState);
     const pageCursorMap = new Map();
-    for (const [page, cursor] of restoredTableState?.pageCursorEntries || []) {
+    const savedCursors = Array.isArray(restoredTableState?.pageCursorEntries) ? restoredTableState.pageCursorEntries.filter(value => Array.isArray(value) && value.length === 2).slice(-40) : [];
+    for (const [page, cursor] of savedCursors) {
       const parsedPage = getPositiveInteger(page, null);
-      if (parsedPage && cursor) {
+      if (parsedPage && typeof cursor === "string" && cursor.length <= 8192) {
         pageCursorMap.set(parsedPage, cursor);
       }
     }
@@ -211,7 +213,7 @@ if (tableEl) {
     }
 
     function renderPagination(api) {
-      const paginate = $("#viewable_images_table_wrapper .dataTables_paginate");
+      const paginate = $("#viewable_images_table_wrapper .dataTables_paginate, #viewable_images_table_wrapper .dt-paging");
       if (!paginate.length) return;
 
       const cappedPage = cappedPageFor(api.page.len());
@@ -354,12 +356,12 @@ if (tableEl) {
         {
           data: "preview",
           render: (_d, _t, image) => `
-            <a href="${imageUrl(image)}">
-              <img class="vf-figure__image" src="${getThumbnail(image) || ""}" />
+            <a href="${escapeHtml(imageUrl(image))}">
+              <img class="vf-figure__image" src="${escapeHtml(getThumbnail(image) || "")}" />
             </a>
           `,
         },
-        { data: "uuid", defaultContent: "" },
+        { data: "uuid", defaultContent: "", render: value => escapeHtml(value) },
         {
           data: "file_path",
           render: (_d, _t, image) => { return renderFilePaths(image); }
@@ -367,7 +369,7 @@ if (tableEl) {
         {
           data: "dataset",
           render: (_d, _t, image) =>
-            image.dataset_title || "",
+            escapeHtml(image.dataset_title),
         },
         {
           data: "total_size_in_bytes",
@@ -376,7 +378,7 @@ if (tableEl) {
         {
           data: "actions",
           render: (_d, _t, image) =>
-            `<a class="vf-link" href="${imageUrl(image)}">View</a>`,
+            `<a class="vf-link" href="${escapeHtml(imageUrl(image))}">View</a>`,
         },
       ],
       drawCallback: function () {

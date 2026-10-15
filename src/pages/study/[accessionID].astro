@@ -1,4 +1,6 @@
 ---
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
+import { generateHowToCiteText } from "../../components/formatting/citation.mjs";
 import BaseLayoutWithBreadcrumbs from "../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import StudyTitleInfo from "../../components/study-page/StudyTitleInfo.astro";
 import StudyContentsSummary from "../../components/study-page/StudyContentsSummary.astro";
@@ -47,7 +49,7 @@ if ((!Array.isArray(study.see_also) || study.see_also.length === 0) && !pdbLinks
 }
 
 // Pre-process grants to group them by funder name
-const groupedGrants = {};
+const groupedGrants = Object.create(null);
 if (study?.grant && Array.isArray(study.grant)) {
   for (const grant of study.grant) {
     // We use the first funder's display name as the grouping key for simplicity
@@ -101,31 +103,6 @@ function formatLinkType(link_type: string) {
   if (!link_type) return "";
   return linkTypeFormatting[link_type.toLowerCase()] ?? link_type;
 }
-export const formatAuthor = (name = "") => {
-  let n = name.trim().replace(/\s+/g, " ").replace(/\b\, PhD\b.*$/i, "").replace(", ", " ");
-  if (!n) return "";
-  if (/\b(lab|labs|laboratory|institute|center|centre|department|university|group|consortium)\b/i.test(n)) return n;
-  return n
-};
-
-
-export const doiToTag = (doi?: string | null) =>
-  doi?.trim() ? `<a class="vf-link" href=${doi}>doi:${doi.trim().replace(/^https?:\/\/doi\.org\//i, "")}</a>` : "";
-
-export const generateHowToCiteText = (study: Study) => {
-  const authors = (study.author ?? [])
-    .map(a => formatAuthor(a.display_name))
-    .filter(Boolean)
-    .join(", ");
-
-  const repo = study.accession_id?.includes("EMPIAR") ? "EMPIAR" : "BioImage Archive";
-  const urlForStudy = repo ==="EMPIAR"? "https://www.ebi.ac.uk/empiar/": "https://www.ebi.ac.uk/biostudies/BioImages/studies/"
-  const doi = doiToTag(study.doi) || `<a class="vf-link" href="${urlForStudy}${study.accession_id}">${urlForStudy}${study.accession_id}</a>`;
-
-  return [authors, `(${study.release_date.split("-")[0]})`, study.title.trim()+".", ` ${repo}, ${study.accession_id}.`, doi]
-    .filter(Boolean)
-    .join(" ") + ".";
-};
 const howToCite = generateHowToCiteText(study);
 const breadcrumbs = [
   "/bioimage-archive",
@@ -152,7 +129,7 @@ const breadcrumbs = [
       {browseFilesLink && (
         <a
           class="vf-button vf-button--primary vf-button--sm bia-button"
-          href={browseFilesLink}
+          href={navigationURL(browseFilesLink) ?? undefined}
           target={hasFileList ? undefined : "_blank"}
           rel={hasFileList ? undefined : "noopener noreferrer"}
         >{hasFileList ? "Browse all files" : "Browse HTTP"}</a>
@@ -160,7 +137,7 @@ const breadcrumbs = [
       {!hasFileList && globusLink && (
         <a
           class="vf-button vf-button--primary vf-button--sm bia-button"
-          href={globusLink}
+          href={navigationURL(globusLink) ?? undefined}
           target="_blank"
           rel="noopener noreferrer"
         >Browse files on Globus</a>
@@ -195,7 +172,7 @@ const breadcrumbs = [
       </div>      
     )}
     <div class="study-info-item">
-      <b>Licence: </b> <a href={study.licence_details.uri}>{study.licence_details.label}</a>
+      <b>Licence: </b> <a href={navigationURL(study.licence_details.uri) ?? undefined}>{study.licence_details.label}</a>
     </div>
     {Array.isArray(study.related_publication) && study.related_publication.length > 0 && (
       <div class="study-info-item">
@@ -218,7 +195,7 @@ const breadcrumbs = [
                   <>
                     . doi:{" "}
                     {doiLink ? (
-                      <a href={doiLink} target="_blank">{doi.replace("https://doi.org/", "")}</a>
+                      <a href={navigationURL(doiLink) ?? undefined} target="_blank">{doi.replace("https://doi.org/", "")}</a>
                     ) : (
                       doi
                     )}
@@ -293,7 +270,7 @@ const breadcrumbs = [
                 <li style={{ fontSize: "inherit", lineHeight: "inherit" }}>
                   {link_type? <b>{formatLinkType(link_type)}.</b> : ""}
                   {description? `${description}: ` : ""}
-                  {link? <a href={link} target="_blank">{link}</a>: ""}
+                  {link? <a href={navigationURL(link) ?? undefined} target="_blank">{link}</a>: ""}
                 </li>
               )
             })

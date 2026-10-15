@@ -1,4 +1,5 @@
 ---
+import { navigationURL } from "../../security/urls.mjs";
 const { title, content, id, license } = Astro.props;
 ---
 
@@ -14,7 +15,7 @@ const { title, content, id, license } = Astro.props;
                     return (
                     <p>
                         <b>{key}: </b>
-                        {isLink ? <a href={value} target="_blank" rel="noopener noreferrer">{value}</a> : value}
+                        {isLink ? <a href={navigationURL(value) ?? undefined} target="_blank" rel="noopener noreferrer">{value}</a> : value}
                     </p>
                     );
                 }) : (
@@ -22,7 +23,7 @@ const { title, content, id, license } = Astro.props;
                     <p><b>{dataset.dataset_title}</b></p>
                         <div style="padding-left: 1.5rem;" data-annotation-dataset={dataset.dataset_uuid}>
                             {
-                                license ? <p><b>License: </b><a href={license.link}>{license.text}</a></p> : <span></span>
+                                license ? <p><b>License: </b><a href={navigationURL(license.link) ?? undefined}>{license.text}</a></p> : <span></span>
                             }  
                             <p><b>Organism: </b> <span set:html={dataset.organism}/></p>
                             <p><b>Imaging method: </b> {dataset.imaging}</p>

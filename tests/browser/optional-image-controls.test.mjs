@@ -4,8 +4,13 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import { parse } from '@astrojs/compiler';
 import ts from 'typescript';
+import { resourceURL } from '../../src/security/urls.mjs';
 
-const tableScript = await readFile(new URL('../../src/components/ViewableImageTable.js', import.meta.url), 'utf8');
+const tableSource = await readFile(new URL('../../src/components/ViewableImageTable.js', import.meta.url), 'utf8');
+const tableScript = ts.transpileModule(tableSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+function runTable(context) {
+    vm.runInNewContext(tableScript, { ...context, exports: {}, require: name => { assert.equal(name, '../security/urls.mjs'); return { resourceURL }; } });
+}
 const imageSource = await readFile(new URL('../../src/pages/image/[uuid].astro', import.meta.url), 'utf8');
 const { ast } = await parse(imageSource);
 function findScripts(node) {
@@ -23,7 +28,7 @@ const copyScript = ts.transpileModule(copyScripts[0], {
 
 test('an absent viewable-image table registers no handlers and needs no jQuery', () => {
     const events = [];
-    vm.runInNewContext(tableScript, {
+    runTable({
         document: {
             querySelector: () => null,
             addEventListener: (...args) => events.push(args),
@@ -47,8 +52,8 @@ test('a present table retains initialization, image destinations and its API req
     });
     jquery.fn = { DataTable: { isDataTable: () => false } };
     const requests = [];
-    const image = { uuid: 'image-id', dataset_title: 'Dataset A' };
-    vm.runInNewContext(tableScript, {
+    const image = { uuid: '001b8ef2-7a5e-4b94-b91c-d93f5095ee39', dataset_title: 'Dataset A' };
+    runTable({
         document: {
             querySelector: selector => selector === "#viewable_images_table" ? element : null,
             addEventListener: (name, handler) => events.set(name, handler),
@@ -64,7 +69,7 @@ test('a present table retains initialization, image destinations and its API req
     events.get('DOMContentLoaded')();
     assert.equal(options.serverSide, true);
     assert.equal(options.pageLength, 10);
-    assert.match(options.columns[5].render(null, null, image), /galleries\/spatialomics\/image\/image-id/);
+    assert.match(options.columns[5].render(null, null, image), /galleries\/spatialomics\/image\/001b8ef2-7a5e-4b94-b91c-d93f5095ee39/);
     assert.match(options.columns[0].render(null, null, image), /src="\/fallback.png"/);
     let result;
     await options.ajax({ start: 0, length: 10, search: { value: 'brain tissue' }, draw: 7 }, value => { result = value; });

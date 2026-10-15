@@ -8,9 +8,11 @@ import { PUBLIC_WEBSITE_STATE } from "astro:env/client";
 
 const state = PUBLIC_WEBSITE_STATE === "DEV"? "Alpha": "Beta";
 ---
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script>
+import { copyURI } from "../../components/volume-em/download-dialog.mjs";
+declare global { interface Window { copyURI: typeof copyURI; } }
+window.copyURI = copyURI;
+</script>
 <script is:inline>
 // Initialize grid columns function
 window.setGridColumns = function(columns) {
@@ -28,79 +30,6 @@ window.setGridColumns = function(columns) {
         cubeWrappers.forEach(wrapper => wrapper.style.display = display);
     }
 }
-
-function parseS3Uri(url) {
-    try {
-        // Basic validation
-        if (!url || typeof url !== 'string') {
-            throw new Error('Invalid URL provided');
-        }
-
-        // Parse the URL
-        const urlObj = new URL(url);
-        
-        // Extract the endpoint
-        const endpoint = `${urlObj.protocol}//${urlObj.host}`;
-        
-        // Split the pathname into segments and remove empty segments
-        const segments = urlObj.pathname.split('/').filter(segment => segment.length > 0);
-        
-        if (segments.length < 2) {
-            throw new Error('Invalid URL format: must contain bucket and key');
-        }
-
-        const bucket = segments[0];
-        const key = segments.slice(1).join('/');
-
-        return {
-            bucket,
-            key,
-            endpoint
-        };
-    } catch (e) {
-        console.error('Failed to parse URL:', e);
-        return null;
-    }
-}
-
-function copyURI(button) {
-        const uri = button.getAttribute('data-uri');
-        const s3Info = parseS3Uri(uri);
-        
-        // Create dialog
-        const dialog = document.createElement('dialog');
-        dialog.innerHTML = `
-            <div style="padding: 20px; text-align: left; max-width: 600px;">
-                <button aria-label="Close" onclick="this.closest('dialog').close()" style="position: absolute;top: 10px;right: 10px;background: none;border: none;font-size: 20px;font-weight: bold;cursor: pointer;line-height: 1;">×</button>
-                <h3 style="margin-bottom: 15px; text-align: center;">OME-Zarr S3 Location</h3>
-                <div style="margin-bottom: 15px;">
-                    <h4 style="margin: 10px 0;">S3 URI:</h4>
-                    <p style="word-break: break-all; font-family: monospace; background: #f5f5f5; padding: 10px; border-radius: 4px;">${uri}</p>
-                </div>
-                <h4 style="margin: 15px 0;">Download with AWS CLI:</h4>
-                <p style="margin-bottom: 10px;">1. Install the AWS CLI if you haven't already.</p>
-                <p style="margin-bottom: 10px;">2. Download the data recursively (no credentials needed):</p>
-                <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-bottom: 15px; overflow-x: auto;">aws s3 cp --no-sign-request --endpoint-url ${s3Info.endpoint} "s3://${s3Info.bucket}/${s3Info.key}" "${s3Info.key.split('/').pop()}" --recursive</pre>
-                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-                    <button class="bia-button" onclick="navigator.clipboard.writeText('${uri}').then(() => this.closest('dialog').close())">Copy S3 URI</button>
-                    <button class="bia-button" onclick="navigator.clipboard.writeText('aws s3 cp --no-sign-request --endpoint-url ${s3Info.endpoint} \\'s3://${s3Info.bucket}/${s3Info.key}\\' \\'${s3Info.key.split('/').pop()}\\' --recursive').then(() => this.closest('dialog').close())">Copy AWS Command</button>
-                </div>
-            </div>
-        `;
-        dialog.style.border = '1px solid #ccc';
-        dialog.style.borderRadius = '8px';
-        dialog.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-        dialog.style.maxWidth = '80vw';
-        
-        // Add to document and show
-        document.body.appendChild(dialog);
-        dialog.showModal();
-        
-        // Remove dialog when closed
-        dialog.addEventListener('close', () => {
-            dialog.remove();
-        });
-    }
 
     let dataTable;
 
