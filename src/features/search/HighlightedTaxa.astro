@@ -1,14 +1,14 @@
 ---
 import HighlightedText from "./HighlightedText.astro";
 import { applyHighlight } from "./highlights.mjs";
+import { distinctTaxa } from "../metadata/taxonomy.mjs";
 
 const { record, query } = Astro.props;
 const highlight = value => query && value ? applyHighlight(value, query) : value;
-const taxa = [];
-for (const taxon of record?.organism_classification ?? []) {
-    if (!taxon || typeof taxon !== "object") continue;
-    if (!taxa.some(existing => existing.common_name === taxon.common_name || existing.scientific_name === taxon.scientific_name)) taxa.push(taxon);
-}
+const taxa = distinctTaxa(record).map(taxon => ({
+    scientific_name: typeof taxon.scientific_name === 'string' ? taxon.scientific_name : '',
+    common_name: typeof taxon.common_name === 'string' ? taxon.common_name : '',
+}));
 ---
 {taxa.map((taxon, index) => <Fragment>
     {index > 0 && ", "}

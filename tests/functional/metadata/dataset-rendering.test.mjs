@@ -23,7 +23,7 @@ before(async () => {
         const bytes = await readFile(new URL(entry.file, fixtures));
         return { ...entry, actualHash: createHash("sha256").update(bytes).digest("hex"), response: JSON.parse(bytes) };
     }));
-    fieldMap = JSON.parse(await readFile(path.join(repository, "src/data/metadata-field-name-mapping.json"), "utf8"));
+    fieldMap = JSON.parse(await readFile(path.join(repository, "src/features/metadata/field-labels.json"), "utf8"));
     application = await createAstroFixture("metadata-rendering");
     const entrypoint = path.join(repository, "tests/fixtures/metadata/dataset-metadata.astro");
     const invalidEntrypoint = path.join(repository, "tests/fixtures/metadata/invalid-dataset.astro");

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { validFileCount } from "../../../src/formatting/file-counts.mjs";
+import { validFileCount } from "../../../src/features/metadata/formatting/file-counts.mjs";
 
 test("file counts preserve exact nonnegative safe integer representations", () => {
     for (const [value, expected] of [[0, 0], [3, 3], [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],

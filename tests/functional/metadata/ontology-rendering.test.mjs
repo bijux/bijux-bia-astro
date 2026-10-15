@@ -18,7 +18,6 @@ after(async () => {
 before(async () => {
     root = await createAstroFixture("ontology-rendering", ["src/components", "src/assets", "src/styles", "src/features", "src/security", "src/api", "src/formatting"]);
     await mkdir(path.join(root, "src/data"), { recursive: true });
-    await cp(path.join(repository, "src/data/metadata-field-name-mapping.json"), path.join(root, "src/data/metadata-field-name-mapping.json"));
     await writeFile(path.join(root, "astro.config.mjs"), `
 import { defineConfig, envField } from 'astro/config';
 export default defineConfig({
@@ -39,7 +38,7 @@ export default defineConfig({
 import DatasetInfo from '../features/metadata/DatasetInfo.astro';
 import DatasetDetail from '../features/metadata/DatasetDetail.astro';
 import ImageInfo from '../features/galleries/ai/ImageInfo.astro';
-import fieldMap from '../data/metadata-field-name-mapping.json';
+import fieldMap from '../features/metadata/field-labels.json';
 import studyResponse from '../data/api/study-s-biad3335-response.json';
 import imageResponse from '../data/api/image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39-response.json';
 import missingResponse from '../data/api/study-s-biad3397-response.json';
