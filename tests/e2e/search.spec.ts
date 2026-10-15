@@ -38,3 +38,9 @@ test('cursor-window history restores rows and labels through back, forward and r
     await expect(label).toHaveText('10009 - 10020 of 10050 results');
     await expect(page.locator('input[name="size_t"][value="1"]')).toBeChecked();
 });
+
+test('study search retains distinct scientific names when common names are absent', async ({ page }) => {
+    await page.goto('/bioimage-archive/studies?query=taxon-example');
+    await expect(page.locator('#card-view')).toContainText('Mus musculus');
+    await expect(page.locator('#card-view')).toContainText('Homo sapiens');
+});

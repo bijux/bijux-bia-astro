@@ -34,6 +34,14 @@ export function fixtureResponse(value) {
         const isImage = url.pathname.endsWith('image');
         if (isImage && url.searchParams.get('query') === 'cursor-example') return cursorSearchResponse(saved('browse-image'), url);
         const response = saved(isImage ? 'browse-image' : 'browse-study');
+        // Synthetic partial labels reproduce a classification-loss case absent from the captures.
+        if (!isImage && url.searchParams.get('query') === 'taxon-example') {
+            response.hits.hits = response.hits.hits.slice(0, 1);
+            response.hits.hits[0]._source.organism_classification = [
+                { scientific_name: 'Mus musculus' }, { scientific_name: 'Homo sapiens' },
+            ];
+            response.hits.hits[0].highlight = {};
+        }
         const page = Number(url.searchParams.get('pagination.page') ?? 1);
         const size = Number(url.searchParams.get('pagination.page_size') ?? 12);
         if (isImage && url.searchParams.get('facet.accession_id') === 'EMPIAR-12104') {

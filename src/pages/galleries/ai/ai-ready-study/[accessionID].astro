@@ -3,7 +3,7 @@ import { groupSourceAnnotations } from "../../../../features/galleries/ai/annota
 import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import StudyTitleInfo from "../../../../features/studies/StudyTitleInfo.astro";
 import { getThumbnail } from "../../../../features/images/thumbnails.mjs";
-import { getTaxons } from "../../../../features/metadata/taxonomy.mjs";
+import { renderTaxonNames } from "../../../../features/metadata/taxonomy.mjs";
 import { getSimpleAttributeValue, getAnnotationType } from "../../../../features/metadata/records.mjs";
 import { formatBytesToHumanSize } from "../../../../formatting/units.mjs";
 import { createRequestClient } from "../../../../api/client.mjs";
@@ -29,7 +29,7 @@ const annotatedImagesMap = groupSourceAnnotations(await client.getImagesByAccess
 const allSourceImages = Array.from(annotatedImagesMap.values())
   .filter(({ annotationImages }) => annotationImages.length > 0);
 
-  const organism = getTaxons(study).join(", ");
+  const organism = renderTaxonNames(study).join(", ");
 
 const sourceDataset = study.dataset.filter(
 ds =>

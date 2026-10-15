@@ -1,14 +1,14 @@
 ---
 import { formatListItem } from "../../../../formatting/lists.mjs";
-import { taxonRender } from "../../../metadata/taxonomy.mjs";
+import { renderTaxonName } from "../../../metadata/taxonomy.mjs";
 import { multilineTextRender } from "../../../../formatting/plain-text.js";
 
 import { getOrganismClassifications, getBiologicalEntityDescriptions } from "../../../metadata/biological-entities.js";
 
 const { dataset, datasetAIInfo, studyAccessionID, studyMetadata } = Astro.props;
 
-function getTaxons(dataset) {
-    return getOrganismClassifications(dataset).map(taxonRender)
+function renderTaxonNames(dataset) {
+    return getOrganismClassifications(dataset).map(renderTaxonName)
 };
 
 function getBiologicalEntity(dataset) {
@@ -43,7 +43,7 @@ function renderTaxonList(taxon_list) {
     return taxon_list.reduce(formatListItem, "");
 }
 
-const taxons = getTaxons(dataset)
+const taxons = renderTaxonNames(dataset)
 
 
 function getAnnotationMethodInformation() {

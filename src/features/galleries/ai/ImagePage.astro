@@ -2,7 +2,7 @@
 import { scriptData } from "../../../security/html.mjs";
 import BaseLayoutWithBreadcrumbs from '../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import WebsiteStateButton from '../../../components/ui/WebsiteStateButton.astro';
-import { getTaxons } from "../../metadata/taxonomy.mjs";
+import { renderTaxonNames } from "../../metadata/taxonomy.mjs";
 import { getAnnotationType } from "../../metadata/records.mjs";
 
 import SourceAnnotatedImage from './SourceAnnotatedImage.astro';
@@ -15,7 +15,7 @@ const { image, annotatedImages } = data;
 const studyInfo: Study = data.study;
 const uuid = image.uuid;
 const sourceImage = image;
-const organism = getTaxons(studyInfo).join(", ");
+const organism = renderTaxonNames(studyInfo).join(", ");
 const sourceDataset = studyInfo.dataset.find((d) => d['uuid'] === sourceImage.submission_dataset_uuid);
 const imagingMethod = sourceDataset?.acquisition_process?.[0]?.imaging_method_name?.join(", ") || "";
 const annotationDatasets = studyInfo.dataset.filter(dataset => (dataset.acquisition_process?.length ?? 0) === 0 && (dataset.annotation_process?.length ?? 0) > 0);
