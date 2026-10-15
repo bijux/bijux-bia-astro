@@ -20,6 +20,7 @@ const sourceDataset = studyInfo.dataset.find((d) => d['uuid'] === sourceImage.su
 const imagingMethod = sourceDataset?.acquisition_process?.[0]?.imaging_method_name?.join(", ") || "";
 const annotationDatasets = studyInfo.dataset.filter(dataset => dataset.acquisition_process.length == 0 && dataset.annotation_process.length > 0);
 const annotatedDatasetContent = annotationDatasets.map((dataset) => ({
+  dataset_uuid: dataset.uuid,
   dataset_title: dataset.title,
   organism: organism,
   imaging: imagingMethod,

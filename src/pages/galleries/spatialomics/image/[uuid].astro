@@ -245,28 +245,28 @@ const breadcrumbs = [
                   specimen != null && "sample_of" in specimen &&
                       specimen.sample_of.length > 0 && (
                           <b>Biosamples:</b>
-                          <ul>
+                          <div class="metadata-fields">
                               {specimen.sample_of.map((biosample) => (
                                   <DatasetDetail
                                       data={biosample}
                                       fieldMap={biosampleMap}
                                   />
                               ))}
-                          </ul>
+                          </div>
                       )
               }
               {
                   specimen != null && "imaging_preparation_protocol" in specimen &&
                       specimen.imaging_preparation_protocol.length > 0 && (
                           <b>Specimen Preparation Protocols:</b>
-                          <ul>
+                          <div class="metadata-fields">
                               {specimen.imaging_preparation_protocol.map((sipp) => (
                                   <DatasetDetail
                                       data={sipp}
                                       fieldMap={sippMap}
                                   />
                               ))}
-                          </ul>
+                          </div>
                       )
               }
               </div>
@@ -283,7 +283,7 @@ const breadcrumbs = [
                       "acquisition_process" in creation_process &&
                           creation_process.acquisition_process.length > 0 && (
                               <b>Image Acquisition Protocols:</b>
-                              <ul>
+                              <div class="metadata-fields">
                                   {creation_process.acquisition_process.map(
                                       (image_acquisition) => (
                                           <DatasetDetail
@@ -292,14 +292,14 @@ const breadcrumbs = [
                                           />
                                       ),
                                   )}
-                              </ul>
+                              </div>
                           )
                   }
                   {
                       "annotation_method" in creation_process &&
                           creation_process.annotation_method.length > 0 && (
                               <b>Image Acquisition Protocols:</b>
-                              <ul>
+                              <div class="metadata-fields">
                                   {creation_process.annotation_method.map(
                                       (annotation_method) => (
                                           <DatasetDetail
@@ -308,14 +308,14 @@ const breadcrumbs = [
                                           />
                                       ),
                                   )}
-                              </ul>
+                              </div>
                           )
                   }
                   {
                       "protocol" in creation_process &&
                           creation_process.protocol.length > 0 && (
                               <b>Image Acquisition Protocols:</b>
-                              <ul>
+                              <div class="metadata-fields">
                                   {creation_process.protocol.map(
                                       (protocol) => (
                                           <DatasetDetail
@@ -324,7 +324,7 @@ const breadcrumbs = [
                                           />
                                       ),
                                   )}
-                              </ul>
+                              </div>
                           )
                   }
               </div>
@@ -333,3 +333,7 @@ const breadcrumbs = [
     </Fragment>
   </BaseLayoutWithBreadcrumbs>
   
+
+<style>
+  .metadata-fields { padding-left: 20px; }
+</style>

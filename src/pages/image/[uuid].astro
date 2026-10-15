@@ -276,11 +276,11 @@ const breadcrumbs = [
             {
                 specimen == null && inherited_specimens && inherited_specimens.length > 0 && (
                     <b>Source Specimen Information</b>
-                    <ul> 
+                    <div class="metadata-fields">
                         {inherited_specimens.map((specimen: SpecimenInfo) => (
                             <Specimen specimen={specimen}/>
                         ))}
-                    </ul>
+                    </div>
                 )
             }
             </div>
@@ -297,7 +297,7 @@ const breadcrumbs = [
                     "acquisition_process" in creation_process &&
                         creation_process.acquisition_process.length > 0 && (
                             <b>Image Acquisition Protocols:</b>
-                            <ul>
+                            <div class="metadata-fields">
                                 {creation_process.acquisition_process.map(
                                     (image_acquisition) => (
                                         <DatasetDetail
@@ -306,14 +306,14 @@ const breadcrumbs = [
                                         />
                                     ),
                                 )}
-                            </ul>
+                            </div>
                         )
                 }
                 {
                     "annotation_method" in creation_process &&
                         creation_process.annotation_method.length > 0 && (
                             <b>Image Acquisition Protocols:</b>
-                            <ul>
+                            <div class="metadata-fields">
                                 {creation_process.annotation_method.map(
                                     (annotation_method) => (
                                         <DatasetDetail
@@ -322,14 +322,14 @@ const breadcrumbs = [
                                         />
                                     ),
                                 )}
-                            </ul>
+                            </div>
                         )
                 }
                 {
                     "protocol" in creation_process &&
                         creation_process.protocol.length > 0 && (
                             <b>Image Acquisition Protocols:</b>
-                            <ul>
+                            <div class="metadata-fields">
                                 {creation_process.protocol.map(
                                     (protocol) => (
                                         <DatasetDetail
@@ -338,7 +338,7 @@ const breadcrumbs = [
                                         />
                                     ),
                                 )}
-                            </ul>
+                            </div>
                         )
                 }
                 {
@@ -396,6 +396,7 @@ const breadcrumbs = [
   </Fragment>
 </BaseLayoutWithBreadcrumbs>
 <style>
+  .metadata-fields { padding-left: 20px; }
   #meta-wrap[data-collapsed="true"] #meta-content { overflow: hidden; }
 </style>
 
