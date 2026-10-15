@@ -19,7 +19,7 @@ async function fixture(t) {
   for (const directory of ["src/content/news_articles", "src/news", "src/components", "src/pages", "src/assets/bioimage-archive"]) {
     await mkdir(join(root, directory), { recursive: true });
   }
-  for (const path of ["src/content/config.ts", "src/news/article-order.mjs", "src/components/News.astro"]) {
+  for (const path of ["src/content.config.ts", "src/news/article-order.mjs", "src/components/News.astro"]) {
     await copyFile(join(repository, path), join(root, path));
   }
   for (const name of originals) {
@@ -43,7 +43,7 @@ const inventory = entries.map(({ id, data }) => ({ id, data: { articleDate: data
 
 async function build(root) {
   const result = await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [join(repository, "node_modules/astro/astro.js"), "build"], {
+    const child = spawn(process.execPath, [join(repository, "node_modules/astro/bin/astro.mjs"), "build"], {
       cwd: root,
       env: { ...process.env, ASTRO_TELEMETRY_DISABLED: "1", NO_COLOR: "1" },
       timeout: 60000,

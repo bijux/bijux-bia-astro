@@ -22,6 +22,7 @@ before(async () => {
     for (const directory of ['components', 'layouts', 'styles', 'data', 'news', 'content', 'security']) {
         await cp(path.join(repository, 'src', directory), path.join(application, 'src', directory), { recursive: true });
     }
+    await cp(path.join(repository, 'src/content.config.ts'), path.join(application, 'src/content.config.ts'));
     await symlink(path.join(repository, 'src/assets'), path.join(application, 'src/assets'), 'dir');
     await symlink(path.join(repository, 'node_modules'), path.join(application, 'node_modules'), 'dir');
     await cp(path.join(repository, 'src/pages/logos.mdx'), path.join(application, 'src/pages/logos.mdx'));
@@ -72,7 +73,7 @@ const volumeImage = { submitted_in_study_accession: 'EMPIAR-12104', label: 'Volu
     <News />
 </BaseLayout>
 `);
-    await promisify(execFile)(process.execPath, [path.join(repository, 'node_modules/astro/astro.js'), 'build', '--root', application], { cwd: application, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
+    await promisify(execFile)(process.execPath, [path.join(repository, 'node_modules/astro/bin/astro.mjs'), 'build', '--root', application], { cwd: application, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
     html = await readFile(path.join(application, 'dist/index.html'), 'utf8');
     logoHtml = await readFile(path.join(application, 'dist/logos/index.html'), 'utf8');
     const sheets = [...html.matchAll(/<link\b[^>]*href="(\/_astro\/[^" ]+\.css)"[^>]*>/g)];

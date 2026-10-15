@@ -78,7 +78,7 @@ const unsupported = { title: 'Unsupported identifiers', fbbi_id: ['<img src=x on
 <article id="identifier-only"><DatasetDetail data={{ title: 'Identifier only', fbbi_id: ['FBbi:00000256'] }} fieldMap={fieldMap.image_acquisition} /></article>
 `);
     await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", root],
+        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root],
         { cwd: repository, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
     const html = await readFile(path.join(root, "dist/index.html"), "utf8");
     sections = Object.fromEntries([...html.matchAll(/<article id="([^"]+)">([\s\S]*?)<\/article>/g)]

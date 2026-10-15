@@ -1,5 +1,12 @@
 # BIA Astro prototype implementation
 
+Use Node 22.22 or newer. `npm ci` stores dependencies and generated output under
+`artifacts/`; root `node_modules`, `.astro` and `.netlify` are compatibility links.
+Set `SITE_URL` at build time for a custom public origin; Netlify previews use
+`DEPLOY_PRIME_URL`. Unapproved request hosts cannot control generated URLs.
+`npm ci` supports this layout; `npm ls` may report spurious errors when inspecting
+the dependency-directory link. Tests and audit probes execute the installed tools.
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
@@ -8,7 +15,7 @@ All commands are run from the root of the project, from a terminal:
 | :------------------------ | :----------------------------------------------- |
 | `npm install`             | Installs dependencies                            |
 | `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run build`           | Build your production site to `./artifacts/dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run local`           | Equivalent to build && preview                   |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
@@ -29,7 +36,7 @@ To test:
 
 \* Note that on mac you may have to modify permissions of the /Users/$USER/.config/linkchecker to get this command to work.
 
-You can also run this on the files genated by the build by running `npm run build` and then `linkchecker dist/bioimage-archive/ ...`
+You can also run this on the files genated by the build by running `npm run build` and then `linkchecker artifacts/dist/bioimage-archive/ ...`
 
 
 ## Verify local OME-Zarr display

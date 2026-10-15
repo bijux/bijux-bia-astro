@@ -114,7 +114,7 @@ import Search from '../components/search/Search.astro';
 `);
     }
     await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/astro.js"), "build", "--root", root],
+        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", root],
         { cwd: repository, env: { ...process.env, PUBLIC_SEARCH_API: apiURL }, timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
     for (const layout of ["BaseLayout", "MinimalLayout", "EMPIARLayout", "ProjectsLayout"]) {
         const html = await readFile(path.join(root, "dist", layout, "index.html"), "utf8");
@@ -146,7 +146,7 @@ function tags(html, name) {
 test("every document layout loads the shared action geometry", () => {
     for (const [layout, css] of styles) {
         assert.match(css, /--bia-button-radius:\s*0px/, layout);
-        assert.match(css, /:is\(a,\s*button,\s*input\)\.bia-button\s*\{[^}]*border-radius:\s*var\(--bia-button-radius\)/, layout);
+        assert.match(css, /:is\(a,\s*button,\s*input\)\.bia-button(?:\s*,[^{}]+)?\s*\{[^}]*border-radius:\s*var\(--bia-button-radius\)/, layout);
     }
 });
 

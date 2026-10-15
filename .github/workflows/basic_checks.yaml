@@ -24,6 +24,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run quality:check
       - run: npm test
 
   wait-for-deploy:

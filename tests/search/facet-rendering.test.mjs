@@ -97,7 +97,7 @@ const url = new URL(${JSON.stringify('http://local/bioimage-archive/' + (['study
 <Search url={url} query=${JSON.stringify(name)} searchType=${JSON.stringify(['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'study' : 'image')} />
 `);
     }
-    await promisify(execFile)(process.execPath, [path.join(repository, 'node_modules/astro/astro.js'), 'build', '--root', root],
+    await promisify(execFile)(process.execPath, [path.join(repository, 'node_modules/astro/bin/astro.mjs'), 'build', '--root', root],
         {
             cwd: repository,
             // A developer's API override must not redirect fixture tests to a

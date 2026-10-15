@@ -28,7 +28,7 @@ export function articleDateKey(value) {
 
 /**
  * Return a new array, newest first, with an entry-ID tie-breaker.
- * Entry objects are retained unchanged, including Astro's render() method.
+ * Entry objects are retained unchanged.
  * Validate every entry before sorting, including a one-entry collection.
  * @template {{id: string, data: {articleDate?: unknown}}} T
  * @param {readonly T[]} entries Astro collection entries with unique IDs.

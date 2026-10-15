@@ -1,9 +1,13 @@
 import { defineConfig, envField } from 'astro/config';
+import { prepareArtifacts } from './scripts/build/artifacts.mjs';
+
 import mdx from "@astrojs/mdx";
 import yaml from '@rollup/plugin-yaml';
 
 import netlify from '@astrojs/netlify';
 import node from '@astrojs/node';
+
+await prepareArtifacts();
 
 function isNetlify() {
   return process.env.NETLIFY === 'true' || 
@@ -11,20 +15,34 @@ function isNetlify() {
          !!process.env.AWS_LAMBDA_FUNCTION_NAME
 }
 
+const publicURL = new URL(process.env.SITE_URL ||
+  (isNetlify() && process.env.DEPLOY_PRIME_URL) || 'https://www.ebi.ac.uk');
+if (!['http:', 'https:'].includes(publicURL.protocol) || publicURL.username || publicURL.password) {
+  throw new Error('SITE_URL must be an HTTP(S) URL without credentials.');
+}
+
 const adapter = isNetlify() 
   ? netlify({ imageCDN: false })
   : node({ mode: 'standalone', experimentalDisableStreaming: true });
 
 export default defineConfig({
-  // Keep image transformation disabled until the framework/Sharp advisory migration is verified.
+  security: {
+    allowedDomains: [
+      { hostname: 'localhost', protocol: 'http' },
+      { hostname: '127.0.0.1', protocol: 'http' },
+      { hostname: publicURL.hostname, protocol: publicURL.protocol.slice(0, -1), port: publicURL.port },
+    ],
+  },
+  // Viewer images retain their supplied URLs; this site does not expose an image optimizer.
   image: { service: { entrypoint: 'astro/assets/services/noop' } },
-  //output: 'server',
-  //integrations: [mdx(), preact()]
   integrations: [mdx()],
 
-  outDir: './dist/bioimage-archive',
+  outDir: './artifacts/dist/bioimage-archive',
+  cacheDir: './artifacts/astro-cache',
+  compressHTML: true,
 
   vite: {
+    cacheDir: './artifacts/vite',
     plugins: [yaml()]
   },
 

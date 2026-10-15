@@ -1,6 +1,6 @@
 // Internal worker: lint only. Never evaluates the snippets or application imports.
 import { realpath } from 'node:fs/promises';
-import { resolve, relative } from 'node:path';
+import { resolve, relative, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import {inventory,fileHashes,inputBytes} from './inventory.mjs';
@@ -47,7 +47,7 @@ try {
   for (const name of ['eslint', 'eslint-plugin-astro', 'astro-eslint-parser', 'typescript-eslint', '@typescript-eslint/parser', 'eslint-plugin-security', 'eslint-plugin-no-unsanitized']) {
     const entry = await realpath(require.resolve(name));
     if (!entry.startsWith(dependencies + '/')) throw new Error(`Analyzer not owned by this checkout: ${name}`);
-    const metadata = JSON.parse((await inputBytes(root, `node_modules/${name}/package.json`)).toString('utf8'));
+    const metadata = JSON.parse((await inputBytes(root, relative(root, resolve(dependencies, name, 'package.json')).split(sep).join('/'))).toString('utf8'));
     if (!metadata.version || lock.packages?.[`node_modules/${name}`]?.version !== metadata.version) throw new Error(`Installed analyzer differs from the lockfile: ${name}`);
     report.versions[name] = metadata.version;
   }

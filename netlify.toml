@@ -4,7 +4,7 @@
   status = 301
 [build]
   base = "/"
-  publish = "dist"
+  publish = "artifacts/dist/bioimage-archive"
   command = "NODE_OPTIONS='--max-old-space-size=4096' npm run astro build"
 
 [[headers]]
