@@ -37,9 +37,6 @@ const fileListUrls = getMetadataValue(study?.additional_metadata, "file_list_vis
 const hasFileList = Boolean(fileListUrls?.table_view && fileListUrls?.tree_view);
 const browseFilesLink = hasFileList ? "#file_list" : ftpHttpsLink;
 
-// Read EMPIAR XML header to get dataset summary
-const datasetFileSummaryString = isEMPIAR ? null: null; //await buildDatasetFileSummary(accessionID, study?.dataset) : null;
-
 if (hasFileList) {
   tableOfContents["Browse All Files"] = "file_list";
 }
@@ -320,7 +317,7 @@ const breadcrumbs = [
       <div>
         {
           study.dataset.map((dataset) => (
-            <DatasetInfo dataset={dataset} isEMPIAR={isEMPIAR} datasetFileSummaryString={datasetFileSummaryString}/>
+            <DatasetInfo dataset={dataset}/>
           ))
         }
       </div>
