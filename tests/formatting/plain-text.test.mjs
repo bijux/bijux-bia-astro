@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { HtmlValidate } from 'html-validate';
-import { escapeHtmlText, multilineTextRender } from '../../src/components/formatting/plain-text.js';
+import { escapeHtmlText, multilineTextRender } from '../../src/formatting/plain-text.js';
 
 const validator = new HtmlValidate({ extends: [], rules: { 'close-order': 'error' } });
 const comparisons = [

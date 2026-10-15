@@ -1,8 +1,8 @@
 ---
-import fieldMap from "../data/metadata-field-name-mapping.json";
+import fieldMap from "../../data/metadata-field-name-mapping.json";
 import DatasetMetadataRecord from "./DatasetMetadataRecord.astro";
-import { validFileCount } from "./formatting/file-counts.mjs";
-import "../styles/dataset-metadata.css";
+import { validFileCount } from "../../formatting/file-counts.mjs";
+import "./dataset-metadata.css";
 
 const { dataset, datasetFileSummaryString = null } = Astro.props;
 const hasDescription = dataset.description != null && dataset.description !== "";

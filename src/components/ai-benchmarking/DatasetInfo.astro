@@ -1,6 +1,6 @@
 ---
 import { formatListItem, taxonRender, multilineTextRender, getStudyFromApiByAccession } from "../SharedJSFunctions";
-import { getOrganismClassifications, getBiologicalEntityDescriptions } from "./biological-entities.js";
+import { getOrganismClassifications, getBiologicalEntityDescriptions } from "../../features/metadata/biological-entities.js";
 
 const { dataset, datasetAIInfo, studyAccessionID } = Astro.props;
 const studyMetadata = Object.fromEntries([[studyAccessionID, await getStudyFromApiByAccession(studyAccessionID)]])

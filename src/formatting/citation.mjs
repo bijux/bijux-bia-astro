@@ -1,5 +1,5 @@
-import { escapeHtml } from "../../security/html.mjs";
-import { navigationURL } from "../../security/urls.mjs";
+import { escapeHtml } from "../security/html.mjs";
+import { navigationURL } from "../security/urls.mjs";
 
 export function formatAuthor(name = "") {
     return String(name).trim().replace(/\s+/g, " ").replace(/\b\, PhD\b.*$/i, "").replace(", ", " ");

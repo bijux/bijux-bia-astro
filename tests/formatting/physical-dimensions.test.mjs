@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatPhysicalDimensions, formatPhysicalVoxelDimensions } from '../../src/components/formatting/physical-dimensions.js';
+import { formatPhysicalDimensions, formatPhysicalVoxelDimensions } from '../../src/formatting/physical-dimensions.js';
 
 const formatters = [
     { name: 'physical image size', format: formatPhysicalDimensions, prefix: 'total_physical_size_', unit: 'm' },
