@@ -1,9 +1,8 @@
+import { createAstroFixture, buildAstroFixture } from '../../support/astro/fixture.mjs';
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { before, after, test } from "node:test";
 
@@ -25,12 +24,7 @@ before(async () => {
         return { ...entry, actualHash: createHash("sha256").update(bytes).digest("hex"), response: JSON.parse(bytes) };
     }));
     fieldMap = JSON.parse(await readFile(path.join(repository, "src/data/metadata-field-name-mapping.json"), "utf8"));
-    const output = path.join(repository, "artifacts/dataset-metadata-tests");
-    await mkdir(output, { recursive: true });
-    application = await mkdtemp(path.join(output, "application-"));
-    await mkdir(path.join(application, "src/pages"), { recursive: true });
-    await symlink(path.join(repository, "node_modules"), path.join(application, "node_modules"), "dir");
-    await writeFile(path.join(application, "package.json"), '{"type":"module"}\n');
+    application = await createAstroFixture("metadata-rendering");
     const entrypoint = path.join(repository, "tests/fixtures/metadata/dataset-metadata.astro");
     const invalidEntrypoint = path.join(repository, "tests/fixtures/metadata/invalid-dataset.astro");
     await writeFile(path.join(application, "astro.config.mjs"), `
@@ -44,11 +38,7 @@ export default defineConfig({
     env: { schema: { PUBLIC_SEARCH_API: envField.string({ access: 'public', context: 'client', default: 'https://alpha.bioimagearchive.org/search/v1' }) } }
 });
 `);
-    const { stdout, stderr } = await promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", application],
-        { cwd: repository, timeout: 120000, maxBuffer: 2 * 1024 * 1024,
-            env: { ...process.env, BIJUX_METADATA_INVALID: "false" } });
-    await writeFile(path.join(application, "build.log"), stdout + stderr);
+    await buildAstroFixture(application, { BIJUX_METADATA_INVALID: "false" });
     const html = await readFile(path.join(application, "dist/index.html"), "utf8");
     sections = Object.fromEntries([...html.matchAll(/<article id="([^"]+)">([\s\S]*?)<\/article>/g)]
         .map(match => [match[1], match[2]]));
@@ -271,10 +261,7 @@ test("the shared image presentation keeps its text, initial state and original s
 });
 
 test("malformed groups fail the actual Astro build with the dataset and property identified", async () => {
-    await assert.rejects(promisify(execFile)(process.execPath,
-        [path.join(repository, "node_modules/astro/bin/astro.mjs"), "build", "--root", application],
-        { cwd: repository, timeout: 120000, maxBuffer: 2 * 1024 * 1024,
-            env: { ...process.env, BIJUX_METADATA_INVALID: "true" } }), error => {
+    await assert.rejects(buildAstroFixture(application, { BIJUX_METADATA_INVALID: "true" }), error => {
         assert.match(error.stdout + error.stderr, /Dataset Invalid group dataset: biological_entity must be an array/);
         return true;
     });
