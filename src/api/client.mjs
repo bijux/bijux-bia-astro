@@ -4,5 +4,5 @@ import { createSearchClient } from './search.mjs';
 export const {
     getFromAPI, getStudyFromApiByAccession, getImageFromAPI, getImagesFromAPI,
     getDownstreamDisplayImages, studyHasSpecimenTracks, getImagesByAccessionID,
-    getAllStudiesFromAPI, getAnnotationFromDerivedImages, generateSourceAnnotatedImageMap,
+    getAllStudiesFromAPI, getDerivedImages,
 } = createSearchClient(PUBLIC_SEARCH_API);
