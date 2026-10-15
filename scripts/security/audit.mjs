@@ -36,7 +36,7 @@ if (args.length > 1 || !['all', 'code', 'deps'].includes(profile)) {
     report.gitStatus = before.status;
     await save('provenance-before.json', JSON.stringify(before, null, 2) + '\n');
     report.hashes = {};
-    for (const name of ['package.json', 'package-lock.json', 'configs/security/eslint.config.mjs']) {
+    for (const name of ['package.json', 'package-lock.json', 'configs/audits/security/eslint.config.mjs']) {
       try { report.hashes[name] = sha256(await inputBytes(root, name)); }
       catch { report.hashes[name] = null; }
     }

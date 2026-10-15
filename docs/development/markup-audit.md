@@ -39,7 +39,7 @@ npm run audit:markup -- --html-dir dist
 Optional HTTP validation checks raw response text, before browser DOM repair:
 
 ```sh
-npm run audit:markup -- --routes configs/quality/markup.routes.json --base-url http://127.0.0.1:4321
+npm run audit:markup -- --routes configs/audits/markup/routes.json --base-url http://127.0.0.1:4321
 ```
 
 Start the supported local built server first and substitute its actual origin/port. The manifest selects representative routes, not every route or API-dependent state. Each request requires status 200, HTML content type, a nonempty body and the listed body markers. Redirects are not followed; remote origins require `--allow-remote`. HTTP requests require a repository-local route manifest with valid, unchanged input provenance. Rejected response bodies are cancelled so an error stream cannot consume the worker deadline; this follows [Undici’s response-body lifecycle guidance](https://github.com/nodejs/undici#garbage-collection). No authentication cookies are supplied. Responses have a 20-second deadline and an 8 MiB limit and are retained as raw HTML evidence. The worker has a five-minute overall deadline, configurable using `--timeout-ms N` (maximum one hour), including synchronous analyzer work. Audited files are also limited to 8 MiB before provenance hashing; oversized or nonregular inputs make the result incomplete.
@@ -88,7 +88,7 @@ Generated evidence can contain article text, paths and served data. Review it be
 
 Markup uses its own configurations, commands, evidence and failure status. It can run before or after a dead-code audit or source cleanup is introduced. Existing parser failures must remain visible as incomplete analysis until their source/configuration causes are addressed; passing application tests do not override that status.
 
-Both audits retain matching locked analyzer dependencies and separate, compatible npm commands. Knip must treat `scripts/markup/worker.mjs` as an entry because the runner spawns it, and must load `configs/quality/eslint.markup.config.mjs` when discovering ESLint dependencies. Its entry/config regression should cover both paths. Include this Make fragment explicitly if integrating a shared root Makefile; keep the two audits independently invokable. CI gating and artifact retention require a separate agreed policy.
+Both audits retain matching locked analyzer dependencies and separate, compatible npm commands. Knip must treat `scripts/markup/worker.mjs` as an entry because the runner spawns it, and must load `configs/audits/markup/eslint.config.mjs` when discovering ESLint dependencies. Its entry/config regression should cover both paths. Include this Make fragment explicitly if integrating a shared root Makefile; keep the two audits independently invokable. CI gating and artifact retention require a separate agreed policy.
 
 ## Shared analyzer dependencies
 

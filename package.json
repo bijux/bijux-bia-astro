@@ -12,7 +12,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "audit:dead-code": "node scripts/dead-code/audit.mjs",
-    "audit:dead-code:knip": "knip --config configs/quality/knip.json --reporter json",
+    "audit:dead-code:knip": "knip --config configs/audits/dead-code/knip.json --reporter json",
     "test:dead-code": "node --test tests/functional/audits/dead-code/*.test.mjs",
     "test:galleries": "node --test \"tests/functional/galleries/**/*.test.mjs\"",
     "prod": "NODE_ENV=production node src/server/host.mjs",

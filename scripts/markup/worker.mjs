@@ -145,7 +145,7 @@ async function main() {
   };
   provenanceFiles = [
     ...sourceFiles, ...generatedFiles,
-    ...['package.json', 'package-lock.json', 'configs/quality/eslint.markup.config.mjs', 'configs/quality/htmlvalidate.markup.json',
+    ...['package.json', 'package-lock.json', 'configs/audits/markup/eslint.config.mjs', 'configs/audits/markup/htmlvalidate.json',
       'scripts/audit/execution.mjs', 'scripts/markup/audit.mjs', 'scripts/markup/worker.mjs', 'scripts/markup/provenance.mjs',
       'scripts/markup/report.mjs', 'scripts/markup/probes.mjs', 'scripts/markup/explicit-closing-tags.mjs'].map(name => path.join(root, name)),
     ...(options.routes ? [path.resolve(root, options.routes)] : []),
@@ -157,7 +157,7 @@ async function main() {
     const module = await moduleFromProject(require, 'eslint');
     const ESLint = module.ESLint ?? module.default?.ESLint;
     const eslint = new ESLint({
-      cwd: root, overrideConfigFile: path.join(root, 'configs/quality/eslint.markup.config.mjs'),
+      cwd: root, overrideConfigFile: path.join(root, 'configs/audits/markup/eslint.config.mjs'),
       fix: false, allowInlineConfig: false,
     });
     report.probes.astro = await probeAstro(eslint, path.join(root, 'src', '__markup_probe__.astro'));
@@ -188,7 +188,7 @@ async function main() {
   try {
     const module = await moduleFromProject(require, 'html-validate');
     const HtmlValidate = module.HtmlValidate ?? module.default?.HtmlValidate;
-    const configFile = path.join(root, 'configs/quality/htmlvalidate.markup.json');
+    const configFile = path.join(root, 'configs/audits/markup/htmlvalidate.json');
     const configText = await readFile(configFile, 'utf8');
     report.htmlConfigSha256 = sha256(configText);
     const config = JSON.parse(configText);
@@ -289,7 +289,7 @@ finally {
         if (inputsChanged(report.provenanceBefore, report.provenanceAfter)) throw new Error('Audited inputs, HEAD or tracked status changed during analysis');
       } catch (error) { report.failures.push(`Input stability: ${error.message}`); }
     }
-    for (const file of ['package-lock.json', 'configs/quality/eslint.markup.config.mjs', 'scripts/markup/explicit-closing-tags.mjs']) {
+    for (const file of ['package-lock.json', 'configs/audits/markup/eslint.config.mjs', 'scripts/markup/explicit-closing-tags.mjs']) {
       try { (report.configurationHashes ??= {})[file] = sha256(await readFile(path.join(root, file))); }
       catch { /* Missing required configuration is reported by the relevant analyzer. */ }
     }

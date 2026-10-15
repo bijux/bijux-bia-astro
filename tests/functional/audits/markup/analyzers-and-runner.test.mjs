@@ -21,11 +21,11 @@ async function checkout(action) {
   try {
     await mkdir(path.join(dir, 'src/nested'), { recursive: true });
     await mkdir(path.join(dir, 'public'));
-    await mkdir(path.join(dir, 'configs/quality'), { recursive: true });
+    await mkdir(path.join(dir, 'configs/audits/markup'), { recursive: true });
     await cp(path.join(root, 'scripts/markup'), path.join(dir, 'scripts/markup'), { recursive: true });
     await cp(path.join(root, 'scripts/audit'), path.join(dir, 'scripts/audit'), { recursive: true });
-    for (const name of ['eslint.markup.config.mjs', 'htmlvalidate.markup.json']) {
-      await cp(path.join(root, 'configs/quality', name), path.join(dir, 'configs/quality', name));
+    for (const name of ['eslint.config.mjs', 'htmlvalidate.json']) {
+      await cp(path.join(root, 'configs/audits/markup', name), path.join(dir, 'configs/audits/markup', name));
     }
     await writeFile(path.join(dir, 'package.json'), '{"type":"module"}\n');
     await writeFile(path.join(dir, 'package-lock.json'), '{}\n');
@@ -62,13 +62,13 @@ async function server(action, handler) {
 }
 
 test('installed Astro analyzer passes all valid and invalid source probes', async () => {
-  const eslint = new ESLint({ cwd: root, overrideConfigFile: path.join(root, 'configs/quality/eslint.markup.config.mjs'), fix: false, allowInlineConfig: false });
+  const eslint = new ESLint({ cwd: root, overrideConfigFile: path.join(root, 'configs/audits/markup/eslint.config.mjs'), fix: false, allowInlineConfig: false });
   const results = await probeAstro(eslint, path.join(root, 'src/markup-probe.astro'));
   assert.equal(results.length, 30);
   assert.deepEqual(results.filter(result => !result.passed), []);
 });
 test('installed HTML analyzer validates raw text, including browser-repairable errors', async () => {
-  const config = JSON.parse(await readFile(path.join(root, 'configs/quality/htmlvalidate.markup.json'), 'utf8'));
+  const config = JSON.parse(await readFile(path.join(root, 'configs/audits/markup/htmlvalidate.json'), 'utf8'));
   const results = await probeHtml(new HtmlValidate(config));
   assert.equal(results.length, 14);
   assert.deepEqual(results.filter(result => !result.passed), []);

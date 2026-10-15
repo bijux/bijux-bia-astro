@@ -56,7 +56,7 @@ test('Knip preserves scripts loaded by live study and search components', async 
   const packageFile = require.resolve('knip/package.json');
   const info = JSON.parse(readFileSync(packageFile, 'utf8'));
   const executable = path.join(path.dirname(packageFile), info.bin.knip);
-  const run = spawnSync(process.execPath, [executable, '--config', 'configs/quality/knip.json', '--reporter', 'json'], {
+  const run = spawnSync(process.execPath, [executable, '--config', 'configs/audits/dead-code/knip.json', '--reporter', 'json'], {
     cwd: process.cwd(), encoding: 'utf8', timeout: 30_000,
   });
   assert(!run.error && !run.signal, run.error?.message ?? run.signal);

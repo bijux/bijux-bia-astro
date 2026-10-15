@@ -19,7 +19,7 @@ The audit tooling and reviewed source corrections are delivered together. The [s
 
 ## Make interface
 
-The root `Makefile` imports `makes/quality.mk`; quality configuration lives in `configs/quality/`. Run from the repository root with npm dependencies installed. The recipes work with macOS GNU Make 3.81 and do not install packages or rewrite application source.
+The root `Makefile` imports `makes/quality.mk`; quality configuration lives in `configs/audits/dead-code/`. Run from the repository root with npm dependencies installed. The recipes work with macOS GNU Make 3.81 and do not install packages or rewrite application source.
 
 | Command | Checks |
 | --- | --- |
@@ -63,9 +63,9 @@ The audit writes `artifacts/dead-codes.log` even when findings or analyzer failu
 
 The dedicated configurations do not change normal build settings:
 
-- `configs/quality/eslint.config.mjs` uses the Astro parser and client-script processor with TypeScript-aware unused-variable rules, control-flow checks and local CSS checks. Ambient type declarations are excluded from ordinary unused-local rules.
-- `configs/quality/knip.json` retains Astro's route discovery and explicitly identifies the audit/probe/test executables, browser scripts loaded through `<script src>` (`src/features/studies/viewable-images.js`, `src/features/search/client/controller.js`), and three layouts referenced through Markdown/MDX frontmatter (`HelpLayout`, `PoliciesLayout`, `MarkdownLayoutLeftAlign`). Those script/layout references are not imports understood by Knip's default compiler; their entry status is backed by actual component/page references. A regression test runs Knip against the repository to preserve the browser entries. Components are not blanket entry points. The separate Knip npm command makes the analyzer's own dependency use discoverable.
-- `configs/quality/tsconfig.dead-code.json` enables unused locals/parameters and JavaScript checking only for the optional type-analysis command.
+- `configs/audits/dead-code/eslint.config.mjs` uses the Astro parser and client-script processor with TypeScript-aware unused-variable rules, control-flow checks and local CSS checks. Ambient type declarations are excluded from ordinary unused-local rules.
+- `configs/audits/dead-code/knip.json` retains Astro's route discovery and explicitly identifies the audit/probe/test executables, browser scripts loaded through `<script src>` (`src/features/studies/viewable-images.js`, `src/features/search/client/controller.js`), and three layouts referenced through Markdown/MDX frontmatter (`HelpLayout`, `PoliciesLayout`, `MarkdownLayoutLeftAlign`). Those script/layout references are not imports understood by Knip's default compiler; their entry status is backed by actual component/page references. A regression test runs Knip against the repository to preserve the browser entries. Components are not blanket entry points. The separate Knip npm command makes the analyzer's own dependency use discoverable.
+- `configs/audits/dead-code/tsconfig.json` enables unused locals/parameters and JavaScript checking only for the optional type-analysis command.
 
 The locked compatibility profile is ESLint 9.39.5, eslint-plugin-astro 1.3.1, typescript-eslint 8.48.1 and Knip 5.70.1. It uses the plugin's v1 flat-config API. ESLint 9 is [end of life](https://eslint.org/version-support/); this profile is a compatibility baseline, not the long-term maintenance target. A maintained ESLint/Astro-plugin profile must be verified against the entire repository before replacing it. Matching peer ranges and a small passing probe alone do not establish compatibility.
 

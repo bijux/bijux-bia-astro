@@ -34,7 +34,7 @@ export default async function prepareWebsite() {
     await symlink(path.join(repository, 'node_modules'), path.join(root, 'node_modules'), 'dir');
     await writeFile(path.join(root, 'astro.config.mjs'), `import config from ${JSON.stringify(pathToFileURL(path.join(repository, 'astro.config.mjs')).href)};\nexport default {...config,root:${JSON.stringify(root)}};\n`);
     await run(['scripts/deployment/build.mjs']);
-    const html = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/quality/htmlvalidate.markup.json'), 'utf8')));
+    const html = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/audits/markup/htmlvalidate.json'), 'utf8')));
     const generated = [];
     async function validate(directory) {
         for (const entry of await readdir(directory, { withFileTypes: true })) {

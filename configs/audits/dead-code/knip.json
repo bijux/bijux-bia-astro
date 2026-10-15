@@ -33,10 +33,10 @@
   ],
   "eslint": {
     "config": [
-      "configs/quality/eslint.config.mjs",
-      "configs/quality/eslint.markup.config.*js",
+      "configs/audits/dead-code/eslint.config.mjs",
+      "configs/audits/markup/eslint.config.*js",
       "eslint.config.{js,mjs,cjs,ts}",
-      "configs/security/eslint.config.mjs"
+      "configs/audits/security/eslint.config.mjs"
     ]
   },
   "playwright": {

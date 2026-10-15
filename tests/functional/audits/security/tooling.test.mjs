@@ -108,8 +108,8 @@ async function runnerCopy(root) {
   await put(root,'.gitignore','/artifacts/\n');
   await put(root,'package.json',JSON.stringify({name:'security-fixture',version:'1.0.0',type:'module'}));
   await put(root,'package-lock.json',JSON.stringify({name:'security-fixture',version:'1.0.0',lockfileVersion:3,packages:{'':{name:'security-fixture',version:'1.0.0'}}}));
-  await cp(resolve(kit,'configs/security/eslint.config.mjs'),resolve(root,'eslint-fixture.mjs'));
-  await put(root,'configs/security/eslint.config.mjs',await readFile(resolve(root,'eslint-fixture.mjs'),'utf8'));
+  await cp(resolve(kit,'configs/audits/security/eslint.config.mjs'),resolve(root,'eslint-fixture.mjs'));
+  await put(root,'configs/audits/security/eslint.config.mjs',await readFile(resolve(root,'eslint-fixture.mjs'),'utf8'));
 }
 test('real runner with missing analyzers preserves a code report and returns 2', () => temporary(async root => {
   await runnerCopy(root);
