@@ -19,3 +19,22 @@ assert((await page.goto('/bioimage-archive/images?size_t=1')).ok());
         await page.locator('#selected-facets').getByText('nuclei', { exact: false }).waitFor();
         assert.equal(await page.locator('#searchitem').inputValue(), 'nuclei');
 });
+
+test('cursor-window history restores rows and labels through back, forward and reload', async ({ page }) => {
+    await page.goto('/bioimage-archive/images?query=cursor-example&size_t=1&pagination.page=833');
+    const label = page.locator('#paginated-results');
+    const next = page.locator('.vf-pagination__item--next-page a');
+    await expect(label).toHaveText('9985 - 9996 of 10050 results');
+    await next.click();
+    await expect(label).toHaveText('9997 - 10008 of 10050 results');
+    await next.click();
+    await expect(label).toHaveText('10009 - 10020 of 10050 results');
+    expect(new URL(page.url()).searchParams.has('cursor')).toBe(false);
+    await page.goBack();
+    await expect(label).toHaveText('9997 - 10008 of 10050 results');
+    await page.goForward();
+    await expect(label).toHaveText('10009 - 10020 of 10050 results');
+    await page.reload();
+    await expect(label).toHaveText('10009 - 10020 of 10050 results');
+    await expect(page.locator('input[name="size_t"][value="1"]')).toBeChecked();
+});

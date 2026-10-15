@@ -21,7 +21,12 @@ export const test = base.extend<{ expectedHTTPFailures: string[] }>({
 
         page.on('pageerror', error => errors.push(error.message));
         page.on('response', response => { if (response.url().startsWith(baseURL!) && !response.url().includes('/images?query=unavailable') && response.status() >= 400 && !expectedHTTPFailures.some(value => response.url().includes(value))) errors.push(`HTTP ${response.status()}: ${response.url()}`); });
-        page.on('requestfailed', request => { if (request.url().startsWith(baseURL!)) errors.push(`Failed request: ${request.url()}`); });
+        page.on('requestfailed', request => {
+            const path = new URL(request.url()).pathname;
+            const cancelledSearch = ['/bioimage-archive/images', '/bioimage-archive/studies'].includes(path) &&
+                request.headers()['x-requested-with'] === 'fetch' && request.failure()?.errorText === 'net::ERR_ABORTED';
+            if (request.url().startsWith(baseURL!) && !cancelledSearch) errors.push(`Failed request: ${request.url()}`);
+        });
         page.on('dialog', async dialog => { errors.push(`Unexpected browser dialog: ${dialog.message()}`); await dialog.dismiss(); });
         await use(page);
         expect(errors, 'Application errors').toEqual([]);

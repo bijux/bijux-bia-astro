@@ -1,4 +1,5 @@
 ---
+import { facetTitle } from "./facet-options.mjs";
 import { formatBytes, formatFieldName } from "../../formatting/units.mjs";
 const { facet, id} = Astro.props;
 const title = facet['title'];
@@ -21,9 +22,6 @@ const initialMax = facet.selectedMax !== "" ? Number(facet.selectedMax) : maxBou
 // optional: step; if your values are huge, consider 1 or 10/100/1024 etc.
 const step = 1;
 
-export function capitalizeFirstLetter(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
 
 ---
 <div class="facet-section" id={`facet-section-${id}`}>
@@ -37,7 +35,7 @@ export function capitalizeFirstLetter(str: string): string {
       >
         <span class="facet-arrow" aria-hidden="true"></span>
         <div class="facet-title-text-and-warning">
-          {capitalizeFirstLetter(title)}
+          {facetTitle(title)}
           {showWarning && (
             <div class="facet-warning">
               <span class="warning-label">Top 10</span>
@@ -61,7 +59,7 @@ export function capitalizeFirstLetter(str: string): string {
             />
           <label for={`${id}-${index}`} class="facet-label">
               <div class="facet-label-inner">
-                <div>{title !=="Image Format" && title !== "File Type"? formatFieldName(facet.title, capitalizeFirstLetter(key.replaceAll("_", " "))) : key}</div>
+                <div>{title !=="Image Format" && title !== "File Type"? formatFieldName(facet.title, facetTitle(key.replaceAll("_", " "))) : key}</div>
                 {count !== null && <div class="facet-count">{count}</div>}
               </div>
             </label>

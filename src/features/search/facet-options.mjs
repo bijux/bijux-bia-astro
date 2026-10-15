@@ -38,7 +38,7 @@ export function getFacetQueryValues(searchParams, queryKey) {
 }
 
 /**
- * @param {{key: string | number, key_as_string?: string, doc_count: number}[]} buckets
+ * @param {{key: string | number, key_as_string?: string | null, doc_count: number}[]} buckets
  * @param {string} queryKey
  * @param {string[]} selectedValues
  * @returns {{value: string, count: number | null}[]}
@@ -76,4 +76,9 @@ export function buildFacetOptions(buckets, queryKey, selectedValues = []) {
         }
     }
     return options;
+}
+
+/** Display a configured facet label without altering its remaining text. */
+export function facetTitle(value) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
 }

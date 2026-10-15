@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { cleanHistoryURL } from '../../../src/features/search/navigation.mjs';
+import { cleanHistoryURL } from '../../../src/features/search/history.mjs';
 import { generateParamString } from '../../../src/features/search/query.mjs';
 
 test('visible search history strips transport state and retains repeated filters and page size', () => {

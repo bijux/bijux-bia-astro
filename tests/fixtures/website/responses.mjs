@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { cursorSearchResponse } from '../scenarios/search-pagination.mjs';
 import { benchmarkStudies } from '../scenarios/benchmark-datasets.mjs';
 import { annotationStudy, sourceImage, annotationImages } from '../scenarios/annotations.mjs';
 
@@ -31,6 +32,7 @@ export function fixtureResponse(value) {
     };
     if (['/search/v1/website/browse/image', '/search/v1/website/browse/study'].includes(url.pathname)) {
         const isImage = url.pathname.endsWith('image');
+        if (isImage && url.searchParams.get('query') === 'cursor-example') return cursorSearchResponse(saved('browse-image'), url);
         const response = saved(isImage ? 'browse-image' : 'browse-study');
         const page = Number(url.searchParams.get('pagination.page') ?? 1);
         const size = Number(url.searchParams.get('pagination.page_size') ?? 12);
