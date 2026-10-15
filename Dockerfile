@@ -35,6 +35,7 @@ COPY --chown=node:node package.json ./
 COPY --chown=node:node scripts/server.mjs ./scripts/server.mjs
 COPY --chown=node:node scripts/deployment/manifest.mjs scripts/deployment/configuration.mjs ./scripts/deployment/
 COPY --chown=node:node src/security/headers.mjs ./src/security/headers.mjs
+COPY --chown=node:node src/observability ./src/observability
 RUN ln -s artifacts/node_modules node_modules
 USER node
 RUN node scripts/deployment/manifest.mjs verify

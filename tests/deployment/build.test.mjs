@@ -33,6 +33,7 @@ test('a Node deployment builds once, serves offline, preserves its configuration
     await cp(path.join(repository, 'package-lock.json'), path.join(root, 'package-lock.json'));
     await cp(path.join(repository, 'scripts/server.mjs'), path.join(root, 'scripts/server.mjs'));
     await cp(path.join(repository, 'src/security'), path.join(root, 'src/security'), { recursive: true });
+    await cp(path.join(repository, 'src/observability'), path.join(root, 'src/observability'), { recursive: true });
     await symlink(path.join(repository, 'node_modules'), path.join(root, 'node_modules'), 'dir');
     const { scripts } = JSON.parse(await readFile(path.join(repository, 'package.json'), 'utf8'));
     await writeFile(path.join(root, 'package.json'), JSON.stringify({ type: 'module', scripts: { build: scripts.build } }));
@@ -111,6 +112,14 @@ export async function GET({url}){
     }
     assert(served, diagnostics);
     assert.equal(served.status, 200);
+    for (const pathname of ['/health/live', '/health/ready']) {
+        const probe = await fetch(`http://127.0.0.1:${port}${pathname}`);
+        assert.equal(probe.status, 200);
+        assert.equal(probe.headers.get('Cache-Control'), 'no-store');
+        assert.match(probe.headers.get('X-Request-ID'), /^[a-f0-9-]{36}$/);
+        assert.deepEqual(await probe.json(), { status: 'ok' });
+        assert.equal(await (await fetch(`http://127.0.0.1:${port}${pathname}`, { method: 'HEAD' })).text(), '');
+    }
     assert.equal(await served.text(), html);
     assert.match(served.headers.get('Permissions-Policy'), /loopback-network=\(self/);
     assert.deepEqual(await (await fetch(address + 'configuration.json')).json(), { api });
