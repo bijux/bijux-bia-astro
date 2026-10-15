@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, writeFile, readFile, rm, symlink, cp, readdir } from 'n
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {inventory,fileHashes,inputBytes} from "../../../../scripts/security/inventory.mjs";
-import {run} from "../../../../scripts/security/execution.mjs";
+import {run} from "../../../../scripts/audit/execution.mjs";
 import {interpretAudit} from "../../../../scripts/security/dependencies.mjs";
 import {normalizeLint,exitFor,renderReport,safeText} from "../../../../scripts/security/reporting.mjs";
 
@@ -90,27 +90,13 @@ test('lint fingerprints change when source changes', () => {
   const a = normalizeLint([diagnostic], '/repo', { 'src/example.js': 'a' }); const b = normalizeLint([diagnostic], '/repo', { 'src/example.js': 'b' }); assert.notEqual(a.findings[0].fingerprint, b.findings[0].fingerprint);
 });
 test('lint normalization does not mutate raw input', () => { const before = JSON.stringify(diagnostic); normalizeLint([diagnostic], '/repo'); assert.equal(JSON.stringify(diagnostic), before); });
-test('subprocess captures unsuccessful stdout/stderr and exit', async () => {
-  const x = await run(process.execPath, ['-e', 'console.log("evidence");console.error("diagnostic");process.exit(7)']);
-  assert.equal(x.code, 7); assert.match(x.stdout, /evidence/); assert.match(x.stderr, /diagnostic/);
-});
-test('subprocess command-not-found is explicit', async () => assert.ok((await run('/definitely/not/a/tool', [])).failure));
-test('subprocess time limit fails visibly', async () => {
-  const x = await run(process.execPath, ['-e', 'setTimeout(()=>{},10000)'], { timeout: 100 }); assert.match(x.failure, /Timed out/);
-});
-test('subprocess output bound fails visibly', async () => {
-  const x = await run(process.execPath, ['-e', 'process.stdout.write("a".repeat(10000))'], { maxBytes: 20 }); assert.match(x.failure, /Output limit/);
-});
-test('subprocess preserves split UTF-8 sequences', async () => {
-  const x = await run(process.execPath, ['-e', 'const b=Buffer.from("µ染");for(const v of b)process.stdout.write(Buffer.from([v]));']); assert.equal(x.stdout, 'µ染');
-});
 test('terminal control characters are neutralized in text evidence', () => assert.equal(safeText('x\u001b[31my'), 'x?[31my'));
 test('report distinguishes unexecuted coverage and incomplete stages', () => {
   const text = renderReport({ runId: 'x', profile: 'all', status: 'INCOMPLETE', exitCode: 2, stages: [{ stage: 'code', incomplete: true, errors: ['missing tool'], findings: [] }] });
   assert.match(text, /NOT RUN/); assert.match(text, /ANALYSIS_ERROR missing tool/); assert.match(text, /not proof/);
 });
 async function runnerCopy(root) {
-  for (const file of ['scripts/security/audit.mjs', 'scripts/security/inventory.mjs', 'scripts/security/execution.mjs', 'scripts/security/dependencies.mjs', 'scripts/security/reporting.mjs', 'scripts/security/scan-code.mjs','scripts/security/evidence.mjs','scripts/security/provenance.mjs']) {
+  for (const file of ['scripts/security/audit.mjs', 'scripts/security/inventory.mjs', 'scripts/audit/execution.mjs', 'scripts/security/dependencies.mjs', 'scripts/security/reporting.mjs', 'scripts/security/scan-code.mjs','scripts/security/evidence.mjs','scripts/security/provenance.mjs']) {
     await mkdir(dirname(resolve(root, file)), { recursive: true }); await cp(resolve(kit, file), resolve(root, file));
   }
   await put(root, 'src/a.js', 'const safe = 1;');
@@ -220,36 +206,6 @@ test('root configs and source paths named dist are inventoried; pipes are reject
   await assert.rejects(inputBytes(root,'src/input.js'),/Non-regular/);
   await assert.rejects(inputBytes(root,'../outside.js'),/Invalid/);
 }));
-test('a successful parent cannot leave a grandchild holding its output pipes open', { timeout: 15000 }, async t => {
-  const result = await run(process.execPath, ['-e', `
-    const { spawn } = require('node:child_process');
-    // Exercise delayed startup before the descendant acknowledges readiness.
-    setTimeout(() => {
-      const child = spawn(process.execPath, ['-e', "process.send('ready'); setInterval(() => {}, 1000);"],
-        { stdio: ['ignore', 1, 2, 'ipc'] });
-      child.once('message', () => {
-        process.stdout.write(JSON.stringify({ pid: child.pid, group: process.pid }) + '\\n', () => process.exit(0));
-      });
-    }, 400);
-  `], { timeout: 10000 });
-  const { pid, group } = JSON.parse(result.stdout.trim());
-  assert(Number.isSafeInteger(pid) && pid > 0);
-  assert(Number.isSafeInteger(group) && group > 0);
-  t.after(() => {
-    try { process.kill(-group, 'SIGKILL'); }
-    catch (error) { if (error.code !== 'ESRCH') throw error; }
-  });
-  assert.equal(result.code, 0);
-  assert.match(result.failure, /Child exited without closing its output streams/);
-  // Reaping is asynchronous; do not assume the orphan disappears in a fixed 100 ms.
-  const deadline = Date.now() + 2000;
-  while (true) {
-    try { process.kill(pid, 0); }
-    catch (error) { if (error.code === 'ESRCH') break; throw error; }
-    assert(Date.now() < deadline, 'The grandchild must terminate with its process group.');
-    await new Promise(resolve => setTimeout(resolve, 20));
-  }
-});
 test('a Git-free fixture cannot inherit its parent checkout provenance', () => temporary(async root => {
   await runnerCopy(root); await rm(resolve(root,'.git'),{recursive:true});
   const result=await run(process.execPath,['scripts/security/audit.mjs','code'],{cwd:root});

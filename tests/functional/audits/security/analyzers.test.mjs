@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { run } from "../../../../scripts/security/execution.mjs";
+import { run } from "../../../../scripts/audit/execution.mjs";
 
 const repository = fileURLToPath(new URL("../../../../", import.meta.url));
 
