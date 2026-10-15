@@ -7,7 +7,9 @@ const image = saved('image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39').hits.hits[0]._
 /** Complete captured metadata with deliberately small, synthetic browse/pagination results. */
 export function fixtureResponse(value) {
     const url = new URL(value);
+    if (url.searchParams.get('query') === 'unavailable') throw new Error('Controlled API failure.');
     if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/biostudies/api/v1/studies/S-BIAD3335/info') return { httpLink: 'https://www.ebi.ac.uk/biostudies/files/S-BIAD3335/' };
+    if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
     if (url.pathname === '/search/v1/website/study') {
         const study = studies.find(item => item.accession_id === url.searchParams.get('facet.accession_id'));

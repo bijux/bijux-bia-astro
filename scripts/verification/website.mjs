@@ -5,7 +5,7 @@ import { cp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/pr
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { chromium } from 'playwright';
+import { chromium, devices } from 'playwright';
 import { HtmlValidate } from 'html-validate';
 import { fixtureResponse } from '../../tests/fixtures/website/responses.mjs';
 
@@ -13,6 +13,7 @@ const repository = fileURLToPath(new URL('../../', import.meta.url));
 const output = path.join(repository, 'artifacts/website-verification');
 const root = path.join(output, 'application');
 await mkdir(output, { recursive: true });
+await rm(path.join(output, 'report.json'), { force: true });
 await rm(root, { recursive: true, force: true });
 await mkdir(root, { recursive: true });
 for (const name of ['src', 'public', 'scripts', 'tests/fixtures', 'package.json', 'package-lock.json', 'tsconfig.json']) await cp(path.join(repository, name), path.join(root, name), { recursive: true });
@@ -67,11 +68,11 @@ try {
     assert(ready, 'Verification server did not become ready.');
     browser = await chromium.launch();
     for (const width of [1440, 375]) {
-        const context = await browser.newContext({ viewport: { width, height: 1000 }, serviceWorkers: 'block' });
+        const context = await browser.newContext({ ...(width === 375 ? devices['Pixel 7'] : {}), viewport: { width, height: 1000 }, serviceWorkers: 'block', permissions: ['clipboard-read', 'clipboard-write'] });
         await context.route('**/*', async route => {
             const request = route.request(), url = new URL(request.url());
             if (url.origin === address) return route.continue();
-            if (url.origin === 'https://alpha.bioimagearchive.org') {
+            if (url.origin === 'https://alpha.bioimagearchive.org' || url.origin === 'https://www.ebi.ac.uk' && url.pathname.startsWith('/ebisearch/ws/rest/')) {
                 try { return route.fulfill({ json: fixtureResponse(url.href) }); }
                 catch (error) { unexpected.push(error.message); return route.abort(); }
             }
@@ -83,22 +84,42 @@ try {
         });
         const page = await context.newPage();
         page.on('pageerror', error => errors.push(error.message));
-        page.on('response', response => { if (response.url().startsWith(address) && response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`); });
+        const unavailable = address + '/bioimage-archive/images?query=unavailable';
+        page.on('response', response => { if (response.url().startsWith(address) && response.url() !== unavailable && response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`); });
         page.on('requestfailed', request => { if (request.url().startsWith(address)) errors.push(`Failed request: ${request.url()}`); });
+        page.on('dialog', dialog => { errors.push(`Unexpected browser dialog: ${dialog.message()}`); return dialog.dismiss(); });
         page.setDefaultTimeout(10000);
+        assert((await page.goto(address + '/bioimage-archive/')).ok());
+        await page.getByRole('heading', { name: 'BioImage Archive', exact: true }).waitFor();
+        await page.locator('#live-tutorials').getByText('Currently there are no upcoming events', { exact: false }).waitFor();
+        await page.locator('#ondemand-tutorials').getByText('Currently there are no upcoming events', { exact: false }).waitFor();
         assert((await page.goto(address + '/bioimage-archive/study/S-BIAD3335')).ok());
         const disclosure = page.locator('.dataset-metadata__record summary').first();
         const details = disclosure.locator('..');
         const before = await details.getAttribute('open');
         await disclosure.focus(); await page.keyboard.press('Space');
         assert.notEqual(await details.getAttribute('open'), before);
+        await page.keyboard.press('Enter');
+        assert.equal(await details.getAttribute('open'), before);
         await page.locator('#open-cite-dialog').focus(); await page.keyboard.press('Enter');
         assert(await page.locator('#cite-dialog').evaluate(element => element.open));
         await page.keyboard.press('Escape');
         assert(await page.locator('#open-cite-dialog').evaluate(element => element === document.activeElement));
+        await page.screenshot({ path: path.join(output, `metadata-${width}.png`), fullPage: true });
         assert((await page.goto(address + '/bioimage-archive/study/EMPIAR-12104')).ok());
         await page.waitForFunction(() => window.jQuery?.fn.dataTable?.isDataTable('#viewable_images_table') && window.jQuery('#viewable_images_table').DataTable().rows().data().length > 0);
         assert.deepEqual(await page.locator('[data-bia-dependency]').evaluateAll(nodes => nodes.map(node => node.dataset.biaDependency)), ['jquery', 'datatables']);
+        await page.locator('select[aria-controls="viewable_images_table"]').selectOption('25');
+        await page.waitForFunction(() => window.jQuery('#viewable_images_table').DataTable().rows().data().length === 25);
+        await page.locator('#viewable_images_table_wrapper [data-action="next"]').click();
+        await page.waitForFunction(() => window.jQuery('#viewable_images_table').DataTable().page.info().page === 1 && window.jQuery('#viewable_images_table').DataTable().rows().data().length === 5);
+        await page.locator('#showDisplayImagesToggle').focus(); await page.keyboard.press('Space');
+        await page.waitForFunction(() => window.jQuery('#viewable_images_table').DataTable().page.info().page === 0 && window.jQuery('#viewable_images_table').DataTable().rows().data().length === 14);
+        await page.reload();
+        await page.waitForFunction(() => window.jQuery?.fn.dataTable?.isDataTable('#viewable_images_table') && window.jQuery('#viewable_images_table').DataTable().rows().data().length === 14);
+        assert(await page.locator('#showDisplayImagesToggle').isChecked());
+        assert.equal(await page.locator('select[aria-controls="viewable_images_table"]').inputValue(), '25');
+        await page.screenshot({ path: path.join(output, `table-${width}.png`), fullPage: true });
         assert((await page.goto(address + '/bioimage-archive/images?size_t=1')).ok());
         assert(await page.locator('input[name="size_t"][value="1"]').isChecked());
         await page.locator('#pageSize').selectOption('30');
@@ -107,12 +128,23 @@ try {
         await page.locator('#searchitem').fill('nuclei');
         await Promise.all([page.waitForURL('**/*query=nuclei*'), page.locator('#searchitem').press('Enter')]);
         await page.locator('#selected-facets').getByText('nuclei', { exact: false }).waitFor();
+        assert.equal(await page.locator('#searchitem').inputValue(), 'nuclei');
+        assert((await page.goto(address + '/bioimage-archive/projects/spora/dataset')).ok());
+        await page.getByRole('button', { name: 'Cite', exact: true }).first().click();
+        await page.locator('.cite-dialog[open]').waitFor();
+        const citation = await page.locator('.cite-dialog code').textContent();
+        await page.locator('.copy-citation').click();
+        assert.equal(await page.evaluate(() => navigator.clipboard.readText()), citation);
+        await page.screenshot({ path: path.join(output, `citation-${width}.png`), fullPage: true });
+        await page.keyboard.press('Escape');
+        assert.equal((await page.goto(unavailable)).status(), 502);
+        await page.getByRole('alert').getByText('Search is temporarily unavailable.', { exact: false }).waitFor();
         assert.deepEqual(errors, []);
-        await page.screenshot({ path: path.join(output, `study-search-${width}.png`), fullPage: true });
+        await page.screenshot({ path: path.join(output, `search-unavailable-${width}.png`), fullPage: true });
         await context.close();
     }
     assert.deepEqual(unexpected, []);
-    await writeFile(path.join(output, 'report.json'), JSON.stringify({ generatedHtml: generated, viewports: [1440, 375], pageErrors: errors, unexpectedRequests: unexpected, externalExclusions: ['EMBL chrome/styles', 'analytics', 'images/fonts', 'external file-browser document'] }, null, 2) + '\n');
+    await writeFile(path.join(output, 'report.json'), JSON.stringify({ generatedHtml: generated, viewports: [1440, 375], journeys: ['metadata keyboard disclosures', 'citation focus return', 'table filtering and restored page size', 'numeric search state and query submission', 'clipboard citation contents', 'search-unavailable response'], pageErrors: errors, unexpectedRequests: unexpected, externalExclusions: ['EMBL chrome/styles', 'analytics', 'images/fonts', 'external file-browser document'] }, null, 2) + '\n');
     console.log(`Verified ${generated} generated HTML files and desktop/mobile browser journeys.`);
 } finally {
     await browser?.close();
