@@ -10,7 +10,7 @@ import { formatListItem } from "../../../../formatting/lists.mjs";
 import { multilineTextRender } from "../../../../formatting/plain-text.js";
 
 
-const { accessionID, studyMetadata, additionalStudyMetadata, tableInfo} = Astro.props;
+const { accessionID, studyMetadata, additionalStudyMetadata, tableInfo, datasetUUIDNameMap} = Astro.props;
 
 const tableOfContents = {
   "Curated Study Information": "study",
@@ -104,7 +104,7 @@ const exampleAnnotationURI = studyAIInfo.hero_image_gt
     <div>
       {
        relevantDatasets.map((dataset) => (
-          <DatasetInfo dataset={dataset} datasetAIInfo={studyAIInfo.dataset.filter(aiDataset => aiDataset.uuid === dataset.uuid)[0]} studyAccessionID={accessionID}/>
+          <DatasetInfo studyMetadata={studyMetadata} dataset={dataset} datasetAIInfo={studyAIInfo.dataset.filter(aiDataset => aiDataset.uuid === dataset.uuid)[0]} studyAccessionID={accessionID}/>
         ))
       }
     </div>
@@ -112,9 +112,9 @@ const exampleAnnotationURI = studyAIInfo.hero_image_gt
 
   <hr/>
 
-  <BenchmarkingTable  tableRows={filteredTableInfo} studyOrModelPageMode='study'/>
+  <BenchmarkingTable  tableRows={filteredTableInfo} datasetUUIDNameMap={datasetUUIDNameMap} studyOrModelPageMode='study'/>
 
   <hr/>
 
-  <ModelPredictionTable  tableRows={filteredTableInfo} studyOrModelPageMode='study'/>
+  <ModelPredictionTable  tableRows={filteredTableInfo} datasetUUIDNameMap={datasetUUIDNameMap} studyOrModelPageMode='study'/>
 </Fragment>

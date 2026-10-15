@@ -1,5 +1,4 @@
 ---
-import { fetchJSON } from "../../../../api/http.mjs";
 import { navigationURL } from "../../../../security/urls.mjs";
 import BaseLayoutWithBreadcrumbs from '../../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import StudyTitleInfo from '../../../../features/studies/StudyTitleInfo.astro'
@@ -12,9 +11,11 @@ import { type Study } from "../../../../api/types.ts"
 import spatialomicsCollection from "../../../../data/collections/spatialomics.json"
 import { getStudyImage } from "../../../../features/images/study-image.mjs";
 import { getDatasetStatsByUUID, getSimpleAttributeValue } from "../../../../features/metadata/records.mjs";
-import { getStudyFromApiByAccession, getImagesByAccessionID } from "../../../../api/client.mjs";
+import { createRequestClient } from "../../../../api/client.mjs";
 import { PUBLIC_MONGO_API } from "astro:env/client";
 
+import { loadStudyFiles } from '../../../../features/studies/load-study.mjs';
+import { studyHasTranscripts } from '../../../../features/galleries/spatialomics/transcripts.mjs';
 export function getStaticPaths() {
   return spatialomicsCollection.accession_ids.map((id) => {
     return {
@@ -24,40 +25,13 @@ export function getStaticPaths() {
 }
 
 const { accessionID } = Astro.params;
-const study = await getStudyFromApiByAccession(accessionID) as Study;
+const client = createRequestClient(Astro.request.signal);
+const study = await client.getStudyFromApiByAccession(accessionID) as Study;
+const fileLinks = await loadStudyFiles(accessionID, client.getFromAPI);
 
 const datasetUUIDsAndFileStats = getDatasetStatsByUUID(study);
 
-let hasTranscripts = false;
-
-const fetchDatasetDetails = async (datasetUuid: string) => {
-    const pageSize = 1000; // Fetch up to 1000 file references to get the attributes
-    const apiUrl = `${PUBLIC_MONGO_API}/dataset/${encodeURIComponent(datasetUuid)}/file_reference?page_size=${pageSize}`;
-    const fileData = await fetchJSON(apiUrl);
-    if (!Array.isArray(fileData)) return false;
-    const attributes = fileData.flatMap(file => file.additional_metadata || []);
-    const dataTypeAttr = attributes.find(attr => 
-        attr.name === 'attributes_from_biostudies.File' && (
-            attr.value?.attributes?.Data_Type === 'transcripts' ||
-            attr.value?.attributes?.Data_Type === 'Transcript_Coordinates' ||
-            attr.value?.attributes?.Description?.includes('Feature barcode') ||
-            attr.value?.attributes?.Description?.includes('feature matrix')
-        )
-    );
-    return dataTypeAttr ? true : false;
-};    
-
-const checkForTranscripts = async () => {
-    for (const [uuid] of datasetUUIDsAndFileStats) {
-        const dataType = await fetchDatasetDetails(uuid);
-        if (dataType) {
-            hasTranscripts = true;
-            break;
-        }
-    }
-};
-
-await checkForTranscripts();
+const hasTranscripts = await studyHasTranscripts(datasetUUIDsAndFileStats.map(([uuid]) => uuid), PUBLIC_MONGO_API, client.getFromAPI);
 
 const tableOfContents = {
   "Curated Study Information": "study",
@@ -70,7 +44,8 @@ if (hasTranscripts) {
 }
 
 
-const images = await getImagesByAccessionID(study.accession_id)
+const images = await client.getImagesByAccessionID(study.accession_id);
+const hasSpecimenTracks = images.length > 0 ? await client.studyHasSpecimenTracks(study.accession_id) : false;
 
 const annotationDatasets = study.dataset.filter(dataset => 
   "annotation_process" in dataset && dataset.annotation_process && dataset.annotation_process.length > 0
@@ -113,7 +88,7 @@ const code_links = getSimpleAttributeValue(study, 'see_also_code')
       </figure>
     </div>
     <div slot="ftp-link">
-      <StudyFiles accessionID={accessionID}/>
+      <StudyFiles {...fileLinks}/>
     </div>
     </StudyContentsSummary>
 
@@ -157,7 +132,7 @@ const code_links = getSimpleAttributeValue(study, 'see_also_code')
 
     <hr/>
     
-    <ViewableImageTable study={study} images={images} imagePageRoot="galleries/spatialomics/image"/>
+    <ViewableImageTable hasSpecimenTracks={hasSpecimenTracks} study={study} images={images} imagePageRoot="galleries/spatialomics/image"/>
 
 
     {annotationDatasets.length > 0 && (     <hr/>

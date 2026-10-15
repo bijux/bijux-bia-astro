@@ -19,3 +19,10 @@ test('browser dependencies reject both spellings of Node built-ins, including su
     }
     assert.deepEqual(boundaryIssues(new Map([['src/client.mjs', { targets: [], specifiers: ['jquery'] }]]), ['src/client.mjs']), []);
 });
+
+test('feature presentation receives loaded data instead of importing the API client', () => {
+    const graph = new Map([
+        ['src/features/studies/StudyPage.astro', { targets: ['src/api/client.mjs'], specifiers: [] }],
+    ]);
+    assert.deepEqual(boundaryIssues(graph), ['src/features/studies/StudyPage.astro: presentation imports API client src/api/client.mjs']);
+});

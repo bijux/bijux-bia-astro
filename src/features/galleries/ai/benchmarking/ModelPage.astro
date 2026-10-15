@@ -9,7 +9,7 @@ import { multilineTextRender } from "../../../../formatting/plain-text.js";
 
 
 
-const { modelName, modelMetadata, tableInfo, aiProjectLogosBasepath} = Astro.props;
+const { modelName, modelMetadata, tableInfo, aiProjectLogosBasepath, datasetUUIDNameMap} = Astro.props;
 
 
 const modelInfo = modelMetadata[modelName]
@@ -106,10 +106,10 @@ const filteredTableInfo = tableInfo.filter( row => row.model === modelName)
 
   <hr/>
 
-  <BenchmarkingTable  tableRows={filteredTableInfo} studyOrModelPageMode='model'/>
+  <BenchmarkingTable  tableRows={filteredTableInfo} datasetUUIDNameMap={datasetUUIDNameMap} studyOrModelPageMode='model'/>
 
 
   <hr/>
 
-  <ModelPredictionTable  tableRows={filteredTableInfo} studyOrModelPageMode='model'/>
+  <ModelPredictionTable  tableRows={filteredTableInfo} datasetUUIDNameMap={datasetUUIDNameMap} studyOrModelPageMode='model'/>
 </Fragment>

@@ -86,12 +86,12 @@ function getRelatedEntries(study, linkType) {
 }
 
 /** Fetch optional resolution metadata separately from HTML generation. */
-export async function loadRelatedEntries(study) {
+export async function loadRelatedEntries(study, request = fetchJSON) {
   const pdb = getRelatedEntries(study, "pdb");
   const emdb = await boundedMap(getRelatedEntries(study, "emdb"), async ({ accession, href }) => {
     let metadata = null;
     try {
-      metadata = await fetchJSON(`https://www.ebi.ac.uk/emdb/api/entry/EMD-${encodeURIComponent(accession)}`);
+      metadata = await request(`https://www.ebi.ac.uk/emdb/api/entry/EMD-${encodeURIComponent(accession)}`);
       if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) throw new TypeError("Invalid EMDB response.");
     } catch {
       metadata = null;

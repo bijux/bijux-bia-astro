@@ -5,6 +5,8 @@ import ModelPage from "../../../../features/galleries/ai/benchmarking/ModelPage.
 import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json"
 import tableInfo from "../../../../data/ai-dataset-benchmarking/model-dataset-table.json"
 
+import { createRequestClient } from '../../../../api/client.mjs';
+import { loadDatasetNames } from '../../../../features/galleries/ai/benchmarking/data.mjs';
 export function getStaticPaths() {
   return Object.keys(modelMetadata).map((id) => {
     return {
@@ -14,6 +16,7 @@ export function getStaticPaths() {
 }
 
 const { modelName } = Astro.params;
+const datasetUUIDNameMap = await loadDatasetNames(tableInfo.filter(row => row.model === modelName), createRequestClient(Astro.request.signal));
 
 
 const breadcrumbs = [
@@ -24,5 +27,5 @@ const breadcrumbs = [
 ]
 ---
 <BaseLayoutWithBreadcrumbs pageTitle={modelName} breadcrumbs={breadcrumbs}>
-  <ModelPage modelName={modelName} modelMetadata={modelMetadata} tableInfo={tableInfo} aiProjectLogosBasepath="/bioimage-archive/ai-galleries/"/>
+  <ModelPage datasetUUIDNameMap={datasetUUIDNameMap} modelName={modelName} modelMetadata={modelMetadata} tableInfo={tableInfo} aiProjectLogosBasepath="/bioimage-archive/ai-galleries/"/>
 </BaseLayoutWithBreadcrumbs>

@@ -8,86 +8,13 @@ import DatasetInfo from "../metadata/DatasetInfo.astro";
 import ViewableImageTable from "./ViewableImageTable.astro";
 import FileListTable from "./FileListTable.astro";
 import Citation from "../../components/ui/Citation.astro";
-import { buildPDBandEMDBLinks } from "./related-entries.mjs";
-import { getMetadataValue } from "../metadata/records.mjs";
 import { multilineTextRender } from "../../formatting/plain-text.js";
-import { formatBytesToHumanSize } from "../../formatting/units.mjs";
-import { getStudyImage } from "../images/study-image.mjs";
-import { getFromAPI, getStudyFromApiByAccession } from "../../api/client.mjs";
-import { type Study } from "../../api/types.ts"
 
-const tableOfContents = {
-  "Viewable Images": "viewable_images",
-  "Study Information": "study",
-  "Linked Information": "linked_information",
-  "Datasets": "study_components"
-};
-
-const { accessionID } = Astro.props as { accessionID: string };
-const study = await getStudyFromApiByAccession(accessionID) as Study;
-const images = study?.image ?? []
-const dirNumber = accessionID.replace("S-BIAD", "").replace("EMPIAR-", "");
-const isEMPIAR = accessionID.includes("EMPIAR");
-const ftpLink = isEMPIAR ? undefined : await getFromAPI(`https://www.ebi.ac.uk/biostudies/api/v1/studies/${accessionID}/info`);
-const ftpHttpsLink = isEMPIAR? `https://ftp.ebi.ac.uk/empiar/world_availability/${dirNumber}`: ftpLink?.httpLink;
-const globusLink = isEMPIAR? `https://app.globus.org/file-manager?origin_id=47772002-3e5b-4fd3-b97c-18cee38d6df2&origin_path=/empiar/world_availability/${dirNumber}/`: ftpLink?.globusLink || "";
-const fileListUrls = getMetadataValue(study?.additional_metadata, "file_list_visualisation");
-const hasFileList = Boolean(fileListUrls?.table_view && fileListUrls?.tree_view);
-const browseFilesLink = hasFileList ? "#file_list" : ftpHttpsLink;
-
-if (hasFileList) {
-  tableOfContents["Browse All Files"] = "file_list";
-}
-
-const [pdbLinks, emdbLinks] = await buildPDBandEMDBLinks(study);
-if ((!Array.isArray(study.see_also) || study.see_also.length === 0) && !pdbLinks && !emdbLinks) {
-  delete tableOfContents["Linked Information"];
-}
-
-// Pre-process grants to group them by funder name
-const groupedGrants = Object.create(null);
-if (study?.grant && Array.isArray(study.grant)) {
-  for (const grant of study.grant) {
-    // We use the first funder's display name as the grouping key for simplicity
-    const funderName =
-      (grant.funder && Array.isArray(grant.funder) && grant.funder.length > 0)
-        ? grant.funder[0].display_name
-        : 'Other Grant'; // Fallback name if no funder is specified
-
-    // Ensure we have a grant ID
-    if (grant.id) {
-        if (!groupedGrants[funderName]) {
-            groupedGrants[funderName] = [];
-        }
-
-        // Store the grant ID and the funder name (for the Europe PMC query's 'ga' parameter)
-        groupedGrants[funderName].push({
-            id: grant.id,
-            funderName: funderName
-        });
-    }
-  }
-}
-// End grant pre-processing
-
-const exampleStudyImage = getStudyImage(study);
-
-function getImageUUIDFromStudyImage(exampleURI: string | string[], images: any[]){
-  const selectedURI = Array.isArray(exampleURI) ? exampleURI[0] : exampleURI;
-  const thumbnailImage = images.find(img => {
-    const meta = getMetadataValue(img.additional_metadata, "image_static_display_uri");
-    return meta?.slice?.uri === selectedURI;
-  });
-  return thumbnailImage?.uuid || ""
-}
-
-const studyImagePageLink = getImageUUIDFromStudyImage(exampleStudyImage, images);
-
-const headlineStats = {
-  "Total Viewable Images":  study?.dataset.reduce((accumulator, dataset) => accumulator + dataset.image_count, 0) || 0,
-  "Total files": study?.dataset.reduce((accumulator, dataset) => accumulator + dataset.file_reference_count, 0) || 0,
-  "Total size of files": formatBytesToHumanSize(study?.dataset.reduce((accumulator, dataset) => accumulator + dataset.file_reference_size_bytes, 0) || 0),
-};
+import type { Study } from "../../api/types.ts";
+const { data } = Astro.props;
+const study: Study = data.study;
+const { accessionID, images, hasSpecimenTracks, isEMPIAR, ftpHttpsLink, globusLink, fileListUrls, hasFileList,
+  browseFilesLink, tableOfContents, pdbLinks, emdbLinks, groupedGrants, exampleStudyImage, studyImagePageLink, headlineStats } = data;
 
 const linkTypeFormatting = {
   "biostudies": "BioStudies",
@@ -151,7 +78,7 @@ const breadcrumbs = [
   </StudyContentsSummary>
 
   <hr/>
-  <ViewableImageTable study={study} images={images}/>
+  <ViewableImageTable hasSpecimenTracks={hasSpecimenTracks} study={study} images={images}/>
   <hr />
 <section id="study" class="vf-content | embl-grid embl-grid--has-centered-content">
   <div>
