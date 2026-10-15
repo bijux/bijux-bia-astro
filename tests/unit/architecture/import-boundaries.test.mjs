@@ -11,3 +11,11 @@ test('the architecture gate rejects a cycle, API presentation imports and browse
     assert(issues.some(issue => issue.includes('API imports presentation')));
     assert(issues.some(issue => issue.includes('browser imports node:fs')));
 });
+
+test('browser dependencies reject both spellings of Node built-ins, including subpaths', () => {
+    for (const specifier of ['node:fs', 'fs', 'fs/promises', 'node:test', 'astro:env/server']) {
+        const graph = new Map([['src/features/search/client.mjs', { targets: [], specifiers: [specifier] }]]);
+        assert.deepEqual(boundaryIssues(graph, [...graph.keys()]), [`src/features/search/client.mjs: browser imports ${specifier}`]);
+    }
+    assert.deepEqual(boundaryIssues(new Map([['src/client.mjs', { targets: [], specifiers: ['jquery'] }]]), ['src/client.mjs']), []);
+});
