@@ -4,7 +4,7 @@ const repository = fileURLToPath(new URL('../../', import.meta.url));
 const port = process.env.WEBSITE_TEST_PORT ?? '4399';
 export default defineConfig({
     testDir: '../../tests/e2e',
-    globalSetup: '../../tests/support/website/delivery.mjs',
+    globalSetup: fileURLToPath(new URL('../../tests/support/website/delivery.mjs', import.meta.url)),
     outputDir: '../../artifacts/browser-results',
     reporter: [['list'], ['json', { outputFile: `${repository}/artifacts/browser-results/results.json` }]],
     workers: 2,
