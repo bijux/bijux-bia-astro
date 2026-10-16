@@ -7,7 +7,7 @@ const {
 } = Astro.props;
 ---
 
-<dialog class={dialogClass}>
+<dialog class={dialogClass} aria-label={title}>
   <form method="dialog">
     <button class="dialog-close" value="cancel" aria-label="Close">×</button>
     <h2>{title}</h2>

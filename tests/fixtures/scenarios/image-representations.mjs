@@ -24,3 +24,9 @@ curatedImage.representation = [uncuratedImage.representation[1], {
 }];
 curatedImage.additional_metadata = [{ name: 'recommended_vizarr_representation',
     provenance: 'bia_curation', value: { attribute_key: curatedImage.representation[1].uuid } }];
+
+// A normal recommendation is distinct from the main image page's curation override.
+export const recommendedImage = structuredClone(curatedImage);
+recommendedImage.uuid = '00000000-0000-4000-8000-000000000101';
+recommendedImage.additional_metadata = [{ name: 'recommended_vizarr_representation',
+    value: { recommended_vizarr_representation: recommendedImage.representation[1].uuid } }];

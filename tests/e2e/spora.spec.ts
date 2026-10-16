@@ -4,17 +4,19 @@ import { test, expect } from '../support/browser';
 
 const boundaryNames = ['constructor', '__proto__', 'toString'];
 
-test('spora preserves production behaviour', async ({ page }) => {
+test('spora preserves production behaviour', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
 assert((await page.goto('/bioimage-archive/projects/spora/dataset')).ok());
         await page.getByRole('button', { name: 'Cite', exact: true }).first().click();
-        await page.locator('.cite-dialog[open]').waitFor();
+        await page.getByRole('dialog', { name: 'Dataset citation', exact: true }).waitFor();
         const citation = await page.locator('.cite-dialog code').textContent();
         await page.locator('.copy-citation').click();
-        assert.equal(await page.evaluate(() => navigator.clipboard.readText()), citation);
+        await expect.poll(() => nativeClipboardWrites.at(-1)).toBe(citation);
+        expect(nativeClipboardWrites).toEqual([citation]);
+        if (browserName === 'chromium') assert.equal(await page.evaluate(() => navigator.clipboard.readText()), citation);
         await page.keyboard.press('Escape');
 });
 
-test('SPORA filters retain working download actions and clear to the original rows', async ({ page }) => {
+test('SPORA filters retain working download actions and clear to the original rows', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
     await page.goto('/bioimage-archive/projects/spora/dataset');
     const rows = page.locator('.browser tbody tr');
     const initial = await rows.count();
@@ -22,10 +24,12 @@ test('SPORA filters retain working download actions and clear to the original ro
     await page.locator('#dataset-search').fill(name!);
     await expect(rows).toHaveCount(1);
     await page.getByRole('button', { name: 'Download', exact: true }).click();
-    const dialog = page.locator('.globus-dialog[open]');
+    const dialog = page.getByRole('dialog', { name: 'Dataset download commands', exact: true });
     const command = await dialog.locator('code').textContent();
     await dialog.getByRole('button', { name: 'Copy', exact: true }).click();
-    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
+    await expect.poll(() => nativeClipboardWrites.at(-1)).toBe(command);
+    expect(nativeClipboardWrites).toEqual([command]);
+    if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
     await expect(rows).toHaveCount(initial);
@@ -41,7 +45,7 @@ test('SPORA filters retain working download actions and clear to the original ro
     await expect(rows).toHaveCount(initial);
 });
 
-test('clipboard rejection leaves the SPORA dialog usable and a retry copies the same command', async ({ page }) => {
+test('clipboard rejection leaves the SPORA dialog usable and a retry copies the same command', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
     await page.goto('/bioimage-archive/projects/spora/dataset');
     // Allow native disabling to blur the active control before rejection settles.
     await page.evaluate(() => Object.defineProperty(navigator.clipboard, 'writeText', {
@@ -51,11 +55,13 @@ test('clipboard rejection leaves the SPORA dialog usable and a retry copies the 
         },
     }));
     const opener = page.getByRole('button', { name: 'Download', exact: true }).first();
-    await opener.click();
-    const dialog = page.locator('.globus-dialog[open]');
+    await opener.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'Dataset download commands', exact: true });
     const command = await dialog.locator('code').textContent();
     const copy = dialog.locator('.copy-commands');
-    await copy.click();
+    await copy.focus();
+    await page.keyboard.press('Enter');
     await expect(copy).toHaveText('Copy unavailable');
     await expect(copy).toBeEnabled();
     await expect(copy).toBeFocused();
@@ -73,7 +79,9 @@ test('clipboard rejection leaves the SPORA dialog usable and a retry copies the 
     await expect(close).toBeFocused();
     await page.evaluate(() => Reflect.deleteProperty(navigator.clipboard, 'writeText'));
     await copy.click();
-    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
+    await expect.poll(() => nativeClipboardWrites.at(-1)).toBe(command);
+    expect(nativeClipboardWrites).toEqual([command]);
+    if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
     await page.keyboard.press('Escape');
     await expect(opener).toBeFocused();
 });
@@ -109,4 +117,29 @@ test('filtered rows preserve unknown category text and their server-rendered con
         await expect(rows.locator('strong')).toHaveText([...catalogue.map(dataset => dataset.name), ...boundaryNames.map(name => `Category ${name}`)]);
         expect(await rows.last().evaluate((row, original) => row === original, retained)).toBe(true);
     }
+});
+
+test('SPORA project commands and citation copy the displayed text and restore modal focus', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
+    await page.goto('/bioimage-archive/projects/spora');
+    const triggers = page.locator('.spora-step-trigger');
+    const commands = await triggers.evaluateAll(buttons => buttons.map(button => button.getAttribute('data-command')));
+    expect(commands.length).toBeGreaterThan(0);
+    for (const [index, command] of commands.entries()) {
+        await triggers.nth(index).focus();
+        await page.keyboard.press('Enter');
+        const dialog = page.getByRole('dialog', { name: 'Download command', exact: true });
+        await expect(dialog.locator('code')).toHaveText(command!);
+        await dialog.getByRole('button', { name: 'Copy', exact: true }).click();
+        await expect.poll(() => nativeClipboardWrites.at(-1)).toBe(command);
+        if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
+        await page.keyboard.press('Escape');
+        await expect(triggers.nth(index)).toBeFocused();
+    }
+    const citation = await page.locator('.spora-citation-box code').textContent();
+    const copy = page.locator('.spora-citation-copy');
+    await copy.focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => nativeClipboardWrites).toEqual([...commands, citation]);
+    await expect(copy).toHaveText('Copied!');
+    if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(citation);
 });
