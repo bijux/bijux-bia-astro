@@ -5,6 +5,7 @@ import { cp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/pr
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { HtmlValidate } from 'html-validate';
+import { withCategoryBoundaries } from '../../fixtures/scenarios/spora-categories.mjs';
 import { ownedDirectory } from '../../../scripts/filesystem/owned-directory.mjs';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
@@ -25,6 +26,8 @@ export default async function prepareWebsite() {
     await rm(buildRoot, { recursive: true, force: true });
     await mkdir(buildRoot, { recursive: true });
     for (const name of ['src', 'public', 'scripts', 'tests/fixtures', 'package.json', 'package-lock.json', 'tsconfig.json']) await cp(path.join(repository, name), path.join(buildRoot, name), { recursive: true });
+    const catalogue = path.join(buildRoot, 'src/data/collections/spora-datasets.json');
+    await writeFile(catalogue, JSON.stringify(withCategoryBoundaries(JSON.parse(await readFile(catalogue, 'utf8')))));
     const contract = JSON.parse(await readFile(path.join(repository, 'tests/fixtures/website/production-contract.json'), 'utf8'));
     const pages = contract.pageSources;
     await rm(path.join(buildRoot, 'src/pages'), { recursive: true });

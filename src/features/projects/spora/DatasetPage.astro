@@ -1,22 +1,25 @@
 ---
 import Layout from '../../../layouts/ProjectsLayout.astro';
 import CodeDialog from './CodeDialog.astro';
-import datasets from '../../../data/collections/spora-mock-datasets.json';
+import datasets from '../../../data/collections/spora-datasets.json';
 import bannerImage from "../../../assets/bioimage-archive/projects/spora/spora_banner_logo.png";
 
 import { getCategoryCounts } from './catalogue.mjs';
+const imageTypeLabels = new Map([
+    ['ROI', 'Region of Interest (ROI)'], ['WSI', 'Whole Slide (WSI)'], ['TC', 'Tissue Core (TC)'],
+]);
+const pillClasses = new Map([
+    ['tc', 'pill pill--tc'], ['roi', 'pill pill--roi'], ['wsi', 'pill pill--wsi'],
+    ['if', 'pill pill--if'], ['codex', 'pill pill--codex'], ['imc', 'pill pill--imc'],
+    ['orion', 'pill pill--orion'], ['mibi', 'pill pill--mibi'], ['h&e', 'pill pill--he'],
+]);
+
+/** Unfamiliar categories retain neutral badges; filtering reuses these server-rendered rows. */
+const categoryPillClass = value => pillClasses.get(String(value).toLowerCase()) ?? 'pill';
 
 const cancers = getCategoryCounts(datasets, "cancer");
 const modalities = getCategoryCounts(datasets, "modalities");
 const imageTypes = getCategoryCounts(datasets, "type");
-const imageTypeTitles = {
-  "ROI": "Region of Interest (ROI)",
-  "WSI": "Whole Slide (WSI)",
-  "TC": "Tissue Core (TC)"
-};
-
-const typePillClass = (type) => `pill pill--${String(type).toLowerCase()}`;
-const modalityPillClass = (modality) => `pill pill--${String(modality).toLowerCase()}`;
 const formatCancers = (cancers) => cancers.join(', ');
 const sporaDocs = "https://spora.epfl.ch/docs/";
 
@@ -55,7 +58,7 @@ const projectNavItems = [
       <details class="filter-group filter-group--collapsible" open>
         <summary>Image Type</summary>
         {imageTypes.map(({ category, count }) => (
-            <label class="filter-option"><input type="checkbox" name="type" value={category} /><span>{imageTypeTitles[category] || category}</span><span class="facet-count">{count}</span></label>
+            <label class="filter-option"><input type="checkbox" name="type" value={category} /><span>{imageTypeLabels.get(category) ?? category}</span><span class="facet-count">{count}</span></label>
           ))}
       </details>
       <button class="clear" type="button">Clear filters</button>
@@ -85,9 +88,9 @@ const projectNavItems = [
               </td>
               <td class="vf-table__cell">{d.patients.toLocaleString()}</td>
               <td class="vf-table__cell">{d.images.toLocaleString()}</td>
-              <td class="vf-table__cell"><span class={typePillClass(d.type)}>{d.type}</span></td>
+              <td class="vf-table__cell"><span class={categoryPillClass(d.type)}>{d.type}</span></td>
               <td class="vf-table__cell">
-                {d.modalities.map((m) => <span class={modalityPillClass(m)}>{m}</span>)}
+                {d.modalities.map((m) => <span class={categoryPillClass(m)}>{m}</span>)}
                 {d.hasHE && <span class="pill pill--he">H&amp;E</span>}
               </td>
               <td class="vf-table__cell">{formatCancers(d.cancer)}</td>

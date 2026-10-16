@@ -15,3 +15,12 @@ test('SPORA filters intersect across groups and clear without changing catalogue
     assert.deepEqual(getCategoryCounts(datasets, 'modalities'), [{ category: 'HE', count: 1 }, { category: 'IF', count: 2 }]);
     assert.deepEqual(datasets, before);
 });
+
+test('category counts retain prototype-like names, duplicates and ordinary categories without mutation', () => {
+    const records = [{ modalities: ['constructor', '__proto__', 'IF', 'toString', 'constructor'] },
+        { modalities: ['__proto__', 'IF'] }];
+    const before = structuredClone(records);
+    const counts = new Map(getCategoryCounts(records, 'modalities').map(({ category, count }) => [category, count]));
+    assert.deepEqual(counts, new Map([['__proto__', 2], ['constructor', 2], ['IF', 2], ['toString', 1]]));
+    assert.deepEqual(records, before);
+});

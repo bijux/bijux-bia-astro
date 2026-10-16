@@ -8,8 +8,8 @@ policies reject local/private destinations by default. Shared policies live in
 
 Mandatory catalogue failures stop publication. Optional enrichment can emit a
 diagnostic while retaining the page. Displayed download commands are copied,
-never executed. SPORA's retained HTML templates consume versioned local data;
-they are not a general renderer for untrusted API records.
+never executed. SPORA renders versioned local data in Astro and filters existing
+rows in the browser; it is not a general renderer for untrusted API records.
 
 The Node wrapper covers static files and errors with the header policy; start it
 through `npm run prod`. Netlify static headers live in `netlify.toml`. Public
@@ -17,8 +17,9 @@ configuration is fixed at build time. See [deployment](deployment.md).
 
 ## Open risks
 
-- The locked dependency audit retains build-time advisories. Node runtime installs
-  omit build-only integrations; the complete audit still includes them. Regenerate
+- The dependency audit retains advisories in Netlify build integrations. Node
+  runtime installs omit those integrations; a clear Node audit does not establish
+  Netlify function exposure. The complete audit includes both. Regenerate
   [the audit](verification.md) after dependency changes;
   mutable registry counts belong in run evidence.
 - A historical private-key candidate is absent from current source but remains
