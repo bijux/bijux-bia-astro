@@ -41,7 +41,6 @@
   "devDependencies": {
     "@astrojs/compiler": "4.0.0",
     "@rollup/plugin-yaml": "5.0.0",
-    "@types/datatables.net": "^1.10.28",
     "@types/jquery": "^3.5.29",
     "@types/node": "^20.11.24",
     "eslint": "9.39.5",
