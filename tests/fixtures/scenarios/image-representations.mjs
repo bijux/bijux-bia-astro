@@ -15,3 +15,12 @@ uncuratedImage.representation = [
     { uuid: '00000000-0000-4000-8000-000000000011', image_format: '.ome.zarr',
         file_uri: ['https://example.org/fallback.ome.zarr'], size_x: 222, size_y: 100 },
 ];
+
+export const curatedImage = structuredClone(uncuratedImage);
+curatedImage.uuid = '00000000-0000-4000-8000-000000000100';
+curatedImage.representation = [uncuratedImage.representation[1], {
+    uuid: '00000000-0000-4000-8000-000000000012', image_format: '.ome.zarr',
+    file_uri: ['https://example.org/curated.ome.zarr'], size_x: 444, size_y: 100,
+}];
+curatedImage.additional_metadata = [{ name: 'recommended_vizarr_representation',
+    provenance: 'bia_curation', value: { attribute_key: curatedImage.representation[1].uuid } }];
