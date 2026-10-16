@@ -141,6 +141,7 @@ test('breadcrumbs retain parent destinations and identify the current page in a 
         await nav.getByRole('link', { name: entry.follow, exact: true }).focus();
         await page.keyboard.press('Enter');
         await expect(page).toHaveURL(new RegExp(`/bioimage-archive${entry.destination}/?$`));
+        await page.waitForLoadState('load');
         await expect(page.getByRole('navigation', { name: 'Breadcrumb', exact: true }).locator('[aria-current="page"]'))
             .toHaveText(entry.nextTitle);
     }
