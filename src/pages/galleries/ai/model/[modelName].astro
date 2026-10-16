@@ -6,7 +6,7 @@ import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metada
 import tableInfo from "../../../../data/ai-dataset-benchmarking/model-dataset-table.json"
 
 import { createRequestClient } from '../../../../api/client.mjs';
-import { loadDatasetNames } from '../../../../features/galleries/ai/benchmarking/data.mjs';
+import { loadDatasetNames } from '../../../../features/galleries/ai/benchmarking/load-studies.mjs';
 export function getStaticPaths() {
   return Object.keys(modelMetadata).map((id) => {
     return {

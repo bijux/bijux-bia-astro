@@ -56,3 +56,5 @@ export async function loadSearchPage(url: URL, query: string, searchType: Search
     const results = sortedSearchResults(hits?.hits, sortBy, sortOrder, releaseDateSortField);
     return { ...state, requestError, status, searchPageURL, paginationData, results, totalResults, facets, hasQueryParam };
 }
+
+export type SearchPageData = Awaited<ReturnType<typeof loadSearchPage>>;

@@ -9,6 +9,23 @@ test('application imports resolve without runtime cycles or ownership violations
     assert.deepEqual(report.issues, []);
 });
 
+test('presentation cannot hide transport behind a formatter while browser requests remain allowed', async t => {
+    const directory = new URL('../../../artifacts/import-boundary-tests/', import.meta.url);
+    await mkdir(directory, { recursive: true });
+    const root = await mkdtemp(fileURLToPath(directory));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    for (const owner of ['api', 'features/benchmarking']) await mkdir(`${root}/src/${owner}`, { recursive: true });
+    await writeFile(`${root}/src/api/http.mjs`, 'export const fetchJSON = fetch;');
+    await writeFile(`${root}/src/features/benchmarking/parameters.mjs`, "import '../../api/http.mjs';\nexport const format = String;");
+    const page = `${root}/src/features/benchmarking/Table.astro`;
+    await writeFile(page, "---\nimport { format } from './parameters.mjs';\n---\n<p>{format(1)}</p>");
+    assert.deepEqual((await inspectImports(root)).issues, ['src/features/benchmarking/Table.astro: presentation reaches API transport src/api/http.mjs']);
+    await writeFile(`${root}/src/features/benchmarking/parameters.mjs`, 'export const format = String;');
+    await writeFile(`${root}/src/features/benchmarking/Controls.astro`, "<script>import { fetchJSON } from '../../api/http.mjs';</script>");
+    await writeFile(page, "---\nimport Controls from './Controls.astro';\n---\n<Controls />");
+    assert.deepEqual((await inspectImports(root)).issues, []);
+});
+
 test('type declarations erase dependencies while empty and named-type imports retain module effects', async t => {
     const directory = new URL('../../../artifacts/import-boundary-tests/', import.meta.url);
     await mkdir(directory, { recursive: true });

@@ -7,7 +7,7 @@ import additionalStudyMetadata from "../../../../data/ai-dataset-benchmarking/ad
 import tableInfo from "../../../../data/ai-dataset-benchmarking/model-dataset-table.json"
 
 
-import { loadDatasetNames, loadAnnotationStudies } from '../../../../features/galleries/ai/benchmarking/data.mjs';
+import { loadDatasetNames, loadAnnotationStudies } from '../../../../features/galleries/ai/benchmarking/load-studies.mjs';
 export function getStaticPaths() {
   return Object.keys(additionalStudyMetadata).map((id) => {
     return {

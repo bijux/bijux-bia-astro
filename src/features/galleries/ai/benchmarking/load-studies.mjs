@@ -1,5 +1,4 @@
 import { boundedMap } from '../../../../api/http.mjs';
-import { escapeHtml } from '../../../../security/html.mjs';
 
 /** Both tables use one ordered lookup; duplicate studies share the page's request session. */
 export async function loadDatasetNames(rows, client) {
@@ -21,9 +20,4 @@ export async function loadAnnotationStudies(study, datasets, client) {
         return [accession, value];
     });
     return Object.fromEntries([[study.accession_id, study], ...related]);
-}
-
-export function formatRowAnalysisParameters(parameters) {
-    return Object.entries(parameters).filter(([, value]) => value != null)
-        .map(([key, value]) => `${escapeHtml(key)}: ${escapeHtml(value)}<br/>`).join('');
 }
