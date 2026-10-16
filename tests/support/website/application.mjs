@@ -5,6 +5,7 @@ import { cp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/pr
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { HtmlValidate } from 'html-validate';
+import { ownedDirectory } from '../../../scripts/filesystem/owned-directory.mjs';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
 const output = path.join(repository, 'artifacts/website-verification');
@@ -19,7 +20,7 @@ async function run(args) {
 }
 
 export default async function prepareWebsite() {
-    await mkdir(output, { recursive: true });
+    await ownedDirectory(repository, 'artifacts/website-verification');
     await rm(path.join(output, 'report.json'), { force: true });
     await rm(root, { recursive: true, force: true });
     await mkdir(root, { recursive: true });

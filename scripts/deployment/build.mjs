@@ -3,11 +3,14 @@ import { rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { buildConfiguration } from '../../src/server/configuration.mjs';
 import { sealDeployment } from './manifest.mjs';
+import { ownedDirectory } from '../filesystem/owned-directory.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 // Invalidate prior output even if configuration validation or the new build fails.
-await rm(new URL('../../artifacts/deployment/', import.meta.url), { recursive: true, force: true });
-await rm(new URL('../../artifacts/dist/', import.meta.url), { recursive: true, force: true });
+const deployment = await ownedDirectory(root, 'artifacts/deployment');
+const output = await ownedDirectory(root, 'artifacts/dist');
+await rm(deployment, { recursive: true, force: true });
+await rm(output, { recursive: true, force: true });
 const configuration = buildConfiguration();
 const environment = { ...process.env, ...configuration };
 for (const name of ['NETLIFY', 'NETLIFY_DEV', 'AWS_LAMBDA_FUNCTION_NAME']) delete environment[name];

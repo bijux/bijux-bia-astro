@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Configured source and locked-dependency checks retain their independent evidence.
-import { ownedDirectory, saveEvidence } from './evidence.mjs';
+import { ownedDirectory } from '../../filesystem/owned-directory.mjs';
+import { writeFileAtomically as saveEvidence } from '../../filesystem/atomic-file.mjs';
 import { gitProvenance } from './provenance.mjs';
 import { resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,9 +45,12 @@ if (args.length > 1 || !['all', 'code', 'deps'].includes(profile)) {
     const manifest = JSON.parse((await inputBytes(root, 'package.json')).toString('utf8'));
     const lock = JSON.parse((await inputBytes(root, 'package-lock.json')).toString('utf8'));
     if (lock.lockfileVersion !== 3 || !lock.packages?.[''] || ['dependencies','devDependencies','optionalDependencies'].some(field => JSON.stringify(Object.entries(manifest[field] ?? {}).sort()) !== JSON.stringify(Object.entries(lock.packages[''][field] ?? {}).sort()))) throw new Error('Manifest and locked dependency declarations disagree.');
-    const files = ['audit.mjs','scan-code.mjs','inventory.mjs','dependencies.mjs','reporting.mjs','evidence.mjs','provenance.mjs'];
+    const files = ['audit.mjs','scan-code.mjs','inventory.mjs','dependencies.mjs','reporting.mjs','provenance.mjs'];
     for (const name of files) report.hashes[`scripts/audits/security/${name}`] = sha256(await inputBytes(root, `scripts/audits/security/${name}`));
     report.hashes['scripts/audits/execution.mjs'] = sha256(await inputBytes(root, 'scripts/audits/execution.mjs'));
+    for (const name of ['owned-directory.mjs', 'atomic-file.mjs']) {
+      report.hashes[`scripts/filesystem/${name}`] = sha256(await inputBytes(root, `scripts/filesystem/${name}`));
+    }
     if (profile !== 'deps') {
       const worker = fileURLToPath(new URL('./scan-code.mjs', import.meta.url));
       const result = await run(process.execPath, [worker, resolve(dir, 'code.json')], { cwd: root });

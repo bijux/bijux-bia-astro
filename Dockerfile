@@ -4,6 +4,7 @@ RUN chown node:node /app
 USER node
 COPY --chown=node:node package.json package-lock.json .npmrc ./
 COPY --chown=node:node scripts/build/artifacts.mjs ./scripts/build/artifacts.mjs
+COPY --chown=node:node scripts/filesystem ./scripts/filesystem
 RUN npm ci
 
 FROM dependencies AS build

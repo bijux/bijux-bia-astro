@@ -5,7 +5,8 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import {inventory,fileHashes,inputBytes} from './inventory.mjs';
 import {normalizeLint} from './reporting.mjs';
-import {ownedDirectory,saveEvidence} from './evidence.mjs';
+import { ownedDirectory } from '../../filesystem/owned-directory.mjs';
+import { writeFileAtomically as saveEvidence } from '../../filesystem/atomic-file.mjs';
 
 const root = process.cwd();
 const output = process.argv[2];

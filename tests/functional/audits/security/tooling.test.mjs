@@ -96,7 +96,7 @@ test('report distinguishes unexecuted coverage and incomplete stages', () => {
   assert.match(text, /NOT RUN/); assert.match(text, /ANALYSIS_ERROR missing tool/); assert.match(text, /not proof/);
 });
 async function runnerCopy(root) {
-  for (const file of ['scripts/audits/security/audit.mjs', 'scripts/audits/security/inventory.mjs', 'scripts/audits/execution.mjs', 'scripts/audits/security/dependencies.mjs', 'scripts/audits/security/reporting.mjs', 'scripts/audits/security/scan-code.mjs','scripts/audits/security/evidence.mjs','scripts/audits/security/provenance.mjs']) {
+  for (const file of ['scripts/audits/security/audit.mjs', 'scripts/audits/security/inventory.mjs', 'scripts/audits/execution.mjs', 'scripts/audits/security/dependencies.mjs', 'scripts/audits/security/reporting.mjs', 'scripts/audits/security/scan-code.mjs','scripts/filesystem/owned-directory.mjs','scripts/filesystem/atomic-file.mjs','scripts/audits/security/provenance.mjs']) {
     await mkdir(dirname(resolve(root, file)), { recursive: true }); await cp(resolve(kit, file), resolve(root, file));
   }
   await put(root, 'src/a.js', 'const safe = 1;');
