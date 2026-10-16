@@ -38,6 +38,7 @@ jobs:
           name: website-verification
           path: |
             artifacts/website-verification/report.json
+            artifacts/website-verification/runtime-install.log
             artifacts/browser-results/
             artifacts/testing/astro/**/build-*.json
             artifacts/testing/astro/**/build-*.log

@@ -9,12 +9,12 @@ import { ownedDirectory } from '../../../scripts/filesystem/owned-directory.mjs'
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
 const output = path.join(repository, 'artifacts/website-verification');
-export const root = path.join(output, 'application');
-const preload = pathToFileURL(path.join(root, 'tests/fixtures/website/preload.mjs')).href;
+export const buildRoot = path.join(output, 'application');
+const preload = pathToFileURL(path.join(buildRoot, 'tests/fixtures/website/preload.mjs')).href;
 export const env = { ...process.env, NETLIFY: 'false', NETLIFY_DEV: 'false', AWS_LAMBDA_FUNCTION_NAME: '', PUBLIC_SEARCH_API: 'https://alpha.bioimagearchive.org/search/v1', PUBLIC_MONGO_API: 'https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2', PUBLIC_GTAG: '', PUBLIC_WEBSITE_STATE: 'PROD', PUBLIC_ALLOW_LOCAL_VIEWERS: 'false', SITE_URL: 'http://localhost', NODE_OPTIONS: `--import=${preload}`, ASTRO_TELEMETRY_DISABLED: '1' };
 delete env.CATALOGUE_SNAPSHOT;
 async function run(args) {
-    const child = spawn(process.execPath, args, { cwd: root, env, stdio: 'inherit' });
+    const child = spawn(process.execPath, args, { cwd: buildRoot, env, stdio: 'inherit' });
     const [code, signal] = await once(child, 'exit');
     assert.equal(code, 0, `Verification subprocess failed: ${signal ?? code}`);
 }
@@ -22,18 +22,18 @@ async function run(args) {
 export default async function prepareWebsite() {
     await ownedDirectory(repository, 'artifacts/website-verification');
     await rm(path.join(output, 'report.json'), { force: true });
-    await rm(root, { recursive: true, force: true });
-    await mkdir(root, { recursive: true });
-    for (const name of ['src', 'public', 'scripts', 'tests/fixtures', 'package.json', 'package-lock.json', 'tsconfig.json']) await cp(path.join(repository, name), path.join(root, name), { recursive: true });
+    await rm(buildRoot, { recursive: true, force: true });
+    await mkdir(buildRoot, { recursive: true });
+    for (const name of ['src', 'public', 'scripts', 'tests/fixtures', 'package.json', 'package-lock.json', 'tsconfig.json']) await cp(path.join(repository, name), path.join(buildRoot, name), { recursive: true });
     const contract = JSON.parse(await readFile(path.join(repository, 'tests/fixtures/website/production-contract.json'), 'utf8'));
     const pages = contract.pageSources;
-    await rm(path.join(root, 'src/pages'), { recursive: true });
+    await rm(path.join(buildRoot, 'src/pages'), { recursive: true });
     for (const page of pages) {
-        await mkdir(path.dirname(path.join(root, 'src/pages', page)), { recursive: true });
-        await cp(path.join(repository, 'src/pages', page), path.join(root, 'src/pages', page));
+        await mkdir(path.dirname(path.join(buildRoot, 'src/pages', page)), { recursive: true });
+        await cp(path.join(repository, 'src/pages', page), path.join(buildRoot, 'src/pages', page));
     }
-    await symlink(path.join(repository, 'node_modules'), path.join(root, 'node_modules'), 'dir');
-    await writeFile(path.join(root, 'astro.config.mjs'), `import config from ${JSON.stringify(pathToFileURL(path.join(repository, 'astro.config.mjs')).href)};\nexport default {...config,root:${JSON.stringify(root)}};\n`);
+    await symlink(path.join(repository, 'node_modules'), path.join(buildRoot, 'node_modules'), 'dir');
+    await writeFile(path.join(buildRoot, 'astro.config.mjs'), `import config from ${JSON.stringify(pathToFileURL(path.join(repository, 'astro.config.mjs')).href)};\nexport default {...config,root:${JSON.stringify(buildRoot)}};\n`);
     await run(['scripts/deployment/build.mjs']);
     const html = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/audits/markup/htmlvalidate.json'), 'utf8')));
     const generated = [];
@@ -44,11 +44,11 @@ export default async function prepareWebsite() {
             else if (entry.name.endsWith('.html')) {
                 const result = await html.validateFile(file);
                 assert(result.valid, JSON.stringify(result.results));
-                generated.push(path.relative(path.join(root, 'artifacts/dist/bioimage-archive/client'), file).split(path.sep).join('/'));
+                generated.push(path.relative(path.join(buildRoot, 'artifacts/dist/bioimage-archive/client'), file).split(path.sep).join('/'));
             }
         }
     }
-    await validate(path.join(root, 'artifacts/dist/bioimage-archive/client'));
+    await validate(path.join(buildRoot, 'artifacts/dist/bioimage-archive/client'));
     assert.deepEqual(generated.sort(), [...contract.generatedHtml].sort(), 'Generated routes differ from the production contract.');
     for (const route of contract.serverRoutes) {
         const pathname = new URL(route, 'http://local').pathname;
