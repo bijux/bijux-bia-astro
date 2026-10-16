@@ -1,3 +1,4 @@
+import { isRootImage } from './relationships/position.mjs';
 import type { Image, SpecimenInfo, Licence } from '../../api/types.ts';
 
 interface ImageStudy {
@@ -63,7 +64,7 @@ export async function loadImagePage(uuid: string, client: ImageClient): Promise<
     const downstreamImages = requiredImages(downstream, 'downstream');
     const segmentationImages = requiredImages(segmentations, 'segmentation');
     const specimen = creation?.subject ?? null;
-    const inherited = specimen == null ? upstreamImages.find(item => item.upstream_image_uuids?.length === 0)?.creation_process?.subject : null;
+    const inherited = specimen == null ? upstreamImages.find(isRootImage)?.creation_process?.subject : null;
     return {
         image, study, dataset: study.dataset.find(dataset => dataset.uuid === image.submission_dataset_uuid),
         inputImages, upstreamImages, downstreamImages, segmentationImages, specimen,

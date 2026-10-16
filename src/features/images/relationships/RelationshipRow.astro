@@ -1,0 +1,16 @@
+---
+import { formatBytesToHumanSize } from "../../../formatting/units.mjs";
+import { imagePositionLabel } from './position.mjs';
+
+const { image } = Astro.props;
+---
+<tr>
+  <td>{imagePositionLabel(image)}</td>
+  <td>{image.label ?? image.uuid}</td>
+  <td><a href={`/bioimage-archive/image/${image.uuid}`}>{image.uuid}</a></td>
+  <td>
+    {image.total_size_in_bytes != null
+      ? formatBytesToHumanSize(image.total_size_in_bytes)
+      : "N/A"}
+  </td>
+</tr>

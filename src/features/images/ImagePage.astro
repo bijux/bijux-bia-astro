@@ -7,9 +7,9 @@ import BaseLayoutWithBreadcrumbs from '../../layouts/BaseLayoutWithBreadcrumbs.a
 import DatasetDetail from '../metadata/DatasetDetail.astro';
 import empiarLogo from "../../assets/bioimage-archive/EMPIAR_logo.png";
 import Specimen from './Specimen.astro';
-import SpecimenTrackTable from './SpecimenTrackTable.astro';
-import DisplayImageTable from './DisplayImageTable.astro';
-import ImageTable from './ImageTable.astro';
+import SpecimenTrackTable from './relationships/SpecimenTrackTable.astro';
+import RelatedImagesTable from './relationships/RelatedImagesTable.astro';
+import InputImagesTable from './relationships/InputImagesTable.astro';
 import ImageFileMetadata from './ImageFileMetadata.astro';
 
 import fieldMap from "../metadata/field-labels.json";
@@ -230,7 +230,7 @@ const breadcrumbs = [
                         <div>
                             <b>Input Images:</b>
                         </div>
-                        <ImageTable images={input_images}/>
+                        <InputImagesTable images={input_images}/>
                     )
                 }
             </div>
@@ -256,19 +256,19 @@ const breadcrumbs = [
                             {
                                 image.specimen_track_position === "segmentation" && input_images.length > 0 && (
                                     <div><b>This segmentation is derived from these images:</b></div>
-                                    <DisplayImageTable images={input_images}/>
+                                    <RelatedImagesTable images={input_images}/>
                                 )
                             }
                             {
                                 image.specimen_track_position === "internal" && downstream_display_images.length > 0 && (
                                     <div><b>Images derived from this image:</b></div>
-                                    <DisplayImageTable images={downstream_display_images}/>
+                                    <RelatedImagesTable images={downstream_display_images}/>
                                 )
                             }
                             {
                                 own_segmentation_images.length > 0 && (
                                     <div><b>Segmentation(s) derived from this image:</b></div>
-                                    <DisplayImageTable images={own_segmentation_images}/>
+                                    <RelatedImagesTable images={own_segmentation_images}/>
                                 )
                             }
                         </div>

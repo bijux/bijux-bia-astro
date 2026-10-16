@@ -1,3 +1,4 @@
+import { relationshipImage, relationshipImages } from '../scenarios/image-relationships.mjs';
 import { readFileSync } from 'node:fs';
 import { cursorSearchResponse } from '../scenarios/search-pagination.mjs';
 import { benchmarkStudies } from '../scenarios/benchmark-datasets.mjs';
@@ -22,6 +23,15 @@ export function fixtureResponse(value) {
     };
     if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
+    if (url.pathname === '/search/v1/website/image') {
+        const related = relationshipImages.find(image => image.uuid === url.searchParams.get('query'));
+        if (related) return { hits: { hits: [{ _source: related }] } };
+        if (relationshipImages.some(image => image.uuid === url.searchParams.get('facet.downstream_of')) &&
+            url.searchParams.get('facet.specimen_track_position') === 'terminal') {
+            return { hits: { hits: relationshipImage.upstream_image_uuids.includes(url.searchParams.get('facet.downstream_of'))
+                ? [{ _source: relationshipImage }] : [] } };
+        }
+    }
     const representationImage = [uncuratedImage, curatedImage, imageWithFileMetadata, imageWithoutViewer].find(image => image.uuid === url.searchParams.get('query'));
     if (url.pathname === '/search/v1/website/image' && representationImage) {
         return { hits: { hits: [{ _source: representationImage }] } };
