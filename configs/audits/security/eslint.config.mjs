@@ -5,14 +5,10 @@ import { parser as tsParser } from 'typescript-eslint';
 import security from 'eslint-plugin-security';
 import noUnsanitized from 'eslint-plugin-no-unsanitized';
 
-const astroBase = astro.configs['flat/base'] ?? astro.configs.base;
-if (!Array.isArray(astroBase)) {
-  throw new Error('Unsupported Astro ESLint base configuration; verify the installed version.');
-}
 const scriptFiles = ['**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'];
 export default [
   // Intentionally no blanket source-directory ignores. The runner inventories files.
-  ...astroBase,
+  ...astro.configs.base,
   {
     files: scriptFiles,
     languageOptions: { ecmaVersion: 'latest', parserOptions: { ecmaFeatures: { jsx: true } } },

@@ -172,15 +172,16 @@ async function main() {
         if (results.length !== 1 || results.some(r => r.messages.some(isIgnoredMessage))) {
           throw new Error('File was ignored or did not receive the expected Astro analysis');
         }
-        results.forEach(r => { r.filePath = relative(file); });
-        rawEslint.push(...results);
-        report.findings.push(...normalizeMessages(results, 'astro-source'));
+        // Materialise ESLint's lazy metadata before replacing its absolute path.
+        const evidence = results.map(result => ({ ...result, filePath: relative(file) }));
+        rawEslint.push(...evidence);
+        report.findings.push(...normalizeMessages(evidence, 'astro-source'));
         report.coverage.sourceAstro++;
       } catch (e) { report.failures.push(`${relative(file)}: ${e.message}`); }
     }
     for (const name of ['eslint-plugin-astro', 'astro-eslint-parser', 'typescript-eslint', 'astro', '@astrojs/compiler']) {
       try {
-        const resolver = name === 'astro-eslint-parser' ? createRequire(require.resolve('eslint-plugin-astro')) : require;
+        const resolver = name === 'astro-eslint-parser' ? createRequire(require.resolve('eslint-plugin-astro/package.json')) : require;
         report.versions[name] = JSON.parse(await readFile(resolver.resolve(`${name}/package.json`), 'utf8')).version;
       } catch (error) { report.failures.push(`Tool version ${name}: ${error.message}`); }
     }

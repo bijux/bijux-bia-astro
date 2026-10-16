@@ -2,7 +2,7 @@
 import { realpath } from 'node:fs/promises';
 import { resolve, relative, sep } from 'node:path';
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {inventory,fileHashes,inputBytes} from './inventory.mjs';
 import {normalizeLint} from './reporting.mjs';
 import { ownedDirectory } from '../../filesystem/owned-directory.mjs';
@@ -46,7 +46,7 @@ try {
   if (!eslintEntry.startsWith(dependencies + '/')) throw new Error('Analyzer must be installed in this repository; parent/global fallback is not allowed.');
   const lock = JSON.parse((await inputBytes(root, 'package-lock.json')).toString('utf8'));
   for (const name of ['eslint', 'eslint-plugin-astro', 'astro-eslint-parser', 'typescript-eslint', '@typescript-eslint/parser', 'eslint-plugin-security', 'eslint-plugin-no-unsanitized']) {
-    const entry = await realpath(require.resolve(name));
+    const entry = await realpath(fileURLToPath(import.meta.resolve(name)));
     if (!entry.startsWith(dependencies + '/')) throw new Error(`Analyzer not owned by this checkout: ${name}`);
     const metadata = JSON.parse((await inputBytes(root, relative(root, resolve(dependencies, name, 'package.json')).split(sep).join('/'))).toString('utf8'));
     if (!metadata.version || lock.packages?.[`node_modules/${name}`]?.version !== metadata.version) throw new Error(`Installed analyzer differs from the lockfile: ${name}`);

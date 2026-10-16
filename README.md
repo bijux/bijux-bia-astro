@@ -3,7 +3,8 @@
 Astro application served under `/bioimage-archive/`. Study pages are prerendered;
 search and image pages also use their configured APIs at runtime.
 
-Use Node 22.22 or newer and run commands from the repository root:
+Use a supported Node release (`^22.22.3 || ^24.16.0 || >=26.3.0`),
+and run commands from the repository root:
 
 ```sh
 npm ci
@@ -16,7 +17,7 @@ live under `artifacts/`; root `node_modules`, `.astro` and `.netlify` are tool e
 Before submitting changes:
 
 ```sh
-PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium
+PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium firefox webkit
 make verify
 ```
 
