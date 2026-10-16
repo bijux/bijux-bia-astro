@@ -1,7 +1,8 @@
 import { test, expect } from '../support/browser';
+import { requestCancellationErrors } from '../support/browser-network.mjs';
 
 test.use({ expectedHTTPFailures: ['pagination.page_size=30'] });
-test('a superseded request is cancelled and cannot replace newer search results', async ({ page }) => {
+test('a superseded request is cancelled and cannot replace newer search results', async ({ page, browserName }) => {
     await page.goto('/bioimage-archive/images?size_t=1');
     let release = () => {}, markStarted = () => {}, markFinished = () => {};
     const held = new Promise<void>(resolve => { release = resolve; });
@@ -18,7 +19,7 @@ test('a superseded request is cancelled and cannot replace newer search results'
     await started;
     const cancelled = page.waitForEvent('requestfailed', request => new URL(request.url()).searchParams.get('pagination.page_size') === '30');
     await page.locator('#pageSize').selectOption('60');
-    expect((await cancelled).failure()?.errorText).toBe('net::ERR_ABORTED');
+    expect((await cancelled).failure()?.errorText).toBe(requestCancellationErrors[browserName]);
     await expect(page).toHaveURL(/pagination.page_size=60/);
     release();
     await settled;
