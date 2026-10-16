@@ -14,11 +14,24 @@ export function boundaryIssues(graph, clients = []) {
     const issues = [], visited = new Set(), active = new Set();
     for (const [file, entry] of graph) {
         for (const target of entry.targets) {
-            if (file.startsWith('src/features/') && file.endsWith('.astro') && target === 'src/api/client.mjs') issues.push(`${file}: presentation imports API client ${target}`);
             if (file.startsWith('src/server/') && target.startsWith('scripts/')) issues.push(`${file}: production runtime imports build tool ${target}`);
             if (file.startsWith('src/api/') && /^src\/(features|components|layouts|formatting)\//.test(target)) issues.push(`${file}: API imports presentation ${target}`);
             if (/^src\/(formatting|security)\//.test(file) && /^src\/(features|components|layouts|api)\//.test(target)) issues.push(`${file}: shared policy/formatting imports ${target}`);
             if (file.startsWith('src/components/ui/') && /^src\/(features|api|layouts)\//.test(target)) issues.push(`${file}: shared UI imports ${target}`);
+        }
+        if (file.startsWith('src/features/') && file.endsWith('.astro')) {
+            const reached = new Set();
+            function presentation(target) {
+                if (reached.has(target)) return;
+                reached.add(target);
+                if (['src/api/client.mjs', 'src/api/http.mjs'].includes(target)) {
+                    issues.push(`${file}: presentation reaches API transport ${target}`);
+                    return;
+                }
+                const dependency = graph.get(target);
+                for (const next of dependency?.serverTargets ?? dependency?.targets ?? []) presentation(next);
+            }
+            for (const target of entry.serverTargets ?? entry.targets) presentation(target);
         }
     }
     function walk(file, trail = []) {
@@ -72,7 +85,11 @@ export async function inspectImports(root = repository) {
         for (const specifier of found) {
             graph.get(file).specifiers.push(specifier);
             const target = await resolve(file, specifier);
-            if (target) { graph.get(file).targets.push(target); if (client) clients.push(target); }
+            if (target) {
+                graph.get(file).targets.push(target);
+                if (client) clients.push(target);
+                else graph.get(file).serverTargets.push(target);
+            }
             if (client && serverOnly(specifier)) issues.push(`${file}: browser imports ${specifier}`);
         }
     }
@@ -82,7 +99,7 @@ export async function inspectImports(root = repository) {
             if (entry.isDirectory()) { await scan(file); continue; }
             if (!/\.(astro|mjs|js|ts|mdx)$/.test(file)) continue;
             const source = await readFile(path.join(root, file), 'utf8');
-            graph.set(file, { targets: [], specifiers: [] });
+            graph.set(file, { targets: [], serverTargets: [], specifiers: [] });
             if (file.endsWith('.astro')) {
                 const { ast } = await parse(source);
                 const visit = async node => {

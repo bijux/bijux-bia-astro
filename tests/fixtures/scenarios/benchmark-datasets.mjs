@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-const rows = JSON.parse(readFileSync(new URL('../../../src/data/ai-dataset-benchmarking/model-dataset-table.json', import.meta.url)));
+const rows = JSON.parse(readFileSync(new URL('../../../src/features/galleries/ai/benchmarking/curation/evaluations.json', import.meta.url)));
 
 // Only names are synthetic; the finite dataset relationships come from authored model tables.
 export const benchmarkStudies = new Map();

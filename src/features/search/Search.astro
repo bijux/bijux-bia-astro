@@ -10,15 +10,13 @@ import "../../styles/browse_controls.css";
 import "../../styles/filter_cards.css";
 import SearchResultsTable from './results/Table.astro';
 import SearchResultsCompactCards from './results/CompactCards.astro';
-import { PUBLIC_SEARCH_API } from 'astro:env/client';
-import { loadSearchPage } from './load-search.ts';
+import type { SearchPageData } from './load-search.ts';
 import type { SearchScope } from './types.ts';
 
-const { url, query, searchType } = Astro.props as {url: URL; query: string; searchType: SearchScope};
-const { requestError, status, searchPageURL, totalResults, results, paginationData, facets, pageSize,
+const { data, url, query, searchType } = Astro.props as {data: SearchPageData; url: URL; query: string; searchType: SearchScope};
+const { requestError, searchPageURL, totalResults, results, paginationData, facets, pageSize,
     cappedPage, displayPage, cursor, shouldKeepSort, sortBy, sortOrder, sortSource, selectedFacets,
-    hasQueryParam, hasPageSizeParam, releaseDateSortField } = await loadSearchPage(url, query, searchType, PUBLIC_SEARCH_API, { signal: Astro.request.signal });
-if (status !== 200) Astro.response.status = status;
+    hasQueryParam, hasPageSizeParam, releaseDateSortField } = data;
 ---
 <script src="./client/controller.js"></script>
 {requestError && <p role="alert">{requestError}</p>}

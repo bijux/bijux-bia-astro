@@ -26,5 +26,5 @@ test('feature presentation receives loaded data instead of importing the API cli
     const graph = new Map([
         ['src/features/studies/StudyPage.astro', { targets: ['src/api/client.mjs'], specifiers: [] }],
     ]);
-    assert.deepEqual(boundaryIssues(graph), ['src/features/studies/StudyPage.astro: presentation imports API client src/api/client.mjs']);
+    assert.deepEqual(boundaryIssues(graph), ['src/features/studies/StudyPage.astro: presentation reaches API transport src/api/client.mjs']);
 });

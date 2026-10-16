@@ -6,10 +6,14 @@ import "../styles/toggle.css";
 import "../styles/browse_controls.css";
 import "../styles/filter_cards.css";
 import SearchResults from "../features/search/Search.astro";
+import { PUBLIC_SEARCH_API } from 'astro:env/client';
+import { loadSearchPage } from '../features/search/load-search.ts';
 
 const url = new URL(Astro.request.url);
 const query = url.searchParams.get('query') || "";
-let pageTitle = query.length === 0? "Browse Studies": "Search Studies"; 
+const data = await loadSearchPage(url, query, 'study', PUBLIC_SEARCH_API, { signal: Astro.request.signal });
+if (data.status !== 200) Astro.response.status = data.status;
+const pageTitle = query.length === 0? "Browse Studies": "Search Studies";
 ---
 <BaseLayoutWithBreadcrumbs pageTitle={pageTitle}>
   <Fragment>
@@ -21,6 +25,6 @@ let pageTitle = query.length === 0? "Browse Studies": "Search Studies";
       </BrowseStudyHeading>
     )
   }
-  <SearchResults query={query} url={url} searchType="study"/>
+  <SearchResults data={data} query={query} url={url} searchType="study"/>
   </Fragment>
 </BaseLayoutWithBreadcrumbs>

@@ -1,6 +1,6 @@
 ---
-import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json";
-import { formatRowAnalysisParameters } from './data.mjs';
+import modelMetadata from "./curation/models.json";
+import { formatRowAnalysisParameters } from './analysis-parameters.mjs';
 const { tableRows, studyOrModelPageMode, datasetUUIDNameMap } = Astro.props;
 
 const filtered_table_rows = tableRows.filter(row => row.precision != null)

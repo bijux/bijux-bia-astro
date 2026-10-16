@@ -83,9 +83,11 @@ export default defineConfig({
     for (const [name, params] of Object.entries(cases)) {
         await writeFile(path.join(root, `src/pages/${name}.astro`), `---
 import Search from '../features/search/Search.astro';
+import { loadSearchPage } from '../features/search/load-search.ts';
 const url = new URL(${JSON.stringify('http://local/bioimage-archive/' + (['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'studies' : 'images') + '?' + params + '&query=' + name)});
+const data = await loadSearchPage(url, ${JSON.stringify(name)}, ${JSON.stringify(['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'study' : 'image')}, ${JSON.stringify(`http://127.0.0.1:${server.address().port}`)});
 ---
-<Search url={url} query=${JSON.stringify(name)} searchType=${JSON.stringify(['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'study' : 'image')} />
+<Search data={data} url={url} query=${JSON.stringify(name)} searchType=${JSON.stringify(['study', 'missing_year', 'omitted_year', 'foreign_study'].includes(name) ? 'study' : 'image')} />
 `);
     }
     await buildAstroFixture(root, { PUBLIC_SEARCH_API: `http://127.0.0.1:${server.address().port}` });

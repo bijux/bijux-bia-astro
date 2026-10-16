@@ -13,6 +13,7 @@ let root;
 const pages = new Map();
 const styles = new Map();
 const searchPages = new Map();
+const unexpectedRequests = [];
 let api;
 
 after(async () => {
@@ -27,9 +28,12 @@ before(async () => {
         ["study", "study-s-biad3335-response.json"],
         ["image", "image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39-response.json"],
     ].map(async ([kind, file]) => [kind, await readFile(path.join(repository, "tests/fixtures/api", file), "utf8")])));
+    const browseResponses = new Map(await Promise.all(['study', 'image'].map(async kind =>
+        [kind, await readFile(path.join(repository, `tests/fixtures/api/browse-${kind}-response.json`), 'utf8')])));
     api = createServer((request, response) => {
-        const kind = new URL(request.url, "http://localhost").pathname.split("/").pop();
-        const body = responses.get(kind);
+        const route = new URL(request.url, "http://localhost").pathname.match(/^\/website\/browse\/(study|image)$/);
+        const body = route ? browseResponses.get(route[1]) : undefined;
+        if (!body) unexpectedRequests.push(request.url);
         response.writeHead(body ? 200 : 404, { "Content-Type": "application/json" });
         response.end(body ?? '{}');
     });
@@ -97,13 +101,17 @@ const tableRows = [{ study: study.accession_id, dataset_uuid: study.dataset[0].u
         await writeFile(path.join(root, "src/pages", `search-${kind}.astro`), `---
 import Layout from '../layouts/MinimalLayout.astro';
 import Search from '../features/search/Search.astro';
+import { loadSearchPage } from '../features/search/load-search.ts';
+const url = new URL(Astro.request.url);
+const data = await loadSearchPage(url, '', '${kind}', ${JSON.stringify(apiURL)});
 ---
 <Layout pageTitle="Search controls">
-  <Search query="" url={new URL(Astro.request.url)} searchType="${kind}" />
+  <Search data={data} query="" url={url} searchType="${kind}" />
 </Layout>
 `);
     }
     await buildAstroFixture(root, { PUBLIC_SEARCH_API: apiURL });
+    assert.deepEqual(unexpectedRequests, [], 'Unrecorded button fixture requests');
     for (const layout of ["BaseLayout", "MinimalLayout", "EMPIARLayout", "ProjectsLayout"]) {
         const html = await readFile(path.join(root, "dist", layout, "index.html"), "utf8");
         pages.set(layout, html);
