@@ -57,5 +57,4 @@ incomplete; it is not the normal passing source gate.
 
 Live catalogue verification is separate: `npm run build:deployment` requires its
 APIs. Retain its logs and completeness report. Security boundaries and unresolved
-risks are described in [the security guidance](development/security.md) and
-[findings](development/security-findings.md).
+risks are described in [the security guidance](security.md).

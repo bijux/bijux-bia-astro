@@ -33,7 +33,7 @@ DEPLOYMENT_MANIFEST=artifacts/deployment/manifest.json npm run prod
 The build needs catalogue APIs unless replaying a captured snapshot. Serving an
 existing verified deployment does not rebuild it.
 
-- [Architecture](docs/development/architecture.md): ownership and preserved contracts.
+- [Architecture](docs/architecture.md): ownership and preserved contracts.
 - [Verification](docs/verification.md): local/CI checks, audits and evidence.
 - [Deployment](docs/deployment.md): snapshots, public configuration, containers and Helm.
-- [Security](docs/development/security.md): application boundaries and remaining risks.
+- [Security](docs/security.md): application boundaries and remaining risks.
