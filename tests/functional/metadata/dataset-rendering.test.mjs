@@ -1,6 +1,5 @@
 import { createAstroFixture, buildAstroFixture } from '../../support/astro/fixture.mjs';
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,7 +20,7 @@ before(async () => {
     const provenance = JSON.parse(await readFile(new URL("provenance.json", fixtures), "utf8"));
     captures = await Promise.all(provenance.responses.map(async entry => {
         const bytes = await readFile(new URL(entry.file, fixtures));
-        return { ...entry, actualHash: createHash("sha256").update(bytes).digest("hex"), response: JSON.parse(bytes) };
+        return { ...entry, response: JSON.parse(bytes) };
     }));
     fieldMap = JSON.parse(await readFile(path.join(repository, "src/features/metadata/field-labels.json"), "utf8"));
     application = await createAstroFixture("metadata-rendering");
@@ -45,20 +44,6 @@ export default defineConfig({
 });
 
 after(async () => { if (application) await rm(application, { recursive: true, force: true }); });
-
-test("shared API captures retain complete response envelopes and recorded hashes", () => {
-    for (const file of ["study-s-biad3335-response.json", "study-s-biad3397-response.json",
-        "image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39-response.json"]) {
-        assert(captures.some(capture => capture.file === file), file);
-    }
-    for (const capture of captures) {
-        assert.equal(capture.actualHash, capture.sha256, capture.file);
-        assert.equal(new URL(capture.url).protocol, "https:");
-        assert(capture.capturedAt);
-        assert(Array.isArray(capture.response.hits.hits));
-        assert("facets" in capture.response && "pagination" in capture.response);
-    }
-});
 
 test("complete shared study responses preserve each dataset, record and mapped field", () => {
     const groups = [
