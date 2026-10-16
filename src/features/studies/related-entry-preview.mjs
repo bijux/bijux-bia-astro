@@ -1,5 +1,5 @@
-import { escapeHtml } from "../security/html.mjs";
-import { navigationURL, resourceURL } from "../security/urls.mjs";
+import { escapeHtml } from "../../security/html.mjs";
+import { navigationURL, resourceURL } from "../../security/urls.mjs";
 
 function asArray(value) {
   if (!value) return [];
@@ -13,11 +13,11 @@ function buildEMDBThumbnailURL(emdbNumber) {
   return `https://www.ebi.ac.uk/emdb/static/em/${subDirectory}/${emdbNumber}/images/400_${emdbNumber}.gif`;
 }
 
-function formatEMDBUnits(units) {
+function normaliseResolutionUnit(units) {
   if (!units || units === "Å" || units === "Å") {
-    return "&#x212B;";
+    return "Å";
   }
-  return escapeHtml(units);
+  return String(units);
 }
 
 function getEMDBResolution(emdbEntry) {
@@ -30,7 +30,7 @@ function getEMDBResolution(emdbEntry) {
       if (resolution?.valueOf_) {
         return {
           value: resolution.valueOf_,
-          units: formatEMDBUnits(resolution.units),
+          units: normaliseResolutionUnit(resolution.units),
         };
       }
     }

@@ -1,5 +1,5 @@
 import { loadRelatedEntries } from "../../api/related-entries.mjs";
-import { renderRelatedEntries } from "../../formatting/related-entries.mjs";
+import { renderRelatedEntries } from "./related-entry-preview.mjs";
 import { getMetadataValue } from "../metadata/records.mjs";
 import { formatBytesToHumanSize } from "../../formatting/units.mjs";
 import { getStudyImage } from "../images/study-image.mjs";

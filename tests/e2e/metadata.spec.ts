@@ -31,3 +31,14 @@ test('metadata preserves production behaviour', async ({ page }) => {
         await expect(page.locator('[data-view="table"]')).toHaveAttribute('aria-pressed', 'true');
         await expect(page.locator('#file-list-table-viewer')).toHaveClass(/is-active/);
 });
+
+test('EMDB previews show the resolution symbol rather than escaped entity text', async ({ page }) => {
+    await page.goto('/bioimage-archive/study/S-BIAD3335');
+    const links = page.locator('.bia-related-entry__link[href="https://www.ebi.ac.uk/emdb/EMD-1234"]');
+    await expect(links).toHaveCount(2);
+    for (const link of await links.all()) {
+        await expect(link).toBeVisible();
+        await expect(link.locator('..')).toContainText('(3.25 Å)');
+        await expect(link.locator('..').locator('.bia-related-entry-preview__measurement')).toHaveText('Resolution: 3.25 Å');
+    }
+});
