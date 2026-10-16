@@ -1,5 +1,31 @@
 import { test, expect } from '../support/browser';
 import { uncuratedImage, curatedImage } from '../fixtures/scenarios/image-representations.mjs';
+import { imageWithFileMetadata } from '../fixtures/scenarios/image-file-metadata.mjs';
+
+test('long image metadata and extra file paths expand independently with the keyboard', async ({ page }) => {
+    await page.goto(`/bioimage-archive/image/${imageWithFileMetadata.uuid}`);
+    const toggle = page.locator('#meta-toggle');
+    const content = page.locator('#meta-content');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-controls', 'meta-content');
+    expect(await content.evaluate(element => element.clientHeight < element.scrollHeight)).toBe(true);
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(content).toContainText('Supplied value 40');
+    expect(await content.evaluate(element => element.clientHeight >= element.scrollHeight)).toBe(true);
+    await page.evaluate(() => document.dispatchEvent(new Event('astro:page-load')));
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await page.locator('#file-path-toggle').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('#file-path-extra')).toBeVisible();
+    await expect(page.locator('#file-path-extra')).toContainText('sample/d.tif');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.focus();
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#file-path-extra')).toBeVisible();
+});
 
 test('search views and the image viewer skip absent representation IDs and retain the OME-Zarr fallback', async ({ page }) => {
     await page.goto('/bioimage-archive/images?query=representation-boundary');
