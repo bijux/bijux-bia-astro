@@ -22,5 +22,5 @@ request IDs, paths and status codes; queries, bodies and credentials are omitted
 Deployment events when a rollout fails; `--atomic` restores the previous release.
 
 `helm lint ./helm-chart --set image.tag=verification` validates local chart input.
-`npm run verify:website` checks the production browser journeys with saved data;
+`npm run test:e2e` checks the production browser journeys with saved data;
 it does not establish live API or remote cluster availability.
