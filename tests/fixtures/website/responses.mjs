@@ -1,3 +1,4 @@
+import { trainingResponse } from './training.mjs';
 import { spatialomicsResponse } from './spatialomics.mjs';
 import { relationshipImage, relationshipImages } from '../scenarios/image-relationships.mjs';
 import { readFileSync } from 'node:fs';
@@ -14,6 +15,8 @@ const image = saved('image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39').hits.hits[0]._
 /** Complete captured metadata with deliberately small, synthetic browse/pagination results. */
 export function fixtureResponse(value) {
     const url = new URL(value);
+    const training = trainingResponse(url);
+    if (training !== undefined) return training;
     const spatialomics = spatialomicsResponse(url);
     if (spatialomics !== undefined) return spatialomics;
     if (url.searchParams.get('query') === 'unavailable') throw new Error('Controlled API failure.');
@@ -24,7 +27,6 @@ export function fixtureResponse(value) {
             final_reconstruction: { resolution: { valueOf_: '3.25', units: 'Å' } },
         } } },
     };
-    if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
     if (url.pathname === '/search/v1/website/image') {
         const related = relationshipImages.find(image => image.uuid === url.searchParams.get('query'));
