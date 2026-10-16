@@ -33,7 +33,7 @@ for (const [entry, link, invocation] of [
             await mkdir(path.join(foreign, name));
             await writeFile(path.join(foreign, name, 'retained'), 'untouched');
         }
-        for (const directory of ['scripts', 'src/server', 'tests/support']) {
+        for (const directory of ['scripts', 'src/server', 'tests/support', 'tests/fixtures']) {
             await cp(path.join(repository, directory), path.join(root, directory), { recursive: true });
         }
         await cp(path.join(repository, 'package.json'), path.join(root, 'package.json'));

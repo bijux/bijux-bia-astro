@@ -16,7 +16,7 @@ export function getCategoryCounts(datasets, key) {
     .reduce((acc, value) => {
       acc[value] = (acc[value] || 0) + 1;
       return acc;
-    }, {});
+    }, Object.create(null));
 
   return Object.entries(counts)
     .sort(([a], [b]) => a.localeCompare(b))

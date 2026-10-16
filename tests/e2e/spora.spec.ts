@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import catalogue from '../../src/data/collections/spora-datasets.json' with { type: 'json' };
 import { test, expect } from '../support/browser';
+
+const boundaryNames = ['constructor', '__proto__', 'toString'];
 
 test('spora preserves production behaviour', async ({ page }) => {
 assert((await page.goto('/bioimage-archive/projects/spora/dataset')).ok());
@@ -11,7 +14,7 @@ assert((await page.goto('/bioimage-archive/projects/spora/dataset')).ok());
         await page.keyboard.press('Escape');
 });
 
-test('SPORA filters regenerate working download actions and clear to the original rows', async ({ page }) => {
+test('SPORA filters retain working download actions and clear to the original rows', async ({ page }) => {
     await page.goto('/bioimage-archive/projects/spora/dataset');
     const rows = page.locator('.browser tbody tr');
     const initial = await rows.count();
@@ -73,4 +76,37 @@ test('clipboard rejection leaves the SPORA dialog usable and a retry copies the 
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
     await page.keyboard.press('Escape');
     await expect(opener).toBeFocused();
+});
+
+test.describe('SPORA server-rendered categories', () => {
+    test.use({ javaScriptEnabled: false });
+    test('the complete catalogue and unfamiliar category labels remain available without JavaScript', { tag: '@preservation' }, async ({ page }) => {
+        await page.goto('/bioimage-archive/projects/spora/dataset');
+        await expect(page.locator('.browser tbody tr strong')).toHaveText([...catalogue.map(dataset => dataset.name), ...boundaryNames.map(name => `Category ${name}`)]);
+        for (const name of boundaryNames) {
+            const option = page.locator(`input[name="type"][value="${name}"]`).locator('..');
+            await expect(option.locator('span').first()).toHaveText(name);
+            await expect(option.locator('.facet-count')).toHaveText('1');
+        }
+        await expect(page.locator('input[name="type"][value="ROI"]').locator('..').locator('span').first()).toHaveText('Region of Interest (ROI)');
+    });
+});
+
+test('filtered rows preserve unknown category text and their server-rendered controls', { tag: '@preservation' }, async ({ page }) => {
+    await page.goto('/bioimage-archive/projects/spora/dataset');
+    const rows = page.locator('.browser tbody tr');
+    const retained = await rows.last().elementHandle();
+    for (const name of boundaryNames) {
+        await page.locator(`input[name="type"][value="${name}"]`).check();
+        await expect(rows).toHaveCount(1);
+        await expect(rows.locator('strong')).toHaveText(`Category ${name}`);
+        for (const index of [3, 4]) {
+            const badge = rows.locator('td').nth(index).locator('span');
+            await expect(badge).toHaveText(name);
+            await expect(badge).toHaveAttribute('class', 'pill');
+        }
+        await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+        await expect(rows.locator('strong')).toHaveText([...catalogue.map(dataset => dataset.name), ...boundaryNames.map(name => `Category ${name}`)]);
+        expect(await rows.last().evaluate((row, original) => row === original, retained)).toBe(true);
+    }
 });
