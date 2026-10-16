@@ -8,6 +8,7 @@ import DatasetInfo from "../metadata/DatasetInfo.astro";
 import ViewableImageTable from "./ViewableImageTable.astro";
 import FileListTable from "./FileListTable.astro";
 import Citation from "../../components/ui/Citation.astro";
+import LinkedInformation from "./LinkedInformation.astro";
 import { multilineTextRender } from "../../formatting/plain-text.js";
 
 import type { Study } from "../../api/types.ts";
@@ -16,16 +17,6 @@ const study: Study = data.study;
 const { accessionID, images, hasSpecimenTracks, isEMPIAR, ftpHttpsLink, globusLink, fileListUrls, hasFileList,
   browseFilesLink, tableOfContents, pdbLinks, emdbLinks, groupedGrants, exampleStudyImage, studyImagePageLink, headlineStats } = data;
 
-const linkTypeFormatting = {
-  "biostudies": "BioStudies",
-  "https": "HTTPS",
-  "arrayexpress": "ArrayExpress",
-  "empiar": "EMPIAR"
-}
-function formatLinkType(link_type: string) {
-  if (!link_type) return "";
-  return linkTypeFormatting[link_type.toLowerCase()] ?? link_type;
-}
 const howToCite = generateHowToCiteText(study);
 const breadcrumbs = [
   "/bioimage-archive",
@@ -179,35 +170,7 @@ const breadcrumbs = [
 </section>
 
   <hr/>
-  {((Array.isArray(study.see_also) && study.see_also.length > 0) || pdbLinks || emdbLinks) && (
-    <section id="linked_information" class="vf-content | embl-grid embl-grid--has-centered-content">
-      <div>
-        <h2 class="vf-section-header__heading">Linked Information</h2>
-      </div>
-      <div>
-        <ul>
-          {
-            study?.see_also.filter((linkedInfo) => linkedInfo.link_type != "emdb" && linkedInfo.link_type != "pdb").map((linkedInfo) => {
-              const { link, link_type, description } = linkedInfo;
-              return (
-                <li style={{ fontSize: "inherit", lineHeight: "inherit" }}>
-                  {link_type? <b>{formatLinkType(link_type)}.</b> : ""}
-                  {description? `${description}: ` : ""}
-                  {link? <a href={navigationURL(link) ?? undefined} target="_blank">{link}</a>: ""}
-                </li>
-              )
-            })
-
-          }
-          {pdbLinks && <li style={{ fontSize: "inherit", lineHeight: "inherit" }}>Related PDB entries: <Fragment set:html={pdbLinks} /></li>}
-          {emdbLinks && <li style={{ fontSize: "inherit", lineHeight: "inherit" }}>Related EMDB entries: <Fragment set:html={emdbLinks} /></li>}
-        </ul>
-      </div>
-
-    </section>
-    <hr/>
-  )}
-
+  <LinkedInformation seeAlso={study.see_also} pdbLinks={pdbLinks} emdbLinks={emdbLinks} />
 
   {Array.isArray(study.dataset) && study.dataset.length > 0 && (
     <section id="study_components" class="vf-content | embl-grid embl-grid--has-centered-content">

@@ -1,0 +1,35 @@
+---
+import { navigationURL } from '../../security/urls.mjs';
+interface Props {
+    seeAlso?: { link_type?: string | null; description?: string | null; link?: string | null }[] | null;
+    pdbLinks?: string | null;
+    emdbLinks?: string | null;
+}
+const { seeAlso, pdbLinks, emdbLinks } = Astro.props;
+const links = Array.isArray(seeAlso) ? seeAlso : [];
+const labels = new Map([
+    ['biostudies', 'BioStudies'], ['https', 'HTTPS'],
+    ['arrayexpress', 'ArrayExpress'], ['empiar', 'EMPIAR'],
+]);
+---
+{(links.length > 0 || pdbLinks || emdbLinks) && (
+    <>
+        <section id="linked_information" class="vf-content | embl-grid embl-grid--has-centered-content">
+            <div><h2 class="vf-section-header__heading">Linked Information</h2></div>
+            <div>
+                <ul>
+                    {links.filter(entry => entry.link_type !== 'emdb' && entry.link_type !== 'pdb').map(({ link, link_type, description }) => (
+                        <li style={{ fontSize: 'inherit', lineHeight: 'inherit' }}>
+                            {link_type ? <b>{labels.get(link_type.toLowerCase()) ?? link_type}.</b> : ''}
+                            {description ? `${description}: ` : ''}
+                            {link ? <a href={navigationURL(link) ?? undefined} target="_blank">{link}</a> : ''}
+                        </li>
+                    ))}
+                    {pdbLinks && <li style={{ fontSize: 'inherit', lineHeight: 'inherit' }}>Related PDB entries: <Fragment set:html={pdbLinks} /></li>}
+                    {emdbLinks && <li style={{ fontSize: 'inherit', lineHeight: 'inherit' }}>Related EMDB entries: <Fragment set:html={emdbLinks} /></li>}
+                </ul>
+            </div>
+        </section>
+        <hr />
+    </>
+)}
