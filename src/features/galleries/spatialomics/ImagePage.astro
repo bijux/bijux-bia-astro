@@ -1,5 +1,6 @@
 ---
 import { navigationURL, resourceURL } from "../../../security/urls.mjs";
+import ImageActions from "../../images/ImageActions.astro";
 import BaseLayoutWithBreadcrumbs from '../../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import DatasetDetail from '../../metadata/DatasetDetail.astro';
 import WebsiteStateButton from '../../../components/ui/WebsiteStateButton.astro';
@@ -160,38 +161,9 @@ const breadcrumbs = [
                   <br/>
                   <a href={"/bioimage-archive/help/downloading-data#aws_client_download"}>How to download this image</a><br/>
                   <br/>
-                  {
-                      interactiveImageRepresentation && (
-                          <button class="vf-button vf-button--primary vf-button--sm bia-button" id="CopyURLButton" data-url={viewerSourceURI ?? interactiveImageRepresentation.file_uri[0]}>Copy OME-Zarr URI</button>
-                      )
-                  }
-                  {
-                      ( vizarrIFrameSource || itkLink || ng_link ) && (
-                          <h3>Visualise</h3>
-                      )
-                  }
-                  {
-                      vizarrIFrameSource && (
-                          <a target="_blank" href={vizarrIFrameSource} class="vf-button vf-button--primary vf-button--sm bia-button">Open in Vizarr viewer</a>
-                      )
-                  }
-                  {
-                      itkLink && (
-                          <a target="_blank" href={itkLink} class="vf-button vf-button--primary vf-button--sm bia-button">Open in ITK viewer</a>
-                      )
-                  }
-                  {
-                      ng_link && (
-                          <a target="_blank" href={navigationURL(ng_link) ?? undefined} class="vf-button vf-button--primary vf-button--sm bia-button">Open in neuroglancer</a>
-                      )
-                  }
-                  <script>
-                    import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
-                    const copyUrlButton = document.getElementById("CopyURLButton");
-                    if (copyUrlButton) {
-                        copyUrlButton.onclick = () => copyWithFeedback(copyUrlButton, copyUrlButton.dataset.url);
-                    }
-                </script>
+                <ImageActions showCopy={Boolean(interactiveImageRepresentation)}
+                    copyURI={viewerSourceURI ?? interactiveImageRepresentation?.file_uri?.[0]}
+                    vizarrURL={vizarrIFrameSource} itkURL={itkLink} neuroglancerLink={ng_link} />
               </div>
           </section>
 

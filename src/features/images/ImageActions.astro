@@ -1,0 +1,34 @@
+---
+import { navigationURL } from '../../security/urls.mjs';
+
+interface Props {
+    showCopy: boolean;
+    copyURI?: string | null;
+    vizarrURL?: string | null;
+    itkURL?: string | null;
+    neuroglancerLink?: unknown;
+}
+const { showCopy, copyURI, vizarrURL, itkURL, neuroglancerLink } = Astro.props;
+---
+
+{showCopy && (
+    <button class="vf-button vf-button--primary vf-button--sm bia-button" id="CopyURLButton" data-url={copyURI}>Copy OME-Zarr URI</button>
+)}
+{(vizarrURL || itkURL || neuroglancerLink) && <h3>Visualise</h3>}
+{vizarrURL && (
+    <a href={vizarrURL} target="_blank" class="vf-button vf-button--primary vf-button--sm bia-button">Open in Vizarr viewer</a>
+)}
+{itkURL && (
+    <a href={itkURL} target="_blank" class="vf-button vf-button--primary vf-button--sm bia-button">Open in ITK viewer</a>
+)}
+{neuroglancerLink && (
+    <a href={navigationURL(neuroglancerLink) ?? undefined} target="_blank" class="vf-button vf-button--primary vf-button--sm bia-button">Open in neuroglancer</a>
+)}
+
+<script>
+    import { copyWithFeedback } from '../../components/ui/clipboard.mjs';
+    const copyUrlButton = document.getElementById('CopyURLButton');
+    if (copyUrlButton) {
+        copyUrlButton.onclick = () => copyWithFeedback(copyUrlButton, copyUrlButton.dataset.url);
+    }
+</script>
