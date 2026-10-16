@@ -8,7 +8,7 @@ import { getThumbnail } from "../../images/thumbnails.mjs";
 import { formatPhysicalDimensions } from "../../../formatting/physical-dimensions.js";
 import { formatPixelDimensions } from "../../../formatting/units.mjs";
 
-import {getImageRep} from "./Table.astro"
+import { selectInteractiveRepresentation } from "../../images/representations.mjs";
 
 const thumbnail = resultType === "study"? getStudyImage(result): getThumbnail(result);
 const isFallback = resultType === "study"? String(thumbnail).includes("placeholder"): thumbnail === imageFallback.src;
@@ -26,7 +26,7 @@ const hasPhysical =
   isNonZeroNumber(result?.total_physical_size_y) ||
   isNonZeroNumber(result?.total_physical_size_z);
 
-const interactiveImageRepresentation = resultType === "study"? [] : getImageRep(result);
+const interactiveImageRepresentation = resultType === "study"? [] : selectInteractiveRepresentation(result);
 
 const hasPixel =
   isNonZeroNumber(interactiveImageRepresentation?.size_x) ||

@@ -6,17 +6,10 @@ import { getStudyImage } from "../../images/study-image.mjs";
 import { getThumbnail } from "../../images/thumbnails.mjs";
 import { formatPhysicalDimensions } from "../../../formatting/physical-dimensions.js";
 import { formatPixelDimensions } from "../../../formatting/units.mjs";
-import { getSimpleAttributeValue } from "../../metadata/records.mjs";
+import { selectInteractiveRepresentation } from "../../images/representations.mjs";
 
 import  HighlightedText  from "./HighlightedText.astro";
 
-export function getImageRep(image){
-    const vizarrRepUuid = getSimpleAttributeValue(image, "recommended_vizarr_representation");
-    const interactiveImageRepresentation = (image.representation.find(
-        (rep) => rep.uuid == vizarrRepUuid
-    ) ?? image.representation.find( (rep) => rep.image_format === ".ome.zarr") )
-    return interactiveImageRepresentation
-}
 
 function highlightImageFormat(image, query){
     const imageFormat = [
@@ -83,9 +76,9 @@ function highlightImageFormat(image, query){
                         <td><HighlightedText text={formatHighlightedList(item?._source?.imaging_method || item?._source?.annotation_type?.map((at: string) => at.replace(/_/g, " ")), query, {sort: false})} />{}</td>
                         <td><HighlightedText text={highlightImageFormat(item?._source, query).join(", ")} /></td>
                         <td>{formatPhysicalDimensions(item._source)}</td>
-                        <td>{getImageRep(item._source) && formatPixelDimensions(getImageRep(item._source))}</td>
-                        <td>{getImageRep(item._source)?.size_c || ""}</td>
-                        <td>{getImageRep(item._source)?.size_t|| ""}</td>
+                        <td>{selectInteractiveRepresentation(item._source) && formatPixelDimensions(selectInteractiveRepresentation(item._source))}</td>
+                        <td>{selectInteractiveRepresentation(item._source)?.size_c || ""}</td>
+                        <td>{selectInteractiveRepresentation(item._source)?.size_t|| ""}</td>
                     </tr>
 
                 )

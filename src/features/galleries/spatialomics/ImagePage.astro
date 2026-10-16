@@ -9,6 +9,7 @@ import fieldMap from "../../metadata/field-labels.json";
 import fallbackImage from "../../../assets/bioimage-archive/image_fallback.png"
 import { buildITKViewerURL, buildVizarrViewerURL, getPublicVisualisationURI } from "../../images/viewers.mjs";
 import { getSimpleAttributeValue } from "../../metadata/records.mjs";
+import { findImageRepresentation } from "../../images/representations.mjs";
 import { type ImageCreationProcess, type ImageRep } from "../../../api/types.ts"
 
 const biosampleMap = fieldMap["biosample"];
@@ -20,9 +21,7 @@ const protocolMap = fieldMap["protocol"];
 const { data } = Astro.props;
 const { image, study: imageStudy } = data;
 const vizarrRepUuid = getSimpleAttributeValue(image, "recommended_vizarr_representation");
-const interactiveImageRepresentation = image.representation.find(
-    (rep) => rep.uuid === vizarrRepUuid
-)
+const interactiveImageRepresentation = findImageRepresentation(image, vizarrRepUuid);
 const imageDataset = imageStudy?.dataset.find(ds => ds.uuid === image.submission_dataset_uuid);
 
 const viewerSourceURI = getPublicVisualisationURI(interactiveImageRepresentation?.file_uri?.[0]);
