@@ -17,7 +17,9 @@
     "galleries/ai/model/[modelName].astro",
     "help/file-list.mdx",
     "help/mifa-overview.mdx",
-    "help/rembi-examples.mdx"
+    "help/rembi-examples.mdx",
+    "policies.md",
+    "policies/imagesatebi.md"
   ],
   "generatedHtml": [
     "case-studies/index.html",
@@ -44,6 +46,8 @@
     "help/rembi-examples/index.html",
     "help/search/index.html",
     "index.html",
+    "policies/imagesatebi/index.html",
+    "policies/index.html",
     "projects/spora/dataset/index.html",
     "projects/spora/index.html",
     "redirect_index.html",

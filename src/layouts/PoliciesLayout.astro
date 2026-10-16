@@ -1,13 +1,14 @@
 ---
 const { frontmatter } = Astro.props;
-import PoliciesNavigation from '../components/navigation/PoliciesNavigation.astro';
+import SectionNavigation from '../components/navigation/SectionNavigation.astro';
+import { policyLinkGroups } from '../components/navigation/section-links.mjs';
 import BaseLayout from './BaseLayout.astro';
 
 ---
 <BaseLayout pageTitle={frontmatter.title}>
   <section class="embl-grid embl-grid--has-centered-content">
     <div>
-      <PoliciesNavigation />
+      <SectionNavigation label="Policies" groups={policyLinkGroups} />
     </div>
     <div class="vf-content">
       <slot />

@@ -1,0 +1,118 @@
+{
+  "referenceRevision": "2b7b5c3eb7121bbc5b3fd9d4f8f070dd98f8494d",
+  "sections": [
+    {
+      "label": "Help",
+      "path": "/help/search",
+      "current": "Searching Data",
+      "groups": [
+        [
+          {
+            "href": "/bioimage-archive/help",
+            "label": "Help Overview"
+          },
+          {
+            "href": "/bioimage-archive/help/about-the-new-website",
+            "label": "About the New Website"
+          }
+        ],
+        [
+          {
+            "href": "/bioimage-archive/help/search",
+            "label": "Searching Data"
+          },
+          {
+            "href": "/bioimage-archive/help/explore-file-list",
+            "label": "Exploring the File List"
+          },
+          {
+            "href": "/bioimage-archive/help/downloading-data",
+            "label": "Downloading Data"
+          },
+          {
+            "href": "/bioimage-archive/help/submitting-data",
+            "label": "Submitting Data"
+          },
+          {
+            "href": "/bioimage-archive/help/supporting-tools",
+            "label": "Supporting Tools"
+          },
+          {
+            "href": "/bioimage-archive/help/galleries-contribute",
+            "label": "Contribute to Galleries"
+          },
+          {
+            "href": "/bioimage-archive/help/faq",
+            "label": "FAQ"
+          }
+        ]
+      ],
+      "follow": {
+        "label": "Downloading Data",
+        "path": "/help/downloading-data"
+      }
+    },
+    {
+      "label": "About",
+      "path": "/contact-us",
+      "current": "Contact Us",
+      "groups": [
+        [
+          {
+            "href": "/bioimage-archive/about-us",
+            "label": "About Us"
+          },
+          {
+            "href": "/bioimage-archive/contributors",
+            "label": "Contributors"
+          },
+          {
+            "href": "/bioimage-archive/case-studies",
+            "label": "Case Studies"
+          },
+          {
+            "href": "/bioimage-archive/project-developments",
+            "label": "Project Developments"
+          },
+          {
+            "href": "/bioimage-archive/contact-us",
+            "label": "Contact Us"
+          },
+          {
+            "href": "/bioimage-archive/logos",
+            "label": "Logos"
+          }
+        ]
+      ],
+      "follow": {
+        "label": "Case Studies",
+        "path": "/case-studies"
+      }
+    },
+    {
+      "label": "Policies",
+      "path": "/policies/imagesatebi",
+      "current": "Image Data at EBI",
+      "groups": [
+        [
+          {
+            "href": "/bioimage-archive/policies",
+            "label": "Archive Policies"
+          },
+          {
+            "href": "/bioimage-archive/scope",
+            "label": "Submission scope"
+          },
+          {
+            "href": "/bioimage-archive/policies/imagesatebi",
+            "label": "Image Data at EBI"
+          }
+        ]
+      ],
+      "follow": {
+        "label": "Archive Policies",
+        "path": "/policies"
+      }
+    }
+  ]
+}

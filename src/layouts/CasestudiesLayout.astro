@@ -1,5 +1,6 @@
 ---
-import AboutusNavigation from '../components/navigation/AboutusNavigation.astro';
+import SectionNavigation from '../components/navigation/SectionNavigation.astro';
+import { aboutLinkGroups } from '../components/navigation/section-links.mjs';
 import RightMenuCard from '../components/navigation/RightMenu.astro';
 import BaseLayout from './BaseLayout.astro';
 
@@ -7,7 +8,7 @@ import BaseLayout from './BaseLayout.astro';
 <BaseLayout pageTitle="Case Studies">
   <section class="embl-grid embl-grid--has-centered-content">
     <div>
-      <AboutusNavigation />
+      <SectionNavigation label="About" groups={aboutLinkGroups} />
     </div>
     <div class="vf-content">
       <slot />

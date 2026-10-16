@@ -1,13 +1,14 @@
 ---
 const { frontmatter } = Astro.props;
-import HelpNavigation from '../components/navigation/HelpNavigation.astro';
+import SectionNavigation from '../components/navigation/SectionNavigation.astro';
+import { helpLinkGroups } from '../components/navigation/section-links.mjs';
 import HelpSearchMenu from '../components/navigation/HelpSearchMenu.astro';
 import BaseLayout from './BaseLayout.astro';
 ---
 <BaseLayout pageTitle={frontmatter.title}>
   <section class="embl-grid embl-grid--has-centered-content">
     <div>
-      <HelpNavigation />
+      <SectionNavigation label="Help" groups={helpLinkGroups} />
     </div>
     <div class="vf-content">
       <slot />
