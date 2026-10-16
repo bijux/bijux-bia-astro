@@ -3,8 +3,8 @@ import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcr
 import BenchmarkedDatasetPage from "../../../../features/galleries/ai/benchmarking/BenchmarkedDatasetPage.astro"
 import { createRequestClient } from "../../../../api/client.mjs";
 import { type Study } from "../../../../api/types.ts"
-import additionalStudyMetadata from "../../../../data/ai-dataset-benchmarking/additional-study-metadata.json"
-import tableInfo from "../../../../data/ai-dataset-benchmarking/model-dataset-table.json"
+import additionalStudyMetadata from "../../../../features/galleries/ai/benchmarking/curation/studies.json"
+import tableInfo from "../../../../features/galleries/ai/benchmarking/curation/evaluations.json"
 
 
 import { loadDatasetNames, loadAnnotationStudies } from '../../../../features/galleries/ai/benchmarking/load-studies.mjs';

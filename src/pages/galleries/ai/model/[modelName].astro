@@ -2,8 +2,8 @@
 import BaseLayoutWithBreadcrumbs from "../../../../layouts/BaseLayoutWithBreadcrumbs.astro";
 import ModelPage from "../../../../features/galleries/ai/benchmarking/ModelPage.astro"
 
-import modelMetadata from "../../../../data/ai-dataset-benchmarking/model-metadata.json"
-import tableInfo from "../../../../data/ai-dataset-benchmarking/model-dataset-table.json"
+import modelMetadata from "../../../../features/galleries/ai/benchmarking/curation/models.json"
+import tableInfo from "../../../../features/galleries/ai/benchmarking/curation/evaluations.json"
 
 import { createRequestClient } from '../../../../api/client.mjs';
 import { loadDatasetNames } from '../../../../features/galleries/ai/benchmarking/load-studies.mjs';
