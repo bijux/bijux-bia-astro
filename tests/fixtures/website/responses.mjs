@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { cursorSearchResponse } from '../scenarios/search-pagination.mjs';
 import { benchmarkStudies } from '../scenarios/benchmark-datasets.mjs';
 import { annotationStudy, sourceImage, annotationImages } from '../scenarios/annotations.mjs';
+import { uncuratedImage } from '../scenarios/image-representations.mjs';
 
 const saved = name => JSON.parse(readFileSync(new URL(`../api/${name}-response.json`, import.meta.url)));
 const studies = ['study-s-biad3335', 'study-empiar12104'].map(name => saved(name).hits.hits[0]._source);
@@ -20,6 +21,9 @@ export function fixtureResponse(value) {
     };
     if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
+    if (url.pathname === '/search/v1/website/image' && url.searchParams.get('query') === uncuratedImage.uuid) {
+        return { hits: { hits: [{ _source: uncuratedImage }] } };
+    }
     if (url.pathname === '/search/v1/website/image' && url.searchParams.get('query') === sourceImage.uuid) {
         const images = url.searchParams.get('includeDerivedImages') === 'true' ? [sourceImage, ...annotationImages] : [sourceImage];
         return { hits: { hits: images.map(_source => ({ _source })) } };
@@ -42,6 +46,11 @@ export function fixtureResponse(value) {
         const isImage = url.pathname.endsWith('image');
         if (isImage && url.searchParams.get('query') === 'cursor-example') return cursorSearchResponse(saved('browse-image'), url);
         const response = saved(isImage ? 'browse-image' : 'browse-study');
+        if (isImage && url.searchParams.get('query') === 'representation-boundary') {
+            response.hits.hits = response.hits.hits.slice(0, 1);
+            response.hits.hits[0]._source.representation = structuredClone(uncuratedImage.representation);
+            response.hits.hits[0]._source.additional_metadata = [];
+        }
         // Synthetic partial labels reproduce a classification-loss case absent from the captures.
         if (!isImage && url.searchParams.get('query') === 'taxon-example') {
             response.hits.hits = response.hits.hits.slice(0, 1);
