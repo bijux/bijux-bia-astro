@@ -73,11 +73,12 @@ const nav = projectNavItems ?? [
    },
 ];
 
-const pathname = Astro.url.pathname;
+const canonicalPath = (value: string) => value.replace(/\/+$/, "") || "/";
+const pathname = canonicalPath(Astro.url.pathname);
 const basePath = pathname.split("/")[2] ?? "";
 const isExternalHref = (href) => /^https?:\/\//.test(href);
 const isCurrent = (href) =>
-  href.replace(/\/+$/, "") === pathname;
+  canonicalPath(href) === pathname;
 
 const hasActiveChild = (item) =>
   item.children?.some((child) => isCurrent(child.href));
@@ -173,10 +174,17 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
     display: block;
   }
 
+  @media (min-width: 769px) {
+    .nav-item.is-dismissed > .nav-dropdown {
+      display: none;
+    }
+  }
+
   @media (max-width: 768px) {
     .navbar {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
       background: #373a36;
       color: white;
@@ -188,15 +196,17 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
     }
 
     .nav-brand,
-    .nav-toggle {
+    .navbar[data-navigation-ready] .nav-toggle {
       display: inline-flex;
       align-items: center;
     }
 
     .nav-list {
-      display: none;
-      position: absolute;
-      top: 56px;
+      display: flex;
+      position: static;
+      flex-basis: 100%;
+      box-sizing: border-box;
+      top: 100%;
       left: 0;
       right: 0;
       flex-direction: column;
@@ -208,7 +218,12 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
       z-index: 20;
     }
 
-    .navbar.is-open .nav-list {
+    .navbar[data-navigation-ready] .nav-list {
+      display: none;
+      position: absolute;
+    }
+
+    .navbar[data-navigation-ready].is-open .nav-list {
       display: flex;
     }
 
@@ -249,14 +264,14 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
 
 </style>
 
-<nav class="vf-navigation vf-navigation--main navbar vf-u-fullbleed">
+<nav data-primary-navigation aria-label={hasProjectNav ? `${brandLabel} primary` : "Primary"} class="vf-navigation vf-navigation--main navbar vf-u-fullbleed">
   <a class="nav-brand" href={brandHref}>{brandLabel}</a>
-  <button class="nav-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation-list" aria-label="Toggle navigation" hidden>
     <span aria-hidden="true">&#9776;</span>
   </button>
-  <ul class="vf-navigation__list vf-list nav-list">
+  <ul id="primary-navigation-list" class="vf-navigation__list vf-list nav-list">
     {nav.map((item) => {
-      const sectionActive = basePath === item.key;
+      const sectionActive = basePath === item.key || isCurrent(item.href);
       const childActive = hasActiveChild(item);
 
       return (
@@ -267,6 +282,7 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
         >
           <a
             href={item.href}
+            aria-current={isCurrent(item.href) && !childActive ? "page" : undefined}
             class={`vf-navigation__link ${
               sectionActive || childActive ? "is-current" : ""
             }`}
@@ -282,6 +298,7 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
                 <li class="nav-dropdown__item">
                   <a
                     href={child.href}
+                    aria-current={isCurrent(child.href) ? "page" : undefined}
                     class={`nav-dropdown__link ${
                       isCurrent(child.href) ? "is-current" : ""
                     }`}
@@ -300,31 +317,6 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
   </ul>
 </nav>
 
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.navbar').forEach((nav) => {
-      const toggle = nav.querySelector('.nav-toggle');
-      const menu = nav.querySelector('.nav-list');
-      if (!toggle || !menu) return;
-
-      const closeMenu = () => {
-        nav.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-      };
-
-      toggle.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const isOpen = nav.classList.toggle('is-open');
-        toggle.setAttribute('aria-expanded', String(isOpen));
-      });
-
-      menu.querySelectorAll('a').forEach((link) => {
-        link.addEventListener('click', closeMenu);
-      });
-
-      document.addEventListener('click', (event) => {
-        if (!nav.contains(event.target)) closeMenu();
-      });
-    });
-  });
+<script>
+  import './navigation-controls.js';
 </script>
