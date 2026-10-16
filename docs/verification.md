@@ -1,6 +1,6 @@
 # Verification
 
-Use Node 22 and install locked dependencies with `npm ci`. Install the browsers once:
+Use a supported Node release (CI uses Node 22) and install locked dependencies with `npm ci`. Install the browsers once:
 
 ```sh
 PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium firefox webkit

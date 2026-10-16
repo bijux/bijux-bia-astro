@@ -1,12 +1,11 @@
 // Source structure audit, independent of unused-code rules.
-// Reference API profile: ESLint 9; eslint-plugin-astro 1.3.1; typescript-eslint 8.
 import astro from 'eslint-plugin-astro';
 import tseslint from 'typescript-eslint';
 import markup from '../../../scripts/audits/markup/explicit-closing-tags.mjs';
 
 export default [
   { ignores: ['.astro', '**/node_modules/**', '**/.git/**', '.astro/**', 'dist/**', '.netlify/**', 'artifacts/**', 'coverage/**'] },
-  ...astro.configs['flat/base'],
+  ...astro.configs.base,
   {
     files: ['**/*.astro'],
     processor: 'astro/client-side-ts',
@@ -15,8 +14,7 @@ export default [
     },
     plugins: { markup },
     rules: {
-      // Legacy v1.3.1 profile only; newer plugin docs deprecate this.
-      // Run project-wide `astro check` separately regardless.
+      // Retain compiler warnings alongside authored-boundary checks.
       'astro/valid-compile': 'error',
       'markup/explicit-closing-tags': 'error',
     },

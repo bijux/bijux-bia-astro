@@ -1,5 +1,4 @@
 // Dedicated reporting configuration, not a replacement for the project's normal lint config.
-// Target versions: ESLint 9.39.5, eslint-plugin-astro 1.3.1, typescript-eslint 8.48.1.
 import astro from 'eslint-plugin-astro';
 import tseslint from 'typescript-eslint';
 
@@ -18,7 +17,7 @@ export default [
     },
   },
   // Crucially, retain the Astro parser and its client-script processor.
-  ...astro.configs['flat/base'],
+  ...astro.configs.base,
   {
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,astro}'],
     plugins: { '@typescript-eslint': tseslint.plugin },

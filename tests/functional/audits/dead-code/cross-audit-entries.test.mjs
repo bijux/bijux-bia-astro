@@ -18,7 +18,9 @@ test('Knip reaches workers, copied fixtures and Playwright setup without hiding 
     // import graph that exposes omissions as unreachable files/dependencies.
     const config = { project: ['scripts/**/*.{mjs,ts}', 'configs/**/*.{mjs,ts}', 'tests/**/*.{mjs,ts}'], playwright: original.playwright, ignoreBinaries: original.ignoreBinaries, entry: original.entry.filter(entry => entry.includes('scripts/audits/markup/') || entry.includes("tests/fixtures/metadata/")), eslint: original.eslint };
     for (const dir of ['scripts/audits/markup', 'configs/audits/markup', 'configs/testing', 'tests/support/website', 'tests/e2e', "tests/fixtures/metadata"]) await mkdir(path.join(root, dir), { recursive: true });
-    await writeFile(path.join(root, 'package.json'), JSON.stringify({ type: 'module', scripts: { 'audit:markup': 'node scripts/audits/markup/audit.mjs' }, devDependencies: { eslint: '9.39.5', 'eslint-plugin-astro': '1.3.1', '@playwright/test': '1.64.1' } }));
+    const { devDependencies } = JSON.parse(await readFile(new URL('package.json', repository)));
+    const dependencies = Object.fromEntries(['eslint', 'eslint-plugin-astro', '@playwright/test'].map(name => [name, devDependencies[name]]));
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ type: 'module', scripts: { 'audit:markup': 'node scripts/audits/markup/audit.mjs' }, devDependencies: dependencies }));
     await writeFile(path.join(root, 'knip.json'), JSON.stringify(config));
     await writeFile(path.join(root, 'configs/testing/playwright.config.ts'), await readFile(new URL('configs/testing/playwright.config.ts', repository)));
     await writeFile(path.join(root, 'tests/support/website/delivery.mjs'), "import './delivery-helper.mjs'; export default async function setup() {}\n");
@@ -27,7 +29,7 @@ test('Knip reaches workers, copied fixtures and Playwright setup without hiding 
     await writeFile(path.join(root, 'tests/e2e/website.spec.ts'), "import { test } from '@playwright/test'; test('website', () => {});\n");
     await writeFile(path.join(root, 'scripts/audits/markup/audit.mjs'), "import { spawn } from 'node:child_process'; spawn(process.execPath, [new URL('./worker.mjs', import.meta.url).pathname]);\n");
     await writeFile(path.join(root, 'scripts/audits/markup/worker.mjs'), "import './worker-helper.mjs';\n");
-    await writeFile(path.join(root, 'configs/audits/markup/eslint.config.mjs'), "import astro from 'eslint-plugin-astro'; export default [...astro.configs['flat/base']];\n");
+    await writeFile(path.join(root, 'configs/audits/markup/eslint.config.mjs'), "import astro from 'eslint-plugin-astro'; export default [...astro.configs.base];\n");
     await writeFile(path.join(root, "tests/fixtures/metadata/dataset-metadata.mjs"), "import './record-helper.mjs';\n");
     await writeFile(path.join(root, "tests/fixtures/metadata/record-helper.mjs"), 'console.log("compiled fixture dependency");\n');
     await writeFile(path.join(root, 'scripts/audits/markup/worker-helper.mjs'), "import { spawnSync } from 'node:child_process'; spawnSync('mkfifo', []); spawnSync('unprovided-tool', []); import { State, Mode } from './symbols.ts'; console.log(State.used, Mode.used);\n");

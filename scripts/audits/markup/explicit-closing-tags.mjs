@@ -62,7 +62,7 @@ const rule = {
     },
   },
   create(context) {
-    const source = context.sourceCode ?? context.getSourceCode();
+    const source = context.sourceCode;
     if (!source.parserServices?.isAstro) return {};
     return {
       JSXFragment(node) {
