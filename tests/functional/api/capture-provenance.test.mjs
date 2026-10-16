@@ -30,6 +30,9 @@ test("shared API captures retain endpoint-specific response envelopes and record
             assert(Array.isArray(capture.response), capture.file);
         } else if (/^\/biostudies\/api\/v1\/studies\/[^/]+\/info$/.test(pathname)) {
             assert.equal(typeof capture.response.httpLink, 'string', capture.file);
+        } else if (/^\/ebisearch\/ws\/rest\/ebiweb_training_(events|online)$/.test(pathname)) {
+            assert(Array.isArray(capture.response.entries), capture.file);
+            assert(Number.isSafeInteger(capture.response.hitCount) && capture.response.hitCount >= 0, capture.file);
         } else assert.fail(`Unrecognised capture endpoint: ${capture.file}`);
     }
 });

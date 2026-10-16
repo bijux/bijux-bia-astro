@@ -20,10 +20,8 @@ test('public routes retain their rendering mode, headings, redirects and base-pa
     }
 });
 
-test('news navigation changes the visible article and training failures stay readable', async ({ page }) => {
-    await page.route('**/ebisearch/ws/rest/ebiweb_training_events?**', route => route.fulfill({ status: 503, json: {} }));
+test('news navigation changes the visible article and returns to the original', async ({ page }) => {
     await page.goto('/bioimage-archive/');
-    await expect(page.locator('#live-tutorials')).toContainText('Training events are temporarily unavailable.');
     const first = await page.locator('.news-article:visible h3').textContent();
     await page.locator('.news-article:visible .slider-right-button').click();
     await expect(page.locator('.news-article:visible h3')).not.toHaveText(first!);

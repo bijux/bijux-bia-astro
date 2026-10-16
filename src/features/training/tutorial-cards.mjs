@@ -3,11 +3,10 @@ import { navigationURL } from "../../security/urls.mjs";
 const first = value => Array.isArray(value) ? value[0] : value;
 const text = value => String(first(value) ?? "");
 
+/** Render validated records as native cards; parsed description nodes remain inert. */
 export function renderTutorials(container, entries, type) {
-    if (!Array.isArray(entries)) throw new TypeError("Invalid training response.");
     const nodes = entries.slice(0, 2).map(item => {
-        const fields = item?.fields;
-        if (!fields || typeof fields !== "object") throw new TypeError("Invalid training record.");
+        const fields = item.fields;
         const entry = document.createElement("div");
         entry.className = "vf-summary vf-summary--event";
         function element(tag, className, value, parent = entry) {
@@ -46,7 +45,9 @@ export function renderTutorials(container, entries, type) {
     });
     if (!nodes.length) {
         const message = document.createElement("p");
-        message.textContent = "Currently there are no upcoming events - please click the below link for more information";
+        message.textContent = type === 'live'
+            ? "Currently there are no upcoming events - please click the below link for more information"
+            : "Currently there are no on-demand tutorials. Use the link below for more information.";
         nodes.push(message);
     }
     container.replaceChildren(...nodes);

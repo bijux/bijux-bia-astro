@@ -31,3 +31,6 @@ identifiers and escaping; identify them as synthetic in the owning test.
 Spatialomics captures for S-BIAD1093 include its complete study, images, track probe,
 BioStudies links and three dataset file inventories. Frozen-build captures have
 day-precision dates; the third inventory was captured separately.
+
+Training captures retain the complete live-event (empty) and on-demand responses.
+Successful live cards are covered by explicit synthetic records.
