@@ -9,6 +9,7 @@ import Specimen from './Specimen.astro';
 import SpecimenTrackTable from './SpecimenTrackTable.astro';
 import DisplayImageTable from './DisplayImageTable.astro';
 import ImageTable from './ImageTable.astro';
+import ImageFileMetadata from './ImageFileMetadata.astro';
 
 import fieldMap from "../metadata/field-labels.json";
 import fallbackImage from "../../assets/bioimage-archive/image_fallback.png"
@@ -41,7 +42,6 @@ const viewerSourceURI = getPublicVisualisationURI(interactiveImageRepresentation
 const vizarrIFrameSource = interactiveImageRepresentation ? buildVizarrViewerURL(viewerSourceURI) : null
 const itkRepUuid = getSimpleAttributeValue(image, "recommended_itk_representation");
 const itkLink = itkRepUuid ? buildITKViewerURL(viewerSourceURI) : null
-const file_path = image?.file_path;
 
 const pref_ng_image_rep_uuid = getSimpleAttributeValue(image, "preferred_neuroglancer_image_representation_uuid")
 const pref_ng_image_rep = image.representation.find((rep) => rep.uuid === pref_ng_image_rep_uuid)
@@ -86,53 +86,10 @@ const breadcrumbs = [
                             <b>Pixel image size: </b> {formatPixelDimensions(interactiveImageRepresentation)}<br />
                             {interactiveImageRepresentation.size_c && (<div><b>Number of channels:</b> {interactiveImageRepresentation.size_c}</div>)}
                             {interactiveImageRepresentation.size_t && (<div><b>Number of timesteps:</b> {interactiveImageRepresentation.size_t}</div>)}
-                            {file_path && (
-                                <div id="file-path-wrap">
-                                    <b>File Path:</b>
-                                    <span id="file-path-visible">
-                                    {file_path.slice(0, 2).join(", ")}
-                                    </span>
-
-                                    {file_path.length > 2 && (
-                                    <>
-                                        <span id="file-path-extra" hidden>
-                                        {", " + file_path.slice(2).join(", ")}
-                                        </span>
-
-                                        <br />
-
-                                        <button
-                                        id="file-path-toggle"
-                                        class="vf-button vf-button--primary vf-button--sm bia-button"
-                                        type="button"
-                                        aria-expanded="false"
-                                        aria-controls="file-path-extra"
-                                        style="margin-top:12px;"
-                                        >
-                                        See more
-                                        </button>
-                                    </>
-                                    )}
-                                </div>
-                            )}
-                            {userProvidedAttribute && (
-                                <div >
-                                    <br/>
-                                    <h4>Additional user metadata</h4>
-                                    <div id="meta-wrap" data-collapsed="false" style="overflow-wrap:anywhere;">
-                                        <div id="meta-content">
-                                            {Object.entries(userProvidedAttribute).map(([k, v]) => (
-                                            <div><b>{k}:</b> {String(v)}</div>
-                                            ))}
-                                        </div>
-                                        <button id="meta-toggle" class="vf-button vf-button--primary vf-button--sm bia-button" type="button" aria-expanded="false" aria-controls="meta-content" style="margin-top:12px;" hidden>See more</button>
-                                        </div>
-                                </div>
-                            )}
                         </span>
                     )
                 }
-
+                <ImageFileMetadata filePaths={image.file_path} attributes={userProvidedAttribute} />
             </div>
             <div style="display: flex; justify-content: center;">
                 {vizarrIFrameSource ? (
@@ -352,9 +309,4 @@ const breadcrumbs = [
 </BaseLayoutWithBreadcrumbs>
 <style>
   .metadata-fields { padding-left: 20px; }
-  #meta-wrap[data-collapsed="true"] #meta-content { overflow: hidden; }
 </style>
-
-<script>
-  import './file-metadata-controls.js';
-</script>

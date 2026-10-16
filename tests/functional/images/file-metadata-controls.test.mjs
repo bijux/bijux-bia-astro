@@ -52,8 +52,10 @@ test('short metadata remains untruncated and file paths operate without metadata
     assert.equal(toggle.removed, true);
     assert.deepEqual(content.style, {});
 
-    const pathToggle = button(), extra = { hidden: true };
+    const pathToggle = button(true), extra = { hidden: false };
     const events = run({ 'file-path-toggle': pathToggle, 'file-path-extra': extra });
+    assert.equal(pathToggle.hidden, false);
+    assert.equal(extra.hidden, true);
     pathToggle.onclick();
     events.get('astro:page-load')();
     assert.equal(extra.hidden, false);

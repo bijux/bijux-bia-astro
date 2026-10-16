@@ -28,6 +28,8 @@ function initialiseFilePaths() {
     const extra = document.getElementById('file-path-extra');
     const button = document.getElementById('file-path-toggle');
     if (!extra || !button || boundButtons.has(button)) return;
+    extra.hidden = true;
+    button.hidden = false;
     button.onclick = () => {
         const wasOpen = button.getAttribute('aria-expanded') === 'true';
         button.setAttribute('aria-expanded', String(!wasOpen));

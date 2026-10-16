@@ -15,3 +15,7 @@ imageWithFileMetadata.file_path = ['sample/a.tif', 'sample/b.tif', 'sample/c.tif
 imageWithFileMetadata.file_list_attributes = [{ value: { attributes: Object.fromEntries(
     Array.from({ length: 40 }, (_, index) => [`Measurement ${index + 1}`, `Supplied value ${index + 1}`]),
 ) } }];
+
+export const imageWithoutViewer = structuredClone(imageWithFileMetadata);
+imageWithoutViewer.uuid = '00000000-0000-4000-8000-000000000103';
+imageWithoutViewer.representation = [{ image_format: '.tif', file_uri: ['https://example.org/sample.tif'] }];

@@ -1,6 +1,31 @@
 import { test, expect } from '../support/browser';
 import { uncuratedImage, curatedImage } from '../fixtures/scenarios/image-representations.mjs';
-import { imageWithFileMetadata } from '../fixtures/scenarios/image-file-metadata.mjs';
+import { imageWithFileMetadata, imageWithoutViewer } from '../fixtures/scenarios/image-file-metadata.mjs';
+
+test('images without a viewer retain their supplied file paths and user metadata', async ({ page }) => {
+    await page.goto(`/bioimage-archive/image/${imageWithoutViewer.uuid}`);
+    await expect(page.locator('iframe[name="vizarr"]')).toHaveCount(0);
+    await expect(page.locator('#CopyURLButton')).toHaveCount(0);
+    await expect(page.locator('#file-path-visible')).toContainText('sample/a.tif, sample/b.tif');
+    await page.locator('#file-path-toggle').click();
+    await expect(page.locator('#file-path-extra')).toContainText('sample/c.tif, sample/d.tif');
+    await page.locator('#meta-toggle').click();
+    await expect(page.locator('#meta-content')).toContainText('Supplied value 40');
+    expect(await page.locator('#meta-content').evaluate(element => element.clientHeight >= element.scrollHeight)).toBe(true);
+});
+
+test.describe('image metadata without JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('all supplied metadata and file paths remain readable', async ({ page }) => {
+        await page.goto(`/bioimage-archive/image/${imageWithoutViewer.uuid}`);
+        await expect(page.locator('#file-path-extra')).toBeVisible();
+        await expect(page.locator('#file-path-extra')).toContainText('sample/d.tif');
+        await expect(page.locator('#file-path-toggle')).toBeHidden();
+        await expect(page.locator('#meta-toggle')).toBeHidden();
+        await expect(page.locator('#meta-content')).toContainText('Supplied value 40');
+        expect(await page.locator('#meta-content').evaluate(element => element.clientHeight >= element.scrollHeight)).toBe(true);
+    });
+});
 
 test('long image metadata and extra file paths expand independently with the keyboard', async ({ page }) => {
     await page.goto(`/bioimage-archive/image/${imageWithFileMetadata.uuid}`);
