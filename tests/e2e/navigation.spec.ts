@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import navigationContract from '../fixtures/website/navigation-contract.json' with { type: 'json' };
 import { test, expect } from '../support/browser';
 
 test('primary navigation identifies one current page with canonical and slash URLs', { tag: '@preservation' }, async ({ page }) => {
@@ -93,4 +95,55 @@ test.describe('navigation without JavaScript', () => {
             await expect(page).toHaveURL(new RegExp(path.startsWith('/projects') ? '/projects/spora/dataset/?$' : '/help/downloading-data/?$'));
         }
     });
+});
+
+
+test('section navigation retains its captured groups, destinations and current-page emphasis', { tag: '@preservation' }, async ({ page }) => {
+    for (const section of navigationContract.sections) {
+        for (const suffix of ['', '/']) {
+            await page.goto(`/bioimage-archive${section.path}${suffix}`);
+            const nav = page.getByRole('navigation', { name: section.label, exact: true });
+            const expected = section.groups.flat();
+            await expect(nav.locator('ul')).toHaveCount(section.groups.length);
+            await expect(nav.getByRole('link')).toHaveText(expected.map(link => link.label));
+            expect(await nav.getByRole('link').evaluateAll(links => links.map(link => link.getAttribute('href'))))
+                .toEqual(expected.map(link => link.href));
+            const current = nav.locator('[aria-current="page"]');
+            await expect(current).toHaveCount(1);
+            await expect(current).toHaveText(section.current);
+            await expect(current).toHaveCSS('font-weight', '700');
+        }
+        await page.getByRole('navigation', { name: section.label, exact: true })
+            .getByRole('link', { name: section.follow.label, exact: true }).click();
+        await expect(page).toHaveURL(new RegExp(`/bioimage-archive${section.follow.path}/?$`));
+        await expect(page.getByRole('navigation', { name: section.label, exact: true }).locator('[aria-current="page"]'))
+            .toHaveText(section.follow.label);
+    }
+});
+
+test('breadcrumbs retain parent destinations and identify the current page in a native list', { tag: '@preservation' }, async ({ page }) => {
+    const study = JSON.parse(readFileSync(new URL('../fixtures/api/study-s-biad3335-response.json', import.meta.url), 'utf8')).hits.hits[0]._source;
+    for (const entry of [
+        { path: '/projects/spora/dataset', title: 'Dataset Browser',
+            parents: ['bioimage-archive', 'projects', 'spora'],
+            hrefs: ['/bioimage-archive', '/bioimage-archive/projects', '/bioimage-archive/projects/spora'],
+            follow: 'spora', destination: '/projects/spora', nextTitle: 'spora' },
+        { path: '/study/S-BIAD3335', title: `${study.accession_id}: ${study.title}`,
+            parents: ['bioimage-archive', 'studies'], hrefs: ['/bioimage-archive', '/bioimage-archive/studies'],
+            follow: 'studies', destination: '/studies', nextTitle: 'Browse Studies' },
+    ]) {
+        await page.goto(`/bioimage-archive${entry.path}`);
+        const nav = page.getByRole('navigation', { name: 'Breadcrumb', exact: true });
+        await expect(nav.getByRole('list')).toHaveCount(1);
+        await expect(nav.getByRole('listitem')).toHaveCount(entry.parents.length + 1);
+        await expect(nav.getByRole('link')).toHaveText(entry.parents);
+        expect(await nav.getByRole('link').evaluateAll(links => links.map(link => link.getAttribute('href')))).toEqual(entry.hrefs);
+        await expect(nav.locator('[aria-current="page"]')).toHaveText(entry.title);
+        await expect(nav.locator('[aria-current="page"]').getByRole('link')).toHaveCount(0);
+        await nav.getByRole('link', { name: entry.follow, exact: true }).focus();
+        await page.keyboard.press('Enter');
+        await expect(page).toHaveURL(new RegExp(`/bioimage-archive${entry.destination}/?$`));
+        await expect(page.getByRole('navigation', { name: 'Breadcrumb', exact: true }).locator('[aria-current="page"]'))
+            .toHaveText(entry.nextTitle);
+    }
 });

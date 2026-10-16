@@ -1,6 +1,7 @@
 ---
 const { frontmatter } = Astro.props;
-import AboutusNavigation from '../components/navigation/AboutusNavigation.astro';
+import SectionNavigation from '../components/navigation/SectionNavigation.astro';
+import { aboutLinkGroups } from '../components/navigation/section-links.mjs';
 import BaseLayout from './BaseLayout.astro';
 import RightMenuCard from '../components/navigation/RightMenu.astro';
 ---
@@ -8,7 +9,7 @@ import RightMenuCard from '../components/navigation/RightMenu.astro';
 <BaseLayout pageTitle={frontmatter.title}>
   <section class="embl-grid embl-grid--has-centered-content">
     <div>
-      <AboutusNavigation />
+      <SectionNavigation label="About" groups={aboutLinkGroups} />
     </div>
     <div class="vf-content">
       <slot />

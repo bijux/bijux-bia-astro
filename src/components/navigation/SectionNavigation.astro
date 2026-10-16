@@ -1,0 +1,22 @@
+---
+import { normaliseNavigationPath } from './paths.mjs';
+interface NavigationLink { href: string; label: string }
+interface Props { label: string; groups: NavigationLink[][] }
+const { label, groups } = Astro.props;
+const pathname = normaliseNavigationPath(Astro.url.pathname);
+const isCurrent = (href: string) => normaliseNavigationPath(href) === pathname;
+---
+<nav aria-label={label}>
+    {groups.map(links => (
+        <ul class="vf-list vf-list--l">
+            {links.map(link => (
+                <li class={isCurrent(link.href) ? 'vf-list__item | active' : 'vf-list__item'}>
+                    <a href={link.href} class="vf-navigation__link" aria-current={isCurrent(link.href) ? 'page' : undefined}>{link.label}</a>
+                </li>
+            ))}
+        </ul>
+    ))}
+</nav>
+<style>
+    .active { font-weight: bold; }
+</style>

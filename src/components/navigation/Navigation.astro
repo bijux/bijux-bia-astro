@@ -1,4 +1,5 @@
 ---
+import { normaliseNavigationPath } from './paths.mjs';
 const {projectNavItems} = Astro.props;
 const nav = projectNavItems ?? [
   { key: "", label: "Home", href: "/bioimage-archive/" },
@@ -73,12 +74,11 @@ const nav = projectNavItems ?? [
    },
 ];
 
-const canonicalPath = (value: string) => value.replace(/\/+$/, "") || "/";
-const pathname = canonicalPath(Astro.url.pathname);
+const pathname = normaliseNavigationPath(Astro.url.pathname);
 const basePath = pathname.split("/")[2] ?? "";
 const isExternalHref = (href) => /^https?:\/\//.test(href);
 const isCurrent = (href) =>
-  canonicalPath(href) === pathname;
+  normaliseNavigationPath(href) === pathname;
 
 const hasActiveChild = (item) =>
   item.children?.some((child) => isCurrent(child.href));
