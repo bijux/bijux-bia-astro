@@ -28,18 +28,17 @@
     "test:controls": "node --test tests/functional/studies/*.test.mjs tests/functional/images/*.test.mjs"
   },
   "dependencies": {
-    "@astrojs/check": "0.9.10",
-    "@astrojs/mdx": "8.1.0",
-    "@astrojs/netlify": "8.2.10",
     "@astrojs/node": "11.1.8",
     "astro": "7.4.0",
     "datatables.net": "2.3.2",
     "datatables.net-dt": "2.3.2",
-    "jquery": "3.7.1",
-    "typescript": "^5.2.2"
+    "jquery": "3.7.1"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.10",
     "@astrojs/compiler": "4.0.0",
+    "@astrojs/mdx": "8.1.0",
+    "@astrojs/netlify": "8.2.10",
     "@rollup/plugin-yaml": "5.0.0",
     "@types/jquery": "^3.5.29",
     "@types/node": "^20.11.24",
@@ -49,6 +48,7 @@
     "eslint-plugin-security": "4.2.0",
     "html-validate": "10.17.0",
     "knip": "6.41.0",
+    "typescript": "^5.2.2",
     "typescript-eslint": "8.71.2",
     "@playwright/test": "1.64.1"
   },

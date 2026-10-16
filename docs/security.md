@@ -17,8 +17,9 @@ configuration is fixed at build time. See [deployment](deployment.md).
 
 ## Open risks
 
-- The locked dependency audit retains advisories, including development/audit
-  tooling. Regenerate [the audit](verification.md) after dependency changes;
+- The locked dependency audit retains build-time advisories. Node runtime installs
+  omit build-only integrations; the complete audit still includes them. Regenerate
+  [the audit](verification.md) after dependency changes;
   mutable registry counts belong in run evidence.
 - A historical private-key candidate is absent from current source but remains
   in Git history. Retirement/revocation is unconfirmed and needs owner investigation.

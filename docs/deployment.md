@@ -35,6 +35,9 @@ certificate/key paths together when mounting TLS files. Start the verified Node
 wrapper with `npm run prod`; launching the adapter entry directly bypasses its
 static-file headers, health checks and request handling.
 
+Builds require development dependencies; use `npm ci --include=dev` if the builder
+sets `NODE_ENV=production`. Containers omit these packages after compilation.
+
 ## Containers and Helm
 
 ```sh
