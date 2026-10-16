@@ -19,7 +19,8 @@
     "help/mifa-overview.mdx",
     "help/rembi-examples.mdx",
     "policies.md",
-    "policies/imagesatebi.md"
+    "policies/imagesatebi.md",
+    "galleries/spatialomics/study/[accessionID].astro"
   ],
   "generatedHtml": [
     "case-studies/index.html",
@@ -52,7 +53,8 @@
     "projects/spora/index.html",
     "redirect_index.html",
     "study/EMPIAR-12104/index.html",
-    "study/S-BIAD3335/index.html"
+    "study/S-BIAD3335/index.html",
+    "galleries/spatialomics/study/S-BIAD1093/index.html"
   ],
   "serverRoutes": [
     "/images?size_t=1",
@@ -111,5 +113,8 @@
       "status": 301,
       "heading": "REMBI Examples"
     }
+  ],
+  "spatialomicsStudies": [
+    "S-BIAD1093"
   ]
 }

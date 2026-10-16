@@ -1,5 +1,5 @@
 {
-  "description": "Complete saved public search API responses. Each response file is unchanged from its recorded capture; metadata is kept here rather than inserted into the response.",
+  "description": "Complete saved public API responses; payloads remain unchanged and capture metadata is recorded separately.",
   "responses": [
     {
       "file": "study-s-biad3335-response.json",
@@ -36,6 +36,48 @@
       "url": "https://alpha.bioimagearchive.org/search/v1/website/study?facet.accession_id=EMPIAR-12104",
       "capturedAt": "2026-10-15T17:13:57.981Z",
       "sha256": "b3833bae9d878a23deb11e872d218106f024f7cd1d35d9a237703e8ad27f77f9"
+    },
+    {
+      "file": "study-s-biad1093-response.json",
+      "url": "https://alpha.bioimagearchive.org/search/v1/website/study?facet.accession_id=S-BIAD1093",
+      "capturedAt": "2026-10-15",
+      "sha256": "b27beb70fd34d48f390a85e54e8e9f008ba93f8fc314636efabff23509a5a0f7"
+    },
+    {
+      "file": "images-s-biad1093-response.json",
+      "url": "https://alpha.bioimagearchive.org/search/v1/website/image?facet.accession_id=S-BIAD1093&pagination.page_size=100&pagination.page=1",
+      "capturedAt": "2026-10-15",
+      "sha256": "545b47154960c916d928d08a19184b01bbc30f98fa790d8b1c6feebe24410016"
+    },
+    {
+      "file": "files-4e1ba81e-86a4-4fc9-b6d9-ea443401d94e-response.json",
+      "url": "https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/4e1ba81e-86a4-4fc9-b6d9-ea443401d94e/file_reference?page_size=1000",
+      "capturedAt": "2026-10-15",
+      "sha256": "429c823d51a2b07b166e918250dc1d9d533d9b05ae212b20d5e6cc989c67e32b"
+    },
+    {
+      "file": "files-858bbc76-2b48-490f-a1bf-fbafe07d8477-response.json",
+      "url": "https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/858bbc76-2b48-490f-a1bf-fbafe07d8477/file_reference?page_size=1000",
+      "capturedAt": "2026-10-15",
+      "sha256": "2c5da57760d73ab97e66309113b5bcea017209bb917ca7194a5648fe721a52de"
+    },
+    {
+      "file": "file-links-s-biad1093-response.json",
+      "url": "https://www.ebi.ac.uk/biostudies/api/v1/studies/S-BIAD1093/info",
+      "capturedAt": "2026-10-15",
+      "sha256": "0a2dbd84acc46150973ee62577969bc158944953a22aaea7f70dedd12af9bab6"
+    },
+    {
+      "file": "image-tracks-s-biad1093-response.json",
+      "url": "https://alpha.bioimagearchive.org/search/v1/website/browse/image?facet.accession_id=S-BIAD1093&has.specimen_track_display_image=false&pagination.page_size=1",
+      "capturedAt": "2026-10-15",
+      "sha256": "8587da68178bb35d82baf4e28c0a2087797e566cc809aafa9138a988920a7411"
+    },
+    {
+      "file": "files-f7a58691-b3bc-4277-8d58-e7ae2b1ddccd-response.json",
+      "url": "https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/f7a58691-b3bc-4277-8d58-e7ae2b1ddccd/file_reference?page_size=1000",
+      "capturedAt": "2026-10-16T05:56:13.291453+00:00",
+      "sha256": "452d9059354f0a4fdf11d374b796a7072b7b26cf29bffd23b3eba19c6752a93e"
     }
   ]
 }

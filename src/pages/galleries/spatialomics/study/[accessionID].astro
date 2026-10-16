@@ -6,16 +6,16 @@ import StudyContentsSummary from '../../../../features/studies/StudyContentsSumm
 import DatasetInfo  from "../../../../features/galleries/spatialomics/DatasetInfo.astro"
 import ViewableImageTable from '../../../../features/studies/ViewableImageTable.astro';
 import StudyFiles from '../../../../features/studies/StudyFiles.astro';
-import SOTables from '../../../../features/galleries/spatialomics/SOTables.astro';
+import TranscriptFiles from '../../../../features/galleries/spatialomics/TranscriptFiles.astro';
 import { type Study } from "../../../../api/types.ts"
 import spatialomicsCollection from "../../../../data/collections/spatialomics.json"
 import { getStudyImage } from "../../../../features/images/study-image.mjs";
-import { getDatasetStatsByUUID, getSimpleAttributeValue } from "../../../../features/metadata/records.mjs";
+import { getSimpleAttributeValue } from "../../../../features/metadata/records.mjs";
 import { createRequestClient } from "../../../../api/client.mjs";
 import { PUBLIC_MONGO_API } from "astro:env/client";
 
 import { loadStudyFiles } from '../../../../features/studies/load-study.mjs';
-import { studyHasTranscripts } from '../../../../features/galleries/spatialomics/transcripts.mjs';
+import { studyHasTranscripts } from '../../../../features/galleries/spatialomics/load-transcripts.mjs';
 export function getStaticPaths() {
   return spatialomicsCollection.accession_ids.map((id) => {
     return {
@@ -29,9 +29,7 @@ const client = createRequestClient(Astro.request.signal);
 const study = await client.getStudyFromApiByAccession(accessionID) as Study;
 const fileLinks = await loadStudyFiles(accessionID, client.getFromAPI);
 
-const datasetUUIDsAndFileStats = getDatasetStatsByUUID(study);
-
-const hasTranscripts = await studyHasTranscripts(datasetUUIDsAndFileStats.map(([uuid]) => uuid), PUBLIC_MONGO_API, client.getFromAPI);
+const hasTranscripts = await studyHasTranscripts(study.dataset.map(({ uuid }) => uuid), PUBLIC_MONGO_API, client.getFromAPI);
 
 const tableOfContents = {
   "Curated Study Information": "study",
@@ -50,7 +48,6 @@ const hasSpecimenTracks = images.length > 0 ? await client.studyHasSpecimenTrack
 const annotationDatasets = study.dataset.filter(dataset => 
   "annotation_process" in dataset && dataset.annotation_process && dataset.annotation_process.length > 0
 );
-//const annotationDatasetUUIDsAndFileStats = aggregateDatasetStats(annotationDatasets);
 
 if (annotationDatasets.length > 0) {
   tableOfContents["Annotation Datasets"] = "annotation_datasets";
@@ -149,6 +146,6 @@ const code_links = getSimpleAttributeValue(study, 'see_also_code')
       </div>
     </section>
     )}
-    {hasTranscripts && ( <hr/> <SOTables datasetUUIDsAndFileStats={datasetUUIDsAndFileStats}/>)}
+    {hasTranscripts && ( <hr/> <TranscriptFiles datasets={study.dataset}/>)}
   </Fragment>
 </BaseLayoutWithBreadcrumbs>

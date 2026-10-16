@@ -1,0 +1,36 @@
+---
+import { PUBLIC_MONGO_API } from "astro:env/client";
+interface Props { datasets: { uuid: string; title?: string }[] }
+const { datasets } = Astro.props;
+---
+<section class="vf-intro | embl-grid embl-grid--has-centered-content | section-spacing bia-table-controls"
+    aria-labelledby="transcript_files" data-transcript-files data-api-url={PUBLIC_MONGO_API}
+    data-datasets={JSON.stringify(datasets.map(({ uuid, title }) => ({ uuid, title })))}>
+    <div class="vf-section-header">
+        <h2 class="vf-section-header__heading" id="transcript_files">Omics Component</h2>
+    </div>
+    <div>
+        <p>Shows transcript or related files found among the first 1,000 returned files per dataset.</p>
+        <label for="sotables_dataset_selector"><b>Dataset:</b></label>
+        <select id="sotables_dataset_selector" class="form-select" disabled>
+            <option value="" disabled selected>Select a Dataset</option>
+        </select>
+        <p data-discovery-status role="status"></p>
+        <button data-retry-discovery type="button" class="vf-button vf-button--secondary bia-button" hidden>Retry dataset discovery</button>
+        <p data-files-status role="status"></p>
+        <button data-retry-files type="button" class="vf-button vf-button--secondary bia-button" hidden>Retry files</button>
+        <div data-file-table hidden>
+            <table id="sotables_file_references_table" class="vf-table display"></table>
+        </div>
+        <noscript><p>Enable JavaScript to browse transcript files.</p></noscript>
+    </div>
+</section>
+<script>
+    import { initialiseTranscriptFiles } from './transcript-controls';
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll<HTMLElement>('[data-transcript-files]').forEach(initialiseTranscriptFiles);
+    }, { once: true });
+</script>
+<style>
+    [hidden] { display: none; }
+</style>
