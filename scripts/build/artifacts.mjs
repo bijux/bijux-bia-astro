@@ -1,6 +1,7 @@
 import { lstat, mkdir, readlink, rename, rm, symlink } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ownedDirectory } from '../filesystem/owned-directory.mjs';
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 const inspect = path => lstat(path).catch(error => {
@@ -10,9 +11,7 @@ const inspect = path => lstat(path).catch(error => {
 
 /** Keep standard tool entry points while storing generated files inside the checkout's artifacts. */
 export async function prepareArtifacts(root = repository) {
-    const artifacts = resolve(root, 'artifacts');
-    await mkdir(artifacts, { recursive: true });
-    if (!(await lstat(artifacts)).isDirectory()) throw new Error('artifacts must be a real directory.');
+    const artifacts = await ownedDirectory(root, 'artifacts');
     for (const [name, storage] of [['node_modules', 'node_modules'], ['.astro', 'astro'], ['.netlify', 'netlify']]) {
         const source = resolve(root, name);
         const target = resolve(artifacts, storage);
