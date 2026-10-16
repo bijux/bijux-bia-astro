@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import navigationContract from '../fixtures/website/navigation-contract.json' with { type: 'json' };
-import { test, expect } from '../support/browser';
+import { test, expect, tabNavigationKeys } from '../support/browser';
 
 test('primary navigation identifies one current page with canonical and slash URLs', { tag: '@preservation' }, async ({ page }) => {
     for (const [path, label] of [
@@ -21,9 +21,7 @@ test('primary navigation identifies one current page with canonical and slash UR
 
 
 test('navigation closes with Escape and retains visible focus across viewport changes', { tag: '@preservation' }, async ({ page, browserName }) => {
-    // Safari on macOS uses Option-Tab to include links in keyboard traversal.
-    const next = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
-    const previous = next === 'Alt+Tab' ? 'Alt+Shift+Tab' : 'Shift+Tab';
+    const { next, previous } = tabNavigationKeys(browserName);
     await page.goto('/bioimage-archive/studies');
     const nav = page.getByRole('navigation', { name: 'Primary', exact: true });
     const toggle = nav.getByRole('button', { name: 'Toggle navigation' });

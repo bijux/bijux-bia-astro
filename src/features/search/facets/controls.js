@@ -1,3 +1,15 @@
+/** Keep visual, keyboard and announced disclosure state together. Hidden values remain successful form controls. */
+export function setFacetExpanded(section, expanded) {
+    const options = section?.querySelector('.facet-options');
+    const toggle = section?.querySelector('[data-facet-toggle]');
+    if (!options || !toggle) return;
+    section.classList.toggle('collapsed', !expanded);
+    section.classList.toggle('open', expanded);
+    options.hidden = !expanded;
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.disabled = false;
+}
+
 export function submitFacetsForm() {
     const form = document.getElementById("facets");
     if (!form)
@@ -155,13 +167,7 @@ export function bindFacetControls(root, signal) {
     }
     function initFacetSections(root) {
         root.querySelectorAll(".facet-section").forEach((section) => {
-            const secClass = isMobile() ? "collapsed" : "open";
-            const styleDisplay = isMobile() ? "none" : "block";
-            section.classList.remove("collapsed", "open");
-            section.classList.add(secClass);
-            const options = section.querySelector(".facet-options");
-            if (options)
-                options.style.display = styleDisplay;
+            setFacetExpanded(section, !isMobile());
         });
     }
     initSliders(root);

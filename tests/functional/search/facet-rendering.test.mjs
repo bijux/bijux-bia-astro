@@ -5,6 +5,7 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { after, before, test } from 'node:test';
+import { HtmlValidate } from 'html-validate';
 
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 let root;
@@ -252,4 +253,13 @@ test('malformed numeric ranges remain whole instead of discarding extra bounds',
     assert.equal(params.has('size_t.gte'), false);
     assert.equal(params.has('size_t.lte'), false);
     assert.match(pages.malformed_range, />1-2-3</);
+});
+
+
+test('every captured and boundary search response retains valid form and disclosure structure', async () => {
+    const validator = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/audits/markup/htmlvalidate.json'), 'utf8')));
+    for (const [name, html] of Object.entries(pages)) {
+        const result = await validator.validateString(html);
+        assert(result.valid, `${name}: ${JSON.stringify(result.results)}`);
+    }
 });

@@ -35,3 +35,9 @@ export const test = base.extend<{ expectedHTTPFailures: string[]; nativeClipboar
     },
 });
 export { expect };
+
+/** macOS WebKit uses Option-Tab to include every native control and link. */
+export function tabNavigationKeys(browserName: string) {
+    const next = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
+    return { next, previous: next === 'Alt+Tab' ? 'Alt+Shift+Tab' : 'Shift+Tab' };
+}
