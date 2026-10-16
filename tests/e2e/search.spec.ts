@@ -102,3 +102,26 @@ test('match details omit empty fields and retain escaped highlighted text in bot
         }
     }
 });
+
+test('match details are described by named result links and can be dismissed with the keyboard', async ({ page }) => {
+    for (const scope of ['images', 'studies']) {
+        await page.goto(`/bioimage-archive/${scope}?query=match-example`);
+        for (const view of ['#card-view', '#grid-view']) {
+            if (view === '#grid-view') await page.locator('label:has(input[name="view"][value="grid-view"])').click();
+            const card = page.locator(`${view} .custom-card`).first();
+            const trigger = card.locator('a[aria-describedby]');
+            await expect(trigger).toHaveAccessibleName(/.+/);
+            await trigger.focus();
+            const details = card.locator('[role="tooltip"]');
+            await expect(details).toBeVisible();
+            await expect(trigger).toHaveAccessibleDescription(/Cell & nucleus/);
+            await expect(card).toHaveCSS('outline-style', 'solid');
+            await card.getByRole('button', { name: 'Close match tooltip' }).focus();
+            await page.keyboard.press(view === '#card-view' ? 'Enter' : 'Escape');
+            await expect(details).toBeHidden();
+            await expect(trigger).toBeFocused();
+        }
+        const ids = await page.locator('[role="tooltip"]').evaluateAll(nodes => nodes.map(node => node.id));
+        expect(new Set(ids).size).toBe(ids.length);
+    }
+});

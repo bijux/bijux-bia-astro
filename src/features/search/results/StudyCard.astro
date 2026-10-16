@@ -1,7 +1,7 @@
 ---
 import { navigationURL, resourceURL } from "../../../security/urls.mjs";
 import HighlightedTaxa from "./HighlightedTaxa.astro";
-import HighlightedFields from "./HighlightedFields.astro";
+import MatchDetails from "./MatchDetails.astro";
 import { additionalHighlightFields, highlightOrganism, highlightLinks, formatHighlightedList } from "./highlights.mjs";
 import { renderTaxonList } from "../../metadata/taxonomy.mjs";
 import { formatListItem } from "../../../formatting/lists.mjs";
@@ -18,6 +18,7 @@ function getDataForCardFilter(study) {
     return dataString
 }
 const highlightFields = additionalHighlightFields(highlight);
+const matchDescriptionId = `search-match-${crypto.randomUUID()}`;
 const studyCardImage = getStudyImage(study, cardImageOverride);
 const isFallback = String(studyCardImage).includes("placeholder");
 const fallbackMessage = isFallback ? "We cannot display images for this study yet." : "";
@@ -50,16 +51,11 @@ const highlightedStudyLink = highlightLinks(base, highlight, query);
         </div>
     </div>
     {highlightFields.length > 0 && (
-            <div class="tooltip">
-                <span class="tooltiptext">
-                    <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
-                    <HighlightedFields fields={highlightFields} />
-                </span>
-            </div>
+            <MatchDetails fields={highlightFields} descriptionId={matchDescriptionId} />
         )}
     <div class="vf-card__content | vf-stack vf-stack--400">
         <h3 class="vf-card__heading">
-            <a class="vf-card__link" href={highlight? highlightedStudyLink : base} >
+            <a class="vf-card__link" aria-describedby={highlightFields.length ? matchDescriptionId : undefined} href={highlight? highlightedStudyLink : base} >
                 { study.accession_id }
                 <svg aria-hidden="true" class="vf-card__heading__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="currentColor" fill-rule="nonzero"></path></svg>
             </a>

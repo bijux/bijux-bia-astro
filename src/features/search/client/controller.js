@@ -78,6 +78,19 @@ function mountSearch() {
             return;
         submitFacetsForm();
     }, { signal });
+    function dismissMatchDetails(details) {
+        details.classList.add('is-dismissed');
+        if (details.contains(document.activeElement)) {
+            details.closest('.custom-card')?.querySelector('a[aria-describedby]')?.focus();
+        }
+    }
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || !(event.target instanceof Element)) return;
+        const details = event.target.closest('.custom-card')?.querySelector('[data-match-details]');
+        if (!details || details.classList.contains('is-dismissed')) return;
+        event.preventDefault();
+        dismissMatchDetails(details);
+    }, { signal });
     document.addEventListener("click", (event) => {
         const target = event.target;
         if (!(target instanceof Element))
@@ -86,7 +99,8 @@ function mountSearch() {
         if (tooltipClose) {
             event.preventDefault();
             event.stopPropagation();
-            tooltipClose.closest(".tooltip")?.classList.add("is-dismissed");
+            const details = tooltipClose.closest('[data-match-details]');
+            if (details) dismissMatchDetails(details);
             return;
         }
         const facetToggle = target.closest("[data-facet-toggle]");

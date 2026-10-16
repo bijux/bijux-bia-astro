@@ -227,3 +227,15 @@
         display: block;
         z-index: 1000;
     }
+
+#search-results-shell .vf-card:focus-within,
+#search-results-shell .compact-card:focus-within {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.vf-card:focus-within .tooltiptext,
+.compact-card:focus-within .tooltiptext {
+    visibility: visible;
+    display: block;
+}
