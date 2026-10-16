@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { highlightLinks } from '../../../src/features/search/results/highlights.mjs';
+import { highlightLinks, additionalHighlightFields } from '../../../src/features/search/results/highlights.mjs';
 
 const base = '/bioimage-archive/study/S-BIAD3335';
 
@@ -23,4 +23,16 @@ test('snippet limits bound fragment selection while retaining a usable fallback'
     assert.equal(highlightLinks(base, highlights, 'cell', 1), base);
     assert.equal(highlightLinks(base, highlights, 'cell', 0), base);
     assert.equal(highlightLinks(base, highlights, 'cell', 2), `${base}#:~:text=cell`);
+});
+
+
+test('additional match fields preserve supplied order and values without rendering empty or malformed snippets', () => {
+    const highlights = Object.freeze({ title: Object.freeze(['Primary title']),
+        'author.name': Object.freeze(['', null, '__HIT__Cell__/HIT__ & nucleus <script>']),
+        zero: 0, flag: false, empty: Object.freeze([]), whitespace: '  ', absent: null, malformed: Object.freeze({}) });
+    assert.deepEqual(additionalHighlightFields(highlights), [
+        ['author.name', '__HIT__Cell__/HIT__ & nucleus <script>'], ['zero', '0'], ['flag', 'false'],
+    ]);
+    for (const value of [undefined, null, [], { title: ['Only a title'], description: [] }])
+        assert.deepEqual(additionalHighlightFields(value), []);
 });

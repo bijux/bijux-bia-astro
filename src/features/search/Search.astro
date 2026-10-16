@@ -75,7 +75,7 @@ const { requestError, searchPageURL, totalResults, results, paginationData, face
     { (hasQueryParam) && (
         <section class="vf-content">
           <div class="vf-grid vf-grid__col-3">
-            <div class="vf-grid__col--span-2">{query && (<h2>Search results for <a href={`${searchPageURL}?query=${query}`}><strong>{query}</strong></a></h2>)}</div>
+            <div class="vf-grid__col--span-2">{query && (<h2>Search results for <a href={`${searchPageURL}?${new URLSearchParams({ query })}`}><strong>{query}</strong></a></h2>)}</div>
             <div></div>
           </div>
           <section class="vf-content">

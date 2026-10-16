@@ -70,3 +70,58 @@ test('physical filter labels preserve zero and very small values without changin
     await expect(page.locator('#pageSize')).toHaveValue('30');
     expect(new URL(page.url()).searchParams.getAll('total_physical_size_x')).toEqual(values);
 });
+
+
+test('query headings retain reserved characters when followed on either search endpoint', async ({ page }) => {
+    const query = 'ATP & RNA+DNA #1';
+    for (const scope of ['images', 'studies']) {
+        await page.goto(`/bioimage-archive/${scope}?${new URLSearchParams({ query })}`);
+        const link = page.getByRole('heading').getByRole('link', { name: query, exact: true });
+        const destination = new URL((await link.getAttribute('href'))!, page.url());
+        expect([...destination.searchParams]).toEqual([['query', query]]);
+        expect(destination.hash).toBe('');
+        await link.click();
+        await expect(page.locator('#searchitem')).toHaveValue(query);
+        expect(new URL(page.url()).searchParams.get('query')).toBe(query);
+    }
+});
+
+
+test('match details omit empty fields and retain escaped highlighted text in both result layouts', async ({ page }) => {
+    for (const scope of ['images', 'studies']) {
+        await page.goto(`/bioimage-archive/${scope}?query=empty-additional-highlights`);
+        await expect(page.locator('.tooltip')).toHaveCount(0);
+        await page.goto(`/bioimage-archive/${scope}?query=match-example`);
+        for (const view of ['#card-view', '#grid-view']) {
+            const fields = page.locator(`${view} .tooltip .highlight`);
+            await expect(fields).toHaveCount(2);
+            await expect(fields.nth(0)).toContainText('Cell & nucleus');
+            await expect(fields.nth(1)).toContainText('<script>literal text</script>');
+            await expect(fields.locator('script')).toHaveCount(0);
+            await expect(fields.locator('mark')).toHaveText('Cell');
+        }
+    }
+});
+
+test('match details are described by named result links and can be dismissed with the keyboard', async ({ page }) => {
+    for (const scope of ['images', 'studies']) {
+        await page.goto(`/bioimage-archive/${scope}?query=match-example`);
+        for (const view of ['#card-view', '#grid-view']) {
+            if (view === '#grid-view') await page.locator('label:has(input[name="view"][value="grid-view"])').click();
+            const card = page.locator(`${view} .custom-card`).first();
+            const trigger = card.locator('a[aria-describedby]');
+            await expect(trigger).toHaveAccessibleName(/.+/);
+            await trigger.focus();
+            const details = card.locator('[role="tooltip"]');
+            await expect(details).toBeVisible();
+            await expect(trigger).toHaveAccessibleDescription(/Cell & nucleus/);
+            await expect(card).toHaveCSS('outline-style', 'solid');
+            await card.getByRole('button', { name: 'Close match tooltip' }).focus();
+            await page.keyboard.press(view === '#card-view' ? 'Enter' : 'Escape');
+            await expect(details).toBeHidden();
+            await expect(trigger).toBeFocused();
+        }
+        const ids = await page.locator('[role="tooltip"]').evaluateAll(nodes => nodes.map(node => node.id));
+        expect(new Set(ids).size).toBe(ids.length);
+    }
+});

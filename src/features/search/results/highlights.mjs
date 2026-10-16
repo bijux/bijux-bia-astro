@@ -60,10 +60,23 @@ export function highlightLinks(baseUrl, highlights, query, limit = 8) {
     return baseUrl;
 }
 
-export function getHighlightTextString(highlights) {
-  if (!highlights) return "";
-  const skiphighlightFields = ["title", "organism_classification.common_name", "organism_classification.scientific_name", "imaging_method","imaging_method.keyword","annotation_type.keyword", "accession_id"];
-  const highlightValues = Object.entries(highlights).map(([key, value]) =>
-    !skiphighlightFields.includes(key) && `<span class="highlight"><b>${`${key.replace(/.*\./g, "").replace(/_/g, " ")}: `}</b><i>${value}</i></span>`).filter(Boolean).flat();
-  return highlightValues.join("<br>");
+const primaryHighlightFields = new Set(['title', 'organism_classification.common_name', 'organism_classification.scientific_name',
+    'imaging_method', 'imaging_method.keyword', 'annotation_type.keyword', 'accession_id']);
+
+function snippetText(value) {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) return String(value);
+    return '';
+}
+
+/** Select the same meaningful additional fields for the trigger and its rendered details.
+ * @returns {Array<[string, string]>}
+ */
+export function additionalHighlightFields(highlights) {
+    if (!highlights || typeof highlights !== 'object' || Array.isArray(highlights)) return [];
+    return Object.entries(highlights).flatMap(([key, value]) => {
+        if (primaryHighlightFields.has(key)) return [];
+        const text = Array.isArray(value) ? value.map(snippetText).filter(part => part.trim()).join(',') : snippetText(value);
+        return text.trim() ? [[key, text]] : [];
+    });
 }

@@ -1,0 +1,17 @@
+---
+import HighlightedFields from './HighlightedFields.astro';
+
+interface Props {
+    fields: [string, string][];
+    descriptionId: string;
+    marginTop?: string;
+}
+const { fields, descriptionId, marginTop } = Astro.props;
+---
+
+<div class="tooltip" data-match-details>
+    <span class="tooltiptext" style={marginTop ? `margin-top:${marginTop};` : undefined}>
+        <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
+        <span id={descriptionId} role="tooltip"><HighlightedFields fields={fields} /></span>
+    </span>
+</div>

@@ -67,6 +67,12 @@ export function fixtureResponse(value) {
             ];
             response.hits.hits[0].highlight = {};
         }
+        if (['empty-additional-highlights', 'match-example'].includes(url.searchParams.get('query'))) {
+            const highlight = url.searchParams.get('query') === 'match-example'
+                ? { description: ['__HIT__Cell__/HIT__ & nucleus'], 'author.name': ['<script>literal text</script>'] }
+                : { title: ['Primary title'], description: [], 'author.name': null };
+            response.hits.hits = response.hits.hits.slice(0, 1).map(hit => ({ ...hit, highlight }));
+        }
         if (url.searchParams.get('query') === 'empty-highlights') {
             response.hits.hits = response.hits.hits.slice(0, 1).map(hit => ({ ...hit, highlight: {} }));
         }
