@@ -57,3 +57,16 @@ test('study and image result links survive empty highlights in cards and tables'
         await expect(page.locator('#table-view tbody tr a').first()).toHaveAttribute('href', destination);
     }
 });
+
+test('physical filter labels preserve zero and very small values without changing their selected tokens', async ({ page }) => {
+    const values = ['>0', '>1e-15'];
+    const query = new URLSearchParams(values.map(value => ['total_physical_size_x', value]));
+    await page.goto(`/bioimage-archive/images?${query}`);
+    for (const [value, label] of [['>0', '> 0 m'], ['>1e-15', '> 1e-15 m']]) {
+        await expect(page.locator(`input[name="total_physical_size_x"][value="${value}"]`)).toBeChecked();
+        await expect(page.locator('#selected-facets .facet-value').getByText(label, { exact: true })).toBeAttached();
+    }
+    await page.locator('#pageSize').selectOption('30');
+    await expect(page.locator('#pageSize')).toHaveValue('30');
+    expect(new URL(page.url()).searchParams.getAll('total_physical_size_x')).toEqual(values);
+});

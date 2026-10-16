@@ -1,13 +1,27 @@
 import { parseNumericRange } from "./numeric-ranges.mjs";
+
+const byteUnits = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
+const metreScales = [
+  { symbol: 'm', divisor: 1 }, { symbol: 'mm', divisor: 1e-3 },
+  { symbol: 'µm', divisor: 1e-6 }, { symbol: 'nm', divisor: 1e-9 },
+  { symbol: 'pm', divisor: 1e-12 },
+];
+
 export function formatBytesToHumanSize(sizeBytes) {
-  var i = sizeBytes == 0 ? 0 : Math.floor(Math.log(sizeBytes) / Math.log(1000));
-  return `${Number(sizeBytes / Math.pow(1000, i)).toFixed(2)} ${['B', 'kB', 'MB', 'GB', 'TB', 'PB'][i]}`
+  if (!['number', 'string'].includes(typeof sizeBytes) || String(sizeBytes).trim() === '') return 'Unknown';
+  const value = Number(sizeBytes);
+  if (!Number.isFinite(value) || value < 0) return 'Unknown';
+  let index = 0;
+  while (index < byteUnits.length - 1 && value >= 1000 ** (index + 1)) index++;
+  return `${(value / 1000 ** index).toFixed(2)} ${byteUnits[index]}`;
 }
 
 function formatMetresToHumanSize(metres) {
-  var i = metres == 0 ? 0 : Math.floor(Math.log(metres) / Math.log(1000)) * -1;
-  var formatted = `${Number(metres / Math.pow(1000, i*-1)).toFixed(0)} ${['mm', 'µm', 'nm', "pm"][i-1]}`
-  return formatted;
+  if (!Number.isFinite(metres)) return 'Unknown';
+  if (metres === 0) return '0 m';
+  const scale = metreScales.find(({ divisor }) => Math.abs(metres) >= divisor);
+  // Preserve smaller values in metres rather than rounding them to zero picometres.
+  return scale ? `${(metres / scale.divisor).toFixed(0)} ${scale.symbol}` : `${metres} m`;
 }
 
 function formatValueHumanReadable(fieldName, value) {
@@ -16,6 +30,8 @@ function formatValueHumanReadable(fieldName, value) {
     return value;
   }
   if (fieldName.endsWith("(m/px)") || fieldName.endsWith("(m)")) {
+    // Non-zero authored exponents can underflow Number; retain their text rather than inventing zero.
+    if (nValue === 0 && /[1-9]/.test(String(value).split(/[eE]/)[0])) return `${value} m`;
     return formatMetresToHumanSize(nValue);
   }
   else if (fieldName.endsWith("(bytes)")) {
@@ -27,12 +43,13 @@ function formatValueHumanReadable(fieldName, value) {
 }
 
 export function formatFieldName(fieldName, fieldValue) {
+  if (typeof fieldValue === 'number') {
+    return Number.isFinite(fieldValue) ? formatValueHumanReadable(fieldName, fieldValue) : 'Unknown';
+  }
+  if (typeof fieldValue !== 'string') return fieldValue;
   const bIsCompared = fieldValue.startsWith(">") || fieldValue.startsWith("<") || fieldValue.startsWith("≤") || fieldValue.startsWith("≥");
   const range = parseNumericRange(fieldValue);
-  if(Number.isFinite(fieldValue)) {
-    return formatValueHumanReadable(fieldName, fieldValue);
-  }
-  else if (bIsCompared) {
+  if (bIsCompared) {
     const fieldValueNumeric = fieldValue.slice(1);
     return `${fieldValue[0]} ${formatValueHumanReadable(fieldName, fieldValueNumeric)}`;
   }
