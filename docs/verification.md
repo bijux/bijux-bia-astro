@@ -8,8 +8,9 @@ make verify
 ```
 
 CI runs the same gate: source checking, all Node unit/functional suites, then a
-representative production build, configured HTML validation and desktop/mobile
-Chromium journeys. Linux CI also installs browser OS dependencies. Tests reject
+representative production build, configured HTML validation, exact served-HTML
+checks against the deployment manifest, and desktop/mobile Chromium journeys.
+Linux CI also installs browser OS dependencies. Tests reject
 unexpected API calls; captured responses and their provenance remain unchanged.
 Synthetic cases cover missing metadata, failed requests and other boundaries.
 
@@ -56,5 +57,6 @@ stricter JavaScript/unused analysis. Existing type diagnostics can make that run
 incomplete; it is not the normal passing source gate.
 
 Live catalogue verification is separate: `npm run build:deployment` requires its
-APIs. Retain its logs and completeness report. Security boundaries and unresolved
+APIs. The manual `Live catalogue verification` workflow retains build logs and
+completeness evidence, including failed runs. Security boundaries and unresolved
 risks are described in [the security guidance](security.md).

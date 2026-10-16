@@ -1,0 +1,40 @@
+name: Live catalogue verification
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-catalogue-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-catalogue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build and verify the live catalogue
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts
+          npm run build:deployment 2>&1 | tee artifacts/catalogue-build.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: catalogue-snapshot
+          path: |
+            artifacts/catalogue-build.log
+            artifacts/catalogue/
+            artifacts/deployment/
+          retention-days: 7
+

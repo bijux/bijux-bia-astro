@@ -1,0 +1,46 @@
+name: Website verification
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --with-deps --only-shell chromium
+      - run: make verify
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
+        with:
+          version: v3.18.3
+      - run: helm lint --strict helm-chart --set image.tag=verification
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: website-verification
+          path: |
+            artifacts/website-verification/report.json
+            artifacts/browser-results/
+            artifacts/testing/astro/**/build-*.json
+            artifacts/testing/astro/**/build-*.log
+            artifacts/website-verification/application/artifacts/deployment/
+          retention-days: 7
+          if-no-files-found: ignore
