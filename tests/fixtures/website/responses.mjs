@@ -12,6 +12,12 @@ export function fixtureResponse(value) {
     const url = new URL(value);
     if (url.searchParams.get('query') === 'unavailable') throw new Error('Controlled API failure.');
     if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/biostudies/api/v1/studies/S-BIAD3335/info') return { httpLink: 'https://www.ebi.ac.uk/biostudies/files/S-BIAD3335/' };
+    // Synthetic optional enrichment exercises unit text absent from the saved study captures.
+    if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/emdb/api/entry/EMD-1234') return {
+        structure_determination_list: { structure_determination: { image_processing: {
+            final_reconstruction: { resolution: { valueOf_: '3.25', units: 'Å' } },
+        } } },
+    };
     if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
     if (url.pathname === '/search/v1/website/image' && url.searchParams.get('query') === sourceImage.uuid) {
@@ -21,7 +27,9 @@ export function fixtureResponse(value) {
     if (url.pathname === '/search/v1/website/study') {
         const accession = url.searchParams.get('facet.accession_id');
         const study = [...studies, annotationStudy].find(item => item.accession_id === accession) ?? benchmarkStudies.get(accession);
-        if (study) return { hits: { hits: [{ _source: study }] } };
+        if (study) return { hits: { hits: [{ _source: accession === 'S-BIAD3335'
+            ? { ...study, see_also: [...(study.see_also ?? []), { link_type: 'EMDB', link: 'https://www.ebi.ac.uk/emdb/EMD-1234' }] }
+            : study }] } };
     }
     // Explicit synthetic boundary: this representative internal image has no returned terminal descendants.
     if (url.pathname === '/search/v1/website/image' && url.searchParams.get('facet.downstream_of') === image.uuid && url.searchParams.get('facet.specimen_track_position') === 'terminal') return { hits: { hits: [] } };
