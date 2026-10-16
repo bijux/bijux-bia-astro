@@ -7,7 +7,7 @@ const boundaryNames = ['constructor', '__proto__', 'toString'];
 test('spora preserves production behaviour', async ({ page }) => {
 assert((await page.goto('/bioimage-archive/projects/spora/dataset')).ok());
         await page.getByRole('button', { name: 'Cite', exact: true }).first().click();
-        await page.locator('.cite-dialog[open]').waitFor();
+        await page.getByRole('dialog', { name: 'Dataset citation', exact: true }).waitFor();
         const citation = await page.locator('.cite-dialog code').textContent();
         await page.locator('.copy-citation').click();
         assert.equal(await page.evaluate(() => navigator.clipboard.readText()), citation);
@@ -22,7 +22,7 @@ test('SPORA filters retain working download actions and clear to the original ro
     await page.locator('#dataset-search').fill(name!);
     await expect(rows).toHaveCount(1);
     await page.getByRole('button', { name: 'Download', exact: true }).click();
-    const dialog = page.locator('.globus-dialog[open]');
+    const dialog = page.getByRole('dialog', { name: 'Dataset download commands', exact: true });
     const command = await dialog.locator('code').textContent();
     await dialog.getByRole('button', { name: 'Copy', exact: true }).click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(command);
@@ -52,7 +52,7 @@ test('clipboard rejection leaves the SPORA dialog usable and a retry copies the 
     }));
     const opener = page.getByRole('button', { name: 'Download', exact: true }).first();
     await opener.click();
-    const dialog = page.locator('.globus-dialog[open]');
+    const dialog = page.getByRole('dialog', { name: 'Dataset download commands', exact: true });
     const command = await dialog.locator('code').textContent();
     const copy = dialog.locator('.copy-commands');
     await copy.click();

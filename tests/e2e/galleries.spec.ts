@@ -46,3 +46,20 @@ test('AI model tables retain their model navigation and initialise', async ({ pa
     await expect(page.locator('#model_prediction_table_wrapper')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Link to model', exact: true })).toHaveAttribute('href', /^https:/);
 });
+
+test('volume-EM download dialogs expose their title and return focus after native dismissal', { tag: '@preservation' }, async ({ page }) => {
+    await page.goto('/bioimage-archive/galleries/volumeem');
+    const opener = page.locator('#card-view').getByRole('button', { name: 'Copy OME-Zarr URI', exact: true }).first();
+    await opener.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'OME-Zarr S3 Location', exact: true });
+    await expect(dialog.getByRole('heading', { name: 'OME-Zarr S3 Location', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Copy S3 URI', exact: true })).toHaveCSS('border-top-left-radius', '0px');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+    await page.keyboard.press('Enter');
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+});

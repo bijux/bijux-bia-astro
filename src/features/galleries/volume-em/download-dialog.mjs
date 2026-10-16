@@ -28,7 +28,9 @@ export function copyURI(opener) {
     const uri = opener.getAttribute("data-uri");
     if (!resourceURL(uri)) return;
     const command = downloadCommand(uri);
+    const title = "OME-Zarr S3 Location";
     const dialog = document.createElement("dialog");
+    dialog.setAttribute("aria-label", title);
     Object.assign(dialog.style, { border: "1px solid #ccc", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", maxWidth: "80vw" });
     const content = document.createElement("div");
     Object.assign(content.style, { padding: "20px", textAlign: "left", maxWidth: "600px" });
@@ -49,7 +51,7 @@ export function copyURI(opener) {
     const close = button("×", () => dialog.close());
     close.setAttribute("aria-label", "Close");
     Object.assign(close.style, { position: "absolute", top: "10px", right: "10px", background: "none", border: "none", fontSize: "20px", fontWeight: "bold", cursor: "pointer" });
-    element("h3", "OME-Zarr S3 Location", { textAlign: "center", marginBottom: "15px" });
+    element("h3", title, { textAlign: "center", marginBottom: "15px" });
     element("h4", "S3 URI:");
     element("p", uri, { wordBreak: "break-all", fontFamily: "monospace", background: "#f5f5f5", padding: "10px", borderRadius: "4px" });
     if (command) {
