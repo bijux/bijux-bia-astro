@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { parse } from '@astrojs/compiler';
 import { eslintFindings, knipFindings, renderFindings, reportExitCode } from "../../../../scripts/audits/dead-code/report.mjs";
 
@@ -52,8 +52,7 @@ test('Knip preserves scripts loaded by live study and search components', async 
   for (const [component, source] of browserScripts) {
     assert((await scriptSources(readFileSync(component, 'utf8'))).includes(source), `${component}: script contract changed`);
   }
-  const require = createRequire(import.meta.url);
-  const packageFile = require.resolve('knip/package.json');
+  const packageFile = fileURLToPath(new URL('../../../../node_modules/knip/package.json', import.meta.url));
   const info = JSON.parse(readFileSync(packageFile, 'utf8'));
   const executable = path.join(path.dirname(packageFile), info.bin.knip);
   const run = spawnSync(process.execPath, [executable, '--config', 'configs/audits/dead-code/knip.json', '--reporter', 'json'], {
@@ -63,7 +62,7 @@ test('Knip preserves scripts loaded by live study and search components', async 
   assert([0, 1].includes(run.status), run.stderr);
   const data = JSON.parse(run.stdout);
   for (const [, , file] of browserScripts) {
-    assert(!data.files.includes(file), `Live browser script reported unreachable: ${file}`);
+    assert(!data.issues.some(row => row.file === file && row.files?.length), `Live browser script reported unreachable: ${file}`);
   }
 });
 
@@ -112,13 +111,13 @@ test('Suppressed findings remain visible and do not count as active findings', (
 });
 
 test('Whole-file Knip findings do not invent line 1', () => {
-  const items = knipFindings({ files: ['src/Unused.astro'], issues: [] }, root);
+  const items = knipFindings({ issues: [{ file: 'src/Unused.astro', files: [{ name: 'src/Unused.astro' }] }] }, root);
   assert.equal(items[0].line, null);
   assert.match(renderFindings(items, () => ''), /file level; line not supplied/);
 });
 
 test('Knip exports and dependency positions survive', () => {
-  const items = knipFindings({ files: [], issues: [
+  const items = knipFindings({ issues: [
     { file: 'src/lib.ts', exports: [{ name: 'unusedFn', line: 5, col: 17 }] },
     { file: 'package.json', devDependencies: [{ name: 'unused-pkg', line: 24, col: 5 }] },
   ] }, root);
@@ -127,17 +126,17 @@ test('Knip exports and dependency positions survive', () => {
   assert.equal(items[1].kind, 'devDependencies');
 });
 
-test('Nested enum and class members are retained', () => {
-  const items = knipFindings({ files: [], issues: [{ file: 'src/a.ts',
-    enumMembers: { Mode: [{ name: 'old', line: 4, col: 1 }] },
-    classMembers: { Service: [{ name: 'oldMethod', line: 8, col: 2 }] },
+test('Flattened enum and namespace members retain their parent and positions', () => {
+  const items = knipFindings({ issues: [{ file: 'src/a.ts',
+    enumMembers: [{ namespace: 'Mode', name: 'old', line: 4, col: 1 }],
+    namespaceMembers: [{ namespace: 'Service', name: 'oldMethod', line: 8, col: 2 }],
   }] }, root);
   assert.match(items[0].message, /Mode.old/);
   assert.match(items[1].message, /Service.oldMethod/);
 });
 
 test('Unresolved and unlisted imports and duplicate exports are not labeled dead', () => {
-  const items = knipFindings({ files: [], issues: [{ file: 'src/a.ts',
+  const items = knipFindings({ issues: [{ file: 'src/a.ts',
     unresolved: [{ name: './missing', line: 1 }],
     unlisted: [{ name: 'missing-package' }],
     duplicates: [[{ name: 'default', line: 3 }, { name: 'other', line: 4 }]],
@@ -147,11 +146,22 @@ test('Unresolved and unlisted imports and duplicate exports are not labeled dead
   assert.equal(reportExitCode(items, noStagesFailed), 2);
 });
 
+test('unresolved catalog references retain metadata and remain incomplete in report-only mode', () => {
+  const items = knipFindings({ issues: [{ file: 'package.json', catalogReferences: [
+    { name: 'missing', kind: 'catalog', specifier: 'catalog:missing', line: 3 },
+  ] }] }, root);
+  assert.equal(items[0].status, 'ANALYSIS_DIAGNOSTIC');
+  assert.equal(items[0].specifier, 'catalog:missing');
+  assert.equal(items[0].symbolKind, 'catalog');
+  assert.equal(reportExitCode(items, noStagesFailed, true), 2);
+});
+
 test('Malformed data and changed schemas fail loudly', () => {
   assert.throws(() => eslintFindings({}, root));
   assert.throws(() => eslintFindings([{ filePath: 'a' }], root));
   assert.throws(() => knipFindings({}, root));
-  assert.throws(() => knipFindings({ files: [], issues: [{ file: 'a', newCategory: [] }] }, root));
+  assert.throws(() => knipFindings({ files: [], issues: [] }, root));
+  assert.throws(() => knipFindings({ issues: [{ file: 'a', newCategory: [] }] }, root));
 });
 
 test('Malformed nested Knip issue shapes are rejected', () => {
@@ -167,23 +177,25 @@ test('Malformed nested Knip issue shapes are rejected', () => {
     { exports: [{ name: 'unused', pos: 0.5 }] },
     { exports: [{ name: 'unused', line: null }] },
     { exports: [{ name: 'unused', unexpected: true }] },
-    { enumMembers: [] },
-    { enumMembers: { Mode: 'invalid' } },
-    { classMembers: { Service: [null] } },
+    { enumMembers: { Mode: [] } },
+    { namespaceMembers: [{ name: 'member', namespace: 2 }] },
+    { classMembers: [] },
+    { exports: [{ name: 'value', kind: false }] },
+    { unresolved: [{ name: 'value', specifier: null }] },
     { duplicates: [{ name: 'unused' }] },
     { duplicates: [['invalid']] },
     { owners: [null] },
   ];
   for (const fields of invalid) {
-    assert.throws(() => knipFindings({ files: [], issues: [{ file: 'src/a.ts', ...fields }] }, root),
+    assert.throws(() => knipFindings({ issues: [{ file: 'src/a.ts', ...fields }] }, root),
       undefined, JSON.stringify(fields));
   }
-  assert.throws(() => knipFindings({ files: [], issues: [null] }, root));
-  assert.throws(() => knipFindings({ files: [], issues: [], unexpected: [] }, root));
+  assert.throws(() => knipFindings({ issues: [null] }, root));
+  assert.throws(() => knipFindings({ issues: [], unexpected: [] }, root));
 });
 
 test('Knip accepts optional locations, zero-based offsets and ownership data', () => {
-  const items = knipFindings({ files: [], issues: [{ file: 'src/a.ts',
+  const items = knipFindings({ issues: [{ file: 'src/a.ts',
     owners: [{ name: '@maintainer' }], binaries: [{ name: 'build-tool' }],
     exports: [{ name: 'unused', line: 1, col: 1, pos: 0 }],
   }] }, root);

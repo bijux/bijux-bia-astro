@@ -22,6 +22,12 @@ const unusedStyleProbe = 'red';
 <p class="presentProbe">{visibleProbeValue}</p>
 <script>
   const unusedClientProbe = 1;
+  class PrivateProbe {
+    #unusedPrivateProbe = 1;
+    #activePrivateProbe = 2;
+    value() { return this.#activePrivateProbe; }
+  }
+  console.log(new PrivateProbe().value());
   console.log('script probe');
 </script>
 <style define:vars={{ usedStyleProbe, unusedStyleProbe }}>
@@ -42,6 +48,8 @@ for (const name of ['UnusedImportProbe', 'unusedFrontmatterProbe', 'unusedClient
 for (const name of ['VisibleProbe', 'visibleProbeValue']) {
   assert(!unused.some(message => message.message.includes(`'${name}'`)), `Template-use false positive: ${name}`);
 }
+assert(messages.some(message => message.ruleId === 'no-unused-private-class-members' && message.message.includes('unusedPrivateProbe')), 'Unused private member probe missing');
+assert(!messages.some(message => message.ruleId === 'no-unused-private-class-members' && message.message.includes('activePrivateProbe')), 'Used private member incorrectly reported');
 assert(messages.some(message => message.ruleId === 'astro/no-unused-css-selector'), 'CSS rule probe missing');
 assert(!messages.some(message => message.ruleId === 'astro/no-unused-css-selector' &&
   message.message.includes('presentProbe')), 'Used CSS selector incorrectly reported');
