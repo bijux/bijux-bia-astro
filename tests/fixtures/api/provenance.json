@@ -78,6 +78,18 @@
       "url": "https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/f7a58691-b3bc-4277-8d58-e7ae2b1ddccd/file_reference?page_size=1000",
       "capturedAt": "2026-10-16T05:56:13.291453+00:00",
       "sha256": "452d9059354f0a4fdf11d374b796a7072b7b26cf29bffd23b3eba19c6752a93e"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/ebisearch/ws/rest/ebiweb_training_events?format=json&query=domain_source:ebiweb_training_events%20AND%20timeframe:upcoming&start=0&size=2&fieldurl=true&fields=title,description,start_date,end_date,date_time_clean,resource_training_page,type,training_type,url,venue,materials,status,timeframe,resource_training_page,course_image&facetcount=0&sort=start_date&facets=resource_training_page:BioImage%20Archive",
+      "capturedAt": "2026-10-16T06:33:07.314696+00:00",
+      "sha256": "71ead80ed19e7f0029d639626a344b40299494712b8d5f3179b5c636ef88d1b6",
+      "file": "training-live-response.json"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/ebisearch/ws/rest/ebiweb_training_online?format=json&query=domain_source:ebiweb_training_online&start=0&size=2&fields=title,subtitle,description,type,url&sort=title&facets=resource_training_page:BioImage%20Archive",
+      "capturedAt": "2026-10-16T06:33:07.309197+00:00",
+      "sha256": "e15a7edd283231b6465fd101c93f91a3b0fb495bf8bdf4ee94ae845e64f4b7bd",
+      "file": "training-on-demand-response.json"
     }
   ]
 }
