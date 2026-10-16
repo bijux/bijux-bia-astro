@@ -4,6 +4,9 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { resourceURL } from "../../../src/security/urls.mjs";
+import { escapeHtml } from "../../../src/security/html.mjs";
+import { formatBytesToHumanSize } from "../../../src/formatting/units.mjs";
+import { renderFilePaths } from "../../../src/features/studies/file-paths.mjs";
 
 const input = await readFile(new URL("../../../src/features/studies/viewable-images.js", import.meta.url), 'utf8');
 const source = ts.transpileModule(input, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
@@ -38,7 +41,12 @@ function mount({ hasTable = true, hasTracks = false, hasToggle = hasTracks, rest
     } : { length: 0 };
     jquery.fn = { DataTable: { isDataTable: () => false } };
     vm.runInNewContext(source, {
-        exports: {}, require: name => { assert.equal(name, '../../security/urls.mjs'); return { resourceURL }; },
+        exports: {}, require: name => {
+            const modules = { '../../security/urls.mjs': { resourceURL }, '../../security/html.mjs': { escapeHtml },
+                '../../formatting/units.mjs': { formatBytesToHumanSize }, './file-paths.mjs': { renderFilePaths } };
+            assert(Object.hasOwn(modules, name), `Unexpected import: ${name}`);
+            return modules[name];
+        },
         document: {
             querySelector(selector) {
                 if (selector === '#viewable_images_table') return hasTable ? tableElement : null;

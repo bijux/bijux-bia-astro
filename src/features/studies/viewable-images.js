@@ -1,4 +1,7 @@
 import { resourceURL } from "../../security/urls.mjs";
+import { escapeHtml } from "../../security/html.mjs";
+import { formatBytesToHumanSize } from "../../formatting/units.mjs";
+import { renderFilePaths } from "./file-paths.mjs";
 
 const tableEl = document.querySelector("#viewable_images_table");
 
@@ -26,85 +29,13 @@ if (tableEl) {
       const thumbnail_uri = getMetadataValue(img.additional_metadata, "image_thumbnail_uri")?.["256"]?.["uri"] || imageFallbackSrc;
       return resourceURL(thumbnail_uri) ?? imageFallbackSrc;
   }
-  function getDownloadSize(image) {
-    var i = image?.total_size_in_bytes == 0 ? 0 : Math.floor(Math.log(image?.total_size_in_bytes) / Math.log(1000));
-    return `${Number(image?.total_size_in_bytes / Math.pow(1000, i)).toFixed(2)} ${['B', 'kB', 'MB', 'GB', 'TB', 'PB'][i]}`
-  }
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function normaliseFilePaths(image) {
-    const value = image.label || image.file_path || "";
-
-    if (Array.isArray(value)) {
-      return value.filter(Boolean);
-    }
-
-    return [value].filter(Boolean);
-  }
-
-  function formatFilePath(path) {
-    // Break the original text so entities and Unicode code points remain intact.
-    return (String(path).match(/[\s\S]{1,40}/gu) || []).map(escapeHtml).join("<wbr>");
-  }
-
-  function renderFilePaths(image) {
-    const paths = normaliseFilePaths(image);
-
-    if (paths.length === 0) return "";
-
-    const visible = paths.slice(0, 2);
-    const hidden = paths.slice(2);
-
-    const visibleHtml = visible
-      .map((path, index) => `
-        <div>
-          ${formatFilePath(path)}${index < paths.length - 1 ? "," : ""}
-        </div>
-      `)
-      .join("");
-
-    if (hidden.length === 0) {
-      return `<span class="file-path">${visibleHtml}</span>`;
-    }
-
-    const hiddenHtml = hidden
-      .map((path, index) => `
-        <div>
-          ${formatFilePath(path)}${index + visible.length < paths.length - 1 ? "," : ""}
-        </div>
-      `)
-      .join("");
-
-    return `
-      <span class="file-path">
-        ${visibleHtml}
-        <span class="file-path-extra" style="display:none;">
-          ${hiddenHtml}
-        </span>
-        <button type="button" class="file-path-toggle vf-button vf-button--link">
-          Expand
-        </button>
-      </span>
-    `;
-  }
   document.addEventListener("click", function (event) {
-    const button = event.target.closest(".file-path-toggle");
-    if (!button) return;
-
-    const wrapper = button.closest(".file-path");
-    const extra = wrapper.querySelector(".file-path-extra");
-
-    const isHidden = extra.style.display === "none";
-
-    extra.style.display = isHidden ? "inline" : "none";
-    button.textContent = isHidden ? "Collapse" : "Expand";
+    const button = event.target.closest?.(".file-path-toggle");
+    if (!button || !tableEl.contains(button)) return;
+    const extra = button.closest(".file-path").querySelector(".file-path-extra");
+    extra.hidden = !extra.hidden;
+    button.setAttribute("aria-expanded", String(!extra.hidden));
+    button.textContent = extra.hidden ? "Expand" : "Collapse";
   });
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -370,8 +301,8 @@ if (tableEl) {
         {
           data: "preview",
           render: (_d, _t, image) => `
-            <a href="${escapeHtml(imageUrl(image))}">
-              <img class="vf-figure__image" src="${escapeHtml(getThumbnail(image) || "")}" />
+            <a href="${escapeHtml(imageUrl(image))}" aria-label="View image ${escapeHtml(image.uuid)}">
+              <img class="vf-figure__image" alt="" src="${escapeHtml(getThumbnail(image) || "")}" />
             </a>
           `,
         },
@@ -387,7 +318,7 @@ if (tableEl) {
         },
         {
           data: "total_size_in_bytes",
-          render: (_d, _t, image) => getDownloadSize(image),
+          render: (_d, _t, image) => formatBytesToHumanSize(image?.total_size_in_bytes),
         },
         {
           data: "actions",
