@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { buildConfiguration } from "../../../src/server/configuration.mjs";
-import { verifyDeployment } from "../../../scripts/deployment/manifest.mjs";
+import { sealDeployment, verifyDeployment } from "../../../scripts/deployment/manifest.mjs";
 import { packageDeployment, deploymentPackagePath } from '../../../scripts/deployment/package.mjs';
 import { deploymentConfiguration } from "../../../src/server/deployment.mjs";
 
@@ -80,6 +80,12 @@ export async function GET({url}){
     await assert.rejects(deploymentConfiguration(manifestFile, { PUBLIC_SEARCH_API: 'https://different.example.org' }), /fixed at build time/);
     const htmlFile = path.join(root, 'artifacts/dist/bioimage-archive/client/index.html');
     const html = await readFile(htmlFile, 'utf8');
+    assert(manifest.references.documents > 0);
+    assert.deepEqual(manifest.references.failures, []);
+    await writeFile(htmlFile, html + '<a href="#missing-generated-section">Broken section</a>');
+    await assert.rejects(sealDeployment(root, manifest.configuration), /missing generated fragment.*missing-generated-section/);
+    await writeFile(htmlFile, html);
+    await verifyDeployment(root);
     await new Promise(resolve => upstream.close(resolve));
     const snapshots = path.join(root, 'artifacts/catalogue/snapshots');
     const captured = await readdir(snapshots);
