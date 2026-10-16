@@ -31,6 +31,7 @@ test('a Node deployment builds once, serves offline, preserves its configuration
     for (const directory of ['src/pages', 'public', 'scripts']) await mkdir(path.join(root, directory), { recursive: true });
     await cp(path.join(repository, 'scripts/deployment'), path.join(root, 'scripts/deployment'), { recursive: true });
     await cp(path.join(repository, 'scripts/catalogue'), path.join(root, 'scripts/catalogue'), { recursive: true });
+    await cp(path.join(repository, 'scripts/filesystem'), path.join(root, 'scripts/filesystem'), { recursive: true });
     await cp(path.join(repository, 'package-lock.json'), path.join(root, 'package-lock.json'));
     await cp(path.join(repository, 'src/server'), path.join(root, 'src/server'), { recursive: true });
     await cp(path.join(repository, 'src/security'), path.join(root, 'src/security'), { recursive: true });

@@ -4,14 +4,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { randomUUID } from 'node:crypto';
+import { ownedDirectory } from '../../../scripts/filesystem/owned-directory.mjs';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
 
 /** An isolated Astro root; callers own teardown while build evidence remains outside it. */
 export async function createAstroFixture(owner, sources = []) {
     if (!/^[a-z][a-z-]*$/.test(owner)) throw new TypeError('Fixture owner must be a descriptive slug.');
-    const directory = path.join(repository, 'artifacts/testing/astro', owner);
-    await mkdir(directory, { recursive: true });
+    const directory = await ownedDirectory(repository, `artifacts/testing/astro/${owner}`);
     const run = await mkdtemp(path.join(directory, 'run-'));
     const root = path.join(run, 'application');
     try {
