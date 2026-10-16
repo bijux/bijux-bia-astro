@@ -2,10 +2,12 @@
 // Read-only source audit. Writes only artifacts; never runs --fix or installs packages.
 // Knip/Astro may evaluate project configuration; optional astro check can generate .astro/ files.
 import { createHash } from 'node:crypto';
-import { closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { eslintFindings, knipFindings, renderFindings, reportExitCode, sortFindings, verifyEslintSourceCoverage } from './report.mjs';
 import { run } from '../execution.mjs';
+import { ownedDirectory } from '../../filesystem/owned-directory.mjs';
+import { writeFileAtomically } from '../../filesystem/atomic-file.mjs';
 
 const args = new Set(process.argv.slice(2));
 const allowed = new Set(['--report-only', '--with-astro-check']);
@@ -23,8 +25,8 @@ if (!existsSync(path.join(root, 'package.json')) || !existsSync(path.join(root, 
 const runId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${process.pid}`;
 const evidencePath = `artifacts/dead-code/${runId}`;
 const out = path.join(root, evidencePath);
-mkdirSync(out, { recursive: true });
-writeFileSync(path.join(root, 'artifacts', 'dead-codes.log'),
+await ownedDirectory(root, evidencePath);
+await writeFileAtomically(path.join(root, 'artifacts', 'dead-codes.log'),
   `BIA-ASTRO DEAD-CODE CANDIDATE AUDIT\nStatus: IN_PROGRESS\nEvidence: ${evidencePath}\n`);
 const env = { ...process.env, NO_COLOR: '1', CI: 'true', ASTRO_TELEMETRY_DISABLED: '1' };
 delete env.FORCE_COLOR;
@@ -83,8 +85,8 @@ async function captureProvenance(name) {
     const result = await execute('git', parameters);
     stage.commands.push({ label, command: result.command, exitCode: result.exitCode,
       signal: result.signal, error: result.error });
-    writeFileSync(path.join(out, `${name}.${label}.stdout.log`), result.stdout);
-    writeFileSync(path.join(out, `${name}.${label}.stderr.log`), result.stderr);
+    await writeFileAtomically(path.join(out, `${name}.${label}.stdout.log`), result.stdout);
+    await writeFileAtomically(path.join(out, `${name}.${label}.stderr.log`), result.stderr);
     if (result.error || result.signal || result.exitCode !== 0) {
       throw new Error(`Git ${label} failed: ${result.error ?? `exit=${result.exitCode}, signal=${result.signal}`}`);
     }
@@ -113,7 +115,7 @@ async function captureProvenance(name) {
   } catch (error) {
     stage.error = error.message;
     stage.exitCode = 2;
-    writeFileSync(path.join(out, `${name}.failure.log`), `${error.stack ?? error}\n`);
+    await writeFileAtomically(path.join(out, `${name}.failure.log`), `${error.stack ?? error}\n`);
   } finally {
     stage.durationMs = Date.now() - begin;
   }
@@ -142,8 +144,8 @@ async function runTool(name, parameters, parse = null) {
       result = await execute(process.execPath, [path.join(info.folder, executable), ...parameters]);
     }
     Object.assign(stage, { exitCode: result.exitCode, signal: result.signal, command: result.command });
-    writeFileSync(path.join(out, `${name}.stdout.log`), result.stdout);
-    writeFileSync(path.join(out, `${name}.stderr.log`), result.stderr);
+    await writeFileAtomically(path.join(out, `${name}.stdout.log`), result.stdout);
+    await writeFileAtomically(path.join(out, `${name}.stderr.log`), result.stderr);
     if (result.error || result.signal || ![0, 1].includes(result.exitCode)) {
       throw new Error(result.error ?? `Process failed: exit=${result.exitCode}, signal=${result.signal}`);
     }
@@ -152,7 +154,7 @@ async function runTool(name, parameters, parse = null) {
       const data = JSON.parse(result.stdout);
       const extracted = parse(data, root);
       findings.push(...extracted);
-      writeFileSync(path.join(out, `${name}.json`), JSON.stringify(data, null, 2) + '\n');
+      await writeFileAtomically(path.join(out, `${name}.json`), JSON.stringify(data, null, 2) + '\n');
       if (name === 'eslint' && data.length === 0) throw new Error('ESLint checked zero files');
       if (name === 'eslint') {
         stage.filesWithResults = data.length;
@@ -170,7 +172,7 @@ async function runTool(name, parameters, parse = null) {
     stage.state = 'COMPLETED';
   } catch (error) {
     stage.error = error.message;
-    writeFileSync(path.join(out, `${name}.failure.log`), `${error.stack ?? error}\n`);
+    await writeFileAtomically(path.join(out, `${name}.failure.log`), `${error.stack ?? error}\n`);
   } finally {
     stage.durationMs = Date.now() - begin;
   }
@@ -225,7 +227,7 @@ const report = {
   node: process.version, versions, hashes: before.hashes, hashesAfter: after.hashes, stages, notes, findings: sortFindings(findings), exitCode,
   completeness: exitCode === 2 ? 'INCOMPLETE' : 'CONFIGURED_STATIC_SCAN_COMPLETED_NOT_PROOF_OF_ALL_DEAD_CODE',
 };
-writeFileSync(path.join(out, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+await writeFileAtomically(path.join(out, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 const candidates = findings.filter(item => item.status === 'REVIEW_CANDIDATE').length;
 const diagnostics = findings.filter(item => item.status === 'ANALYSIS_DIAGNOSTIC').length;
 const suppressed = findings.filter(item => item.status === 'SUPPRESSED_REVIEW').length;
@@ -245,6 +247,6 @@ const text = [
   'Optional astro-check diagnostics are in astro-check.stdout.log / astro-check.stderr.log, not classified as dead code.',
   '', `Exit code: ${exitCode} (0=completed/no active findings or report-only; 1=findings; 2=incomplete/failure)`, '',
 ].join('\n');
-writeFileSync(path.join(root, 'artifacts', 'dead-codes.log'), text);
+await writeFileAtomically(path.join(root, 'artifacts', 'dead-codes.log'), text);
 console.log(`Wrote artifacts/dead-codes.log (${candidates} candidates, ${diagnostics} diagnostics; ${report.completeness})`);
 process.exitCode = exitCode;

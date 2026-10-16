@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
-import { lstat, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { lstat, readdir, readFile } from 'node:fs/promises';
+import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deploymentConfiguration } from '../../src/server/deployment.mjs';
+import { ownedDirectory } from '../filesystem/owned-directory.mjs';
+import { writeFileAtomically } from '../filesystem/atomic-file.mjs';
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 const manifestPath = root => join(root, 'artifacts/deployment/manifest.json');
@@ -30,13 +32,14 @@ async function catalogueProvenance(root) {
 
 /** Seal only a completed Node build; the manifest is outside the public document root. */
 export async function sealDeployment(root, configuration) {
+    await ownedDirectory(root, 'artifacts');
     const files = await inventory(root);
     for (const name of ['bioimage-archive/server/entry.mjs', 'bioimage-archive/client/index.html', 'index.html', 'robots.txt']) {
         if (!files[`artifacts/dist/${name}`]) throw new Error(`Deployment is missing ${name}.`);
     }
     const manifest = { configuration, files, catalogue: await catalogueProvenance(root) };
-    await mkdir(dirname(manifestPath(root)), { recursive: true });
-    await writeFile(manifestPath(root), JSON.stringify(manifest, null, 2) + '\n');
+    await ownedDirectory(root, 'artifacts/deployment');
+    await writeFileAtomically(manifestPath(root), JSON.stringify(manifest, null, 2) + '\n');
     return manifest;
 }
 

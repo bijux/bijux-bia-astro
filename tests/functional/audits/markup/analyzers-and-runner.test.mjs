@@ -23,6 +23,7 @@ async function checkout(action) {
     await mkdir(path.join(dir, 'public'));
     await mkdir(path.join(dir, 'configs/audits/markup'), { recursive: true });
     await cp(path.join(root, 'scripts/audits/markup'), path.join(dir, 'scripts/audits/markup'), { recursive: true });
+    await cp(path.join(root, 'scripts/filesystem'), path.join(dir, 'scripts/filesystem'), { recursive: true });
     await cp(path.join(root, 'scripts/audits/execution.mjs'), path.join(dir, 'scripts/audits/execution.mjs'));
     for (const name of ['eslint.config.mjs', 'htmlvalidate.json']) {
       await cp(path.join(root, 'configs/audits/markup', name), path.join(dir, 'configs/audits/markup', name));
@@ -305,7 +306,7 @@ test('artifact write failures return incomplete status with an actionable error'
   const result = spawnSync(process.execPath, [runner], { cwd: dir, encoding: 'utf8', timeout: 15000 });
   assert.equal(result.status, 2, result.stderr);
   assert.match(result.stderr, /Markup audit could not finish/);
-  assert.match(result.stderr, /ENOTDIR/);
+  assert.match(result.stderr, /Output storage must be a real directory/);
 }));
 
 test('selected generated output includes route directories named like source exclusions', async () => checkout(async dir => {

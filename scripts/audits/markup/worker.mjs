@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /** Read-only application audit. Writes reports only under artifacts/. */
-import { readFile, writeFile, mkdir, readdir, lstat, realpath } from 'node:fs/promises';
+import { readFile, readdir, lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { ownedDirectory } from '../../filesystem/owned-directory.mjs';
+import { writeFileAtomically } from '../../filesystem/atomic-file.mjs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -45,7 +47,7 @@ function argumentsFor(argv) {
 }
 
 async function save(name, value) {
-  await writeFile(path.join(evidenceDir, name), typeof value === 'string' ? value : `${JSON.stringify(value, null, 2)}\n`);
+  await writeFileAtomically(path.join(evidenceDir, name), typeof value === 'string' ? value : `${JSON.stringify(value, null, 2)}\n`);
 }
 
 async function walk(directory, generated = false, recordCoverage = true) {
@@ -146,6 +148,7 @@ async function main() {
   provenanceFiles = [
     ...sourceFiles, ...generatedFiles,
     ...['package.json', 'package-lock.json', 'configs/audits/markup/eslint.config.mjs', 'configs/audits/markup/htmlvalidate.json',
+      'scripts/filesystem/owned-directory.mjs', 'scripts/filesystem/atomic-file.mjs',
       'scripts/audits/execution.mjs', 'scripts/audits/markup/audit.mjs', 'scripts/audits/markup/worker.mjs', 'scripts/audits/markup/provenance.mjs',
       'scripts/audits/markup/report.mjs', 'scripts/audits/markup/probes.mjs', 'scripts/audits/markup/explicit-closing-tags.mjs'].map(name => path.join(root, name)),
     ...(options.routes ? [path.resolve(root, options.routes)] : []),
@@ -268,8 +271,8 @@ async function main() {
   if (report.coverage.renderedRequested) report.coverage.renderedStatus = report.failures.length ? 'INCOMPLETE_OR_OTHER_STAGE_FAILED' : 'CONFIGURED_INPUTS_CHECKED';
 }
 
-await mkdir(evidenceDir, { recursive: true });
-await writeFile(path.join(root, 'artifacts', 'markup-issues.log'), `BIA-astro markup audit\nStatus: IN_PROGRESS\nTimestamp: ${report.timestamp}\nEvidence: ${report.evidenceDir}\nThis is not a completed report.\n`);
+await ownedDirectory(root, path.relative(root, evidenceDir).split(path.sep).join('/'));
+await writeFileAtomically(path.join(root, 'artifacts', 'markup-issues.log'), `BIA-astro markup audit\nStatus: IN_PROGRESS\nTimestamp: ${report.timestamp}\nEvidence: ${report.evidenceDir}\nThis is not a completed report.\n`);
 try { await main(); }
 catch (e) { report.failures.push(`Audit: ${e.stack ?? e.message}`); }
 finally {
@@ -303,7 +306,7 @@ finally {
     await save('report.json', report);
     const log = renderLog(report);
     await save('markup-issues.log', log);
-    await writeFile(path.join(root, 'artifacts', 'markup-issues.log'), log);
+    await writeFileAtomically(path.join(root, 'artifacts', 'markup-issues.log'), log);
     console.log(`artifacts/markup-issues.log\nEvidence: ${report.evidenceDir}\nExit: ${report.exitCode}`);
     process.exitCode = report.exitCode;
   }

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // Bound analyzer execution outside the worker so synchronous parser stalls can be stopped.
 import { run } from '../execution.mjs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { ownedDirectory } from '../../filesystem/owned-directory.mjs';
+import { writeFileAtomically } from '../../filesystem/atomic-file.mjs';
 import { fileURLToPath } from 'node:url';
 import { renderLog, isWorkerReport, auditExitCode } from './report.mjs';
 
@@ -24,15 +26,15 @@ async function main() {
     process.exit(0);
   }
   const evidenceDir = path.join(root, 'artifacts', 'markup', `${new Date().toISOString().replace(/[:.]/g, '-')}-${process.pid}`);
-  await mkdir(evidenceDir, { recursive: true });
+  await ownedDirectory(root, path.relative(root, evidenceDir).split(path.sep).join('/'));
   const latest = path.join(root, 'artifacts', 'markup-issues.log');
-  await writeFile(latest, `BIA-astro markup audit\nStatus: IN_PROGRESS\nEvidence: ${path.relative(root, evidenceDir)}\n`);
+  await writeFileAtomically(latest, `BIA-astro markup audit\nStatus: IN_PROGRESS\nEvidence: ${path.relative(root, evidenceDir)}\n`);
   if (argumentError) {
     const report = { timestamp: new Date().toISOString(), findings: [], failures: [argumentError], versions: { node: process.version }, coverage: {}, evidenceDir: path.relative(root, evidenceDir), exitCode: 2 };
     const log = renderLog(report);
-    await writeFile(path.join(evidenceDir, 'report.json'), JSON.stringify(report, null, 2) + '\n');
-    await writeFile(path.join(evidenceDir, 'markup-issues.log'), log);
-    await writeFile(latest, log);
+    await writeFileAtomically(path.join(evidenceDir, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+    await writeFileAtomically(path.join(evidenceDir, 'markup-issues.log'), log);
+    await writeFileAtomically(latest, log);
     console.error(argumentError);
     process.exit(2);
   }
@@ -42,8 +44,8 @@ async function main() {
   const { code, signal } = result;
   const timedOut = result.failure === 'Timed out';
   const spawnError = result.failure;
-  await writeFile(path.join(evidenceDir, 'worker.stdout.log'), result.stdout);
-  await writeFile(path.join(evidenceDir, 'worker.stderr.log'), result.stderr);
+  await writeFileAtomically(path.join(evidenceDir, 'worker.stdout.log'), result.stdout);
+  await writeFileAtomically(path.join(evidenceDir, 'worker.stderr.log'), result.stderr);
   let report;
   let reportError = null;
   let workerOutput;
@@ -57,7 +59,7 @@ async function main() {
     report = candidate;
   } catch (error) {
     reportError = error.message;
-    if (workerOutput !== undefined) await writeFile(path.join(evidenceDir, 'invalid-worker-report.txt'), workerOutput);
+    if (workerOutput !== undefined) await writeFileAtomically(path.join(evidenceDir, 'invalid-worker-report.txt'), workerOutput);
   }
   if (timedOut || spawnError || signal || !report || ![0, 1, 2].includes(code) || report.exitCode !== code) {
     report ??= { timestamp: new Date().toISOString(), findings: [], failures: [], versions: { node: process.version }, coverage: {}, evidenceDir: path.relative(root, evidenceDir) };
@@ -65,10 +67,10 @@ async function main() {
     report.exitCode = 2;
   }
   report.execution = { timeoutMs, timedOut, exitCode: code, signal, error: spawnError };
-  await writeFile(path.join(evidenceDir, 'report.json'), JSON.stringify(report, null, 2) + '\n');
+  await writeFileAtomically(path.join(evidenceDir, 'report.json'), JSON.stringify(report, null, 2) + '\n');
   const log = renderLog(report);
-  await writeFile(path.join(evidenceDir, 'markup-issues.log'), log);
-  await writeFile(latest, log);
+  await writeFileAtomically(path.join(evidenceDir, 'markup-issues.log'), log);
+  await writeFileAtomically(latest, log);
   console.log(`artifacts/markup-issues.log\nEvidence: ${path.relative(root, evidenceDir)}\nExit: ${report.exitCode}`);
   process.exitCode = report.exitCode;
 }
