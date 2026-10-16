@@ -3,9 +3,9 @@ import path from 'node:path';
 
 const KNIP_CANDIDATES = new Set([
   'dependencies', 'devDependencies', 'optionalPeerDependencies', 'exports', 'types',
-  'nsExports', 'nsTypes', 'enumMembers', 'classMembers', 'catalog',
+  'nsExports', 'nsTypes', 'enumMembers', 'namespaceMembers', 'catalog', 'files',
 ]);
-const KNIP_DIAGNOSTICS = new Set(['unlisted', 'binaries', 'unresolved', 'duplicates']);
+const KNIP_DIAGNOSTICS = new Set(['unlisted', 'binaries', 'unresolved', 'duplicates', 'catalogReferences', 'cycles']);
 
 function record(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -27,7 +27,10 @@ function knipItem(item, kind) {
   record(item, `Knip ${kind} issue`);
   nonemptyString(item.name, `Knip ${kind} issue name`);
   for (const key of Object.keys(item)) {
-    if (!['name', 'line', 'col', 'pos'].includes(key)) throw new Error(`Unrecognized Knip issue field: ${key}`);
+    if (!['name', 'namespace', 'kind', 'specifier', 'line', 'col', 'pos'].includes(key)) throw new Error(`Unrecognized Knip issue field: ${key}`);
+  }
+  for (const key of ['namespace', 'kind', 'specifier']) {
+    if (item[key] !== undefined) nonemptyString(item[key], `Knip ${key}`);
   }
   position(item.line, 'Knip line');
   position(item.col, 'Knip column');
@@ -110,17 +113,11 @@ export function eslintFindings(data, root) {
 
 export function knipFindings(data, root) {
   record(data, 'Knip report');
-  if (!data || !Array.isArray(data.files) || !Array.isArray(data.issues)) {
-    throw new Error('Unexpected Knip JSON: expected files[] and issues[]');
-  }
+  if (!Array.isArray(data.issues)) throw new Error('Unexpected Knip JSON: expected issues[]');
   for (const key of Object.keys(data)) {
-    if (!['files', 'issues'].includes(key)) throw new Error(`Unrecognized Knip report field: ${key}`);
+    if (key !== 'issues') throw new Error(`Unrecognized Knip report field: ${key}`);
   }
-  const findings = data.files.map(file => ({
-    tool: 'knip', file: relativePath(file, root), line: null, column: null, endLine: null,
-    kind: 'files', status: 'REVIEW_CANDIDATE',
-    message: 'File not reachable from configured entry points; verify routes, URL use and dynamic loading.',
-  }));
+  const findings = [];
   for (const row of data.issues) {
     record(row, 'Knip file result');
     const file = relativePath(row.file, root);
@@ -137,14 +134,8 @@ export function knipFindings(data, root) {
         throw new Error(`Unrecognized Knip issue category: ${kind}; raw JSON preserved`);
       }
       let items;
-      if (kind === 'enumMembers' || kind === 'classMembers') {
-        record(value, `Knip ${kind} members`);
-        items = Object.entries(value).flatMap(([parent, children]) => {
-          nonemptyString(parent, `Knip ${kind} parent`);
-          return knipItems(children, kind).map(item => ({ ...item, name: `${parent}.${item.name}` }));
-        });
-      } else if (kind === 'duplicates') {
-        if (!Array.isArray(value)) throw new Error('Unexpected Knip duplicate groups');
+      if (kind === 'duplicates' || kind === 'cycles') {
+        if (!Array.isArray(value)) throw new Error(`Unexpected Knip ${kind} groups`);
         items = value.flatMap(group => knipItems(group, kind));
       } else {
         items = knipItems(value, kind);
@@ -154,7 +145,12 @@ export function knipFindings(data, root) {
           tool: 'knip', file, line: item.line ?? null, column: item.col ?? null,
           endLine: item.line ?? null, kind,
           status: KNIP_CANDIDATES.has(kind) ? 'REVIEW_CANDIDATE' : 'ANALYSIS_DIAGNOSTIC',
-          message: `${kind}: ${item.name}`,
+          ...(item.namespace === undefined ? {} : { namespace: item.namespace }),
+          ...(item.kind === undefined ? {} : { symbolKind: item.kind }),
+          ...(item.specifier === undefined ? {} : { specifier: item.specifier }),
+          message: kind === 'files'
+            ? 'File not reachable from configured entry points; verify routes, URL use and dynamic loading.'
+            : `${kind}: ${item.namespace ? item.namespace + '.' : ''}${item.name}`,
         });
       }
     }
@@ -198,7 +194,7 @@ export function renderFindings(findings, readSource) {
 
 export function reportExitCode(findings, stages, reportOnly = false) {
   const incomplete = stages.some(stage => stage.state === 'FAILED') || findings.some(finding =>
-    finding.fatal || finding.kind === 'unresolved');
+    finding.fatal || ['unresolved', 'catalogReferences'].includes(finding.kind));
   if (incomplete) return 2;
   const actionable = findings.some(finding => finding.status !== 'SUPPRESSED_REVIEW');
   return actionable && !reportOnly ? 1 : 0;

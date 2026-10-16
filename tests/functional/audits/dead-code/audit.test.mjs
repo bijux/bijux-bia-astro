@@ -22,7 +22,7 @@ function git(fixture, args) {
   return result.stdout;
 }
 
-function fixture({ knip = { files: [], issues: [] }, eslint, knipExit = 0, duringScan = '' } = {}) {
+function fixture({ knip = { issues: [] }, eslint, knipExit = 0, duringScan = '' } = {}) {
   const root = mkdtempSync(path.join(suiteRoot, 'audit-contract-'));
   for (const folder of ['src', 'scripts/audits/dead-code', 'configs/audits/dead-code', 'bin', 'disabled-hooks']) {
     mkdirSync(path.join(root, folder), { recursive: true });
@@ -96,9 +96,9 @@ process.exit(result.status ?? 2);
 
 test('Stable complete provenance and candidate exit codes are preserved', () => {
   for (const [knip, flags, exit] of [
-    [{ files: [], issues: [] }, [], 0],
-    [{ files: [], issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] }, [], 1],
-    [{ files: [], issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged' }] }] }, ['--report-only'], 0],
+    [{ issues: [] }, [], 0],
+    [{ issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] }, [], 1],
+    [{ issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged' }] }] }, ['--report-only'], 0],
   ]) {
     const root = fixture({ knip });
     writeFileSync(path.join(root, 'src/untracked.ts'), 'export const present = 2;\n');
@@ -156,7 +156,7 @@ test('Unreadable source inputs and missing required configuration are incomplete
 
 test('Non-regular tracked inputs fail provenance without waiting for a writer', () => {
   for (const flags of [[], ['--report-only']]) {
-    const root = fixture({ knip: { files: [], issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] } });
+    const root = fixture({ knip: { issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] } });
     const input = path.join(root, 'src/a.ts');
     unlinkSync(input);
     const createPipe = spawnSync('mkfifo', [input], { encoding: 'utf8', timeout: 5_000 });
@@ -190,7 +190,7 @@ test('Changed source content and changed HEAD are incomplete even in report-only
 test('Nested malformed analyzer output fails and retains raw evidence in both modes', () => {
   for (const tool of ['knip', 'eslint']) {
     for (const flags of [[], ['--report-only']]) {
-      const knip = { files: [], issues: [{ file: 'src/a.ts', exports: ['invalid'] }] };
+      const knip = { issues: [{ file: 'src/a.ts', exports: ['invalid'] }] };
       const eslint = [{ filePath: 'src/a.ts', messages: [{ message: 'invalid', line: '1' }] }];
       const root = fixture(tool === 'knip' ? { knip } : { eslint });
       const result = run(root, flags);
@@ -288,7 +288,7 @@ test('Rejected source symlinks launch no analyzers and copy no external bytes in
 test('Source excerpts reject a symlink introduced after successful initial provenance', () => {
   const privateContent = 'PRIVATE_CONTENT_OUTSIDE_THE_AUDIT_REPOSITORY';
   const root = fixture({
-    knip: { files: [], issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] },
+    knip: { issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] },
     duringScan: "const fs = require('node:fs'); fs.unlinkSync('src/a.ts'); fs.symlinkSync(require('node:path').join(process.cwd(), '../outside-excerpt.ts'), 'src/a.ts');",
   });
   writeFileSync(path.join(path.dirname(root), 'outside-excerpt.ts'), `const external = "${privateContent}";\n`);
@@ -302,7 +302,7 @@ test('Source excerpts reject a symlink introduced after successful initial prove
 
 test('Source excerpts do not wait on a pipe introduced after initial provenance', () => {
   const root = fixture({
-    knip: { files: [], issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] },
+    knip: { issues: [{ file: 'src/a.ts', exports: [{ name: 'unchanged', line: 1, col: 14 }] }] },
     duringScan: "require('node:fs').unlinkSync('src/a.ts'); const result = require('node:child_process').spawnSync('mkfifo', ['src/a.ts']); if (result.status !== 0) throw new Error('Fixture pipe creation failed');",
   });
   const result = spawnSync(process.execPath, [executable, '--report-only'], {
