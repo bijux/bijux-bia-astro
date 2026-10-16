@@ -1,27 +1,6 @@
 import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
 import { resourceURL } from "../../../security/urls.mjs";
-
-/** Quote one POSIX shell argument; generated commands are displayed/copied, never run. */
-function shellArgument(value) {
-    return `'${String(value).replaceAll("'", `'"'"'`)}'`;
-}
-
-export function downloadCommand(value) {
-    const approved = resourceURL(value);
-    if (!approved) return null;
-    const uri = new URL(approved);
-    if (uri.search || uri.hash) return null;
-    let path;
-    try { path = decodeURIComponent(uri.pathname); } catch { return null; }
-    if (/[\u0000-\u001f\u007f]/.test(path)) return null;
-    const segments = path.split("/").filter(Boolean);
-    if (segments.some(segment => segment === "." || segment === ".." || segment.includes("\\"))) return null;
-    const bucket = segments.shift();
-    if (!bucket || !/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket) || !segments.length) return null;
-    const filename = segments.at(-1);
-    if ([".", ".."].includes(filename)) return null;
-    return `aws s3 cp --no-sign-request --endpoint-url ${shellArgument(uri.origin)} ${shellArgument(`s3://${bucket}/${segments.join("/")}`)} ${shellArgument(`./${filename}`)} --recursive`;
-}
+import { downloadCommand } from "./download-command.mjs";
 
 /** API/collection values stay in text nodes and event closures, never HTML or JavaScript source. */
 export function copyURI(opener) {
