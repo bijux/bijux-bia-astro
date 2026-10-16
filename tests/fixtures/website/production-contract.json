@@ -20,7 +20,8 @@
     "help/rembi-examples.mdx",
     "policies.md",
     "policies/imagesatebi.md",
-    "galleries/spatialomics/study/[accessionID].astro"
+    "galleries/spatialomics/study/[accessionID].astro",
+    "help.mdx"
   ],
   "generatedHtml": [
     "case-studies/index.html",
@@ -55,7 +56,8 @@
     "study/EMPIAR-12104/index.html",
     "study/S-BIAD3335/index.html",
     "galleries/spatialomics/study/S-BIAD1093/index.html",
-    "study/S-BIAD546/index.html"
+    "study/S-BIAD546/index.html",
+    "help/index.html"
   ],
   "serverRoutes": [
     "/images?size_t=1",

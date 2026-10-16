@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { lstat, readdir, readFile } from 'node:fs/promises';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inspectDocumentReferences } from './document-references.mjs';
 import { deploymentConfiguration } from '../../src/server/deployment.mjs';
 import { ownedDirectory } from '../filesystem/owned-directory.mjs';
 import { writeFileAtomically } from '../filesystem/atomic-file.mjs';
@@ -37,7 +38,9 @@ export async function sealDeployment(root, configuration) {
     for (const name of ['bioimage-archive/server/entry.mjs', 'bioimage-archive/client/index.html', 'index.html', 'robots.txt']) {
         if (!files[`artifacts/dist/${name}`]) throw new Error(`Deployment is missing ${name}.`);
     }
-    const manifest = { configuration, files, catalogue: await catalogueProvenance(root) };
+    const references = await inspectDocumentReferences(root, files, configuration.SITE_URL);
+    if (references.failures.length) throw new Error(`Deployment document references failed:\n${references.failures.join('\n')}`);
+    const manifest = { configuration, files, catalogue: await catalogueProvenance(root), references };
     await ownedDirectory(root, 'artifacts/deployment');
     await writeFileAtomically(manifestPath(root), JSON.stringify(manifest, null, 2) + '\n');
     return manifest;

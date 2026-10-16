@@ -5,26 +5,28 @@ const saved = JSON.parse(readFileSync(new URL('../fixtures/api/training-on-deman
 const live = '**/ebisearch/ws/rest/ebiweb_training_events?**';
 const ondemand = '**/ebisearch/ws/rest/ebiweb_training_online?**';
 
-test('captured training cards preserve titles, links, type and decoded descriptions', { tag: '@preservation' }, async ({ page }) => {
-    await page.goto('/bioimage-archive/');
-    const training = page.getByRole('region', { name: 'Training', exact: true });
-    const section = training.getByRole('region', { name: 'On-demand training', exact: true });
-    const cards = section.locator('.vf-summary--event');
-    await expect(cards).toHaveCount(saved.entries.length);
-    for (const [index, { fields }] of saved.entries.entries()) {
-        const title = fields.title[0] + (fields.subtitle[0] ? `: ${fields.subtitle[0]}` : '');
-        const link = cards.nth(index).getByRole('link', { name: title, exact: true });
-        await expect(link).toHaveAttribute('href', fields.url[0]);
-        await expect(link).toHaveAttribute('target', '_blank');
-        await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-        await expect(cards.nth(index).locator('.vf-summary__date')).toHaveText(fields.type[0]);
-        await expect(cards.nth(index).locator('.vf-summary__text')).not.toContainText('<p>');
-        await expect(cards.nth(index).locator('.vf-summary__text')).not.toContainText('&nbsp;');
-        expect((await cards.nth(index).locator('.vf-summary__text').textContent()).length).toBeLessThanOrEqual(201);
+test('homepage and help training cards preserve titles, links, type and decoded descriptions', { tag: '@preservation' }, async ({ page }) => {
+    for (const route of ['', 'help']) {
+        await page.goto(`/bioimage-archive/${route}`);
+        const training = page.getByRole('region', { name: 'Training', exact: true });
+        const section = training.getByRole('region', { name: 'On-demand training', exact: true });
+        const cards = section.locator('.vf-summary--event');
+        await expect(cards).toHaveCount(saved.entries.length);
+        for (const [index, { fields }] of saved.entries.entries()) {
+            const title = fields.title[0] + (fields.subtitle[0] ? `: ${fields.subtitle[0]}` : '');
+            const link = cards.nth(index).getByRole('link', { name: title, exact: true });
+            await expect(link).toHaveAttribute('href', fields.url[0]);
+            await expect(link).toHaveAttribute('target', '_blank');
+            await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+            await expect(cards.nth(index).locator('.vf-summary__date')).toHaveText(fields.type[0]);
+            await expect(cards.nth(index).locator('.vf-summary__text')).not.toContainText('<p>');
+            await expect(cards.nth(index).locator('.vf-summary__text')).not.toContainText('&nbsp;');
+            expect((await cards.nth(index).locator('.vf-summary__text').textContent()).length).toBeLessThanOrEqual(201);
+        }
+        await expect(cards.first().locator('.vf-summary__text')).toHaveText('The BioImage Archive is a free, publicly available online resource which stores and distributes biological images. This quick tour provides information on the scope of the BioImage Archive, how to sea…');
+        await expect(training.getByRole('link', { name: 'View all live training', exact: true })).toHaveAttribute('href', 'https://www.ebi.ac.uk/training/live-events?query=bioimage-archive&domain=ebiweb_training_events');
+        await expect(training.getByRole('link', { name: 'View all on-demand training', exact: true })).toHaveAttribute('href', 'https://www.ebi.ac.uk/training/on-demand?query=bioimage-archive&domain=ebiweb_training_online');
     }
-    await expect(cards.first().locator('.vf-summary__text')).toHaveText('The BioImage Archive is a free, publicly available online resource which stores and distributes biological images. This quick tour provides information on the scope of the BioImage Archive, how to sea…');
-    await expect(training.getByRole('link', { name: 'View all live training', exact: true })).toHaveAttribute('href', 'https://www.ebi.ac.uk/training/live-events?query=bioimage-archive&domain=ebiweb_training_events');
-    await expect(training.getByRole('link', { name: 'View all on-demand training', exact: true })).toHaveAttribute('href', 'https://www.ebi.ac.uk/training/on-demand?query=bioimage-archive&domain=ebiweb_training_online');
 });
 
 test('synthetic live cards preserve date, status, online venue and literal content without attaching description HTML', { tag: '@preservation' }, async ({ page }) => {
