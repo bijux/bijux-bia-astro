@@ -4,12 +4,21 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import { parse } from '@astrojs/compiler';
 import ts from 'typescript';
+import { HtmlValidate } from 'html-validate';
 import { resourceURL } from "../../../src/security/urls.mjs";
+import { escapeHtml } from "../../../src/security/html.mjs";
+import { formatBytesToHumanSize } from "../../../src/formatting/units.mjs";
+import { renderFilePaths } from "../../../src/features/studies/file-paths.mjs";
 
 const tableSource = await readFile(new URL("../../../src/features/studies/viewable-images.js", import.meta.url), 'utf8');
 const tableScript = ts.transpileModule(tableSource, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
 function runTable(context) {
-    vm.runInNewContext(tableScript, { ...context, exports: {}, require: name => { assert.equal(name, '../../security/urls.mjs'); return { resourceURL }; } });
+    vm.runInNewContext(tableScript, { ...context, exports: {}, require: name => {
+            const modules = { '../../security/urls.mjs': { resourceURL }, '../../security/html.mjs': { escapeHtml },
+                '../../formatting/units.mjs': { formatBytesToHumanSize }, './file-paths.mjs': { renderFilePaths } };
+            assert(Object.hasOwn(modules, name), `Unexpected import: ${name}`);
+            return modules[name];
+        } });
 }
 const imageSource = await readFile(new URL("../../../src/features/images/ImageActions.astro", import.meta.url), 'utf8');
 const { ast } = await parse(imageSource);
@@ -81,6 +90,15 @@ test('a present table retains initialization, image destinations and its API req
     assert.equal(options.pageLength, 10);
     assert.match(options.columns[5].render(null, null, image), /galleries\/spatialomics\/image\/001b8ef2-7a5e-4b94-b91c-d93f5095ee39/);
     assert.match(options.columns[0].render(null, null, image), /src="\/fallback.png"/);
+    assert.match(options.columns[0].render(null, null, image), /aria-label="View image 001b8ef2-7a5e-4b94-b91c-d93f5095ee39"/);
+    for (const [value, expected] of [[undefined, 'Unknown'], [null, 'Unknown'], [-1, 'Unknown'], [0, '0.00 B'], [0.5, '0.50 B'], [1e18, '1000.00 PB']]) {
+        assert.equal(options.columns[4].render(null, null, { ...image, total_size_in_bytes: value }), expected);
+    }
+    const validator = new HtmlValidate(JSON.parse(await readFile(new URL('../../../configs/audits/markup/htmlvalidate.json', import.meta.url), 'utf8')));
+    const rowImage = { ...image, label: ['one', 'two', 'three'] };
+    const row = options.columns.map(column => `<td>${column.render(rowImage[column.data], 'display', rowImage)}</td>`).join('');
+    const markup = await validator.validateString(`<table><tbody><tr>${row}</tr></tbody></table>`);
+    assert(markup.valid, JSON.stringify(markup.results));
     let result;
     await options.ajax({ start: 0, length: 10, search: { value: 'brain tissue' }, draw: 7 }, value => { result = value; });
     assert.equal(requests[0], '/search/v1/website/browse/image?facet.accession_id=S-BIAD3335&query=brain%20tissue&pagination.page_size=10&pagination.page=1');
