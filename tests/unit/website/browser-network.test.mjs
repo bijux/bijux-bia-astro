@@ -8,6 +8,8 @@ function request({ url = 'http://local/bioimage-archive/images', type = 'fetch',
 
 test('cancellation exemptions retain genuine script, connection and unrelated request failures', () => {
     assert.equal(expectedBrowserCancellation(request(), 'firefox'), true);
+    for (const error of ['cancelled', 'Load request cancelled'])
+        assert.equal(expectedBrowserCancellation(request({ error }), 'webkit'), true);
     assert.equal(expectedBrowserCancellation(request({ type: 'image', url: 'http://local/logo.png' }), 'firefox'), true);
     for (const fields of [{ error: 'NS_ERROR_CONNECTION_REFUSED' }, { url: 'http://local/app.js', type: 'script' }, { headers: {} }, { url: 'http://local/other' }])
         assert.equal(expectedBrowserCancellation(request(fields), 'firefox'), false);

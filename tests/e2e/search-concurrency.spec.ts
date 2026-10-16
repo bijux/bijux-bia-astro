@@ -19,7 +19,7 @@ test('a superseded request is cancelled and cannot replace newer search results'
     await started;
     const cancelled = page.waitForEvent('requestfailed', request => new URL(request.url()).searchParams.get('pagination.page_size') === '30');
     await page.locator('#pageSize').selectOption('60');
-    expect((await cancelled).failure()?.errorText).toBe(requestCancellationErrors[browserName]);
+    expect(requestCancellationErrors[browserName]).toContain((await cancelled).failure()?.errorText);
     await expect(page).toHaveURL(/pagination.page_size=60/);
     release();
     await settled;

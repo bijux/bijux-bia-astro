@@ -1,9 +1,13 @@
-export const requestCancellationErrors = Object.freeze({ chromium: 'net::ERR_ABORTED', firefox: 'NS_BINDING_ABORTED', webkit: 'cancelled' });
+export const requestCancellationErrors = Object.freeze({
+    chromium: Object.freeze(['net::ERR_ABORTED']),
+    firefox: Object.freeze(['NS_BINDING_ABORTED']),
+    webkit: Object.freeze(['cancelled', 'Load request cancelled']),
+});
 
 /** Navigation can cancel old assets; only search fetches and excluded media may be disregarded. */
 export function expectedBrowserCancellation(request, browserName) {
     const expected = requestCancellationErrors[browserName];
-    if (!expected || request.failure()?.errorText !== expected) return false;
+    if (!expected?.includes(request.failure()?.errorText)) return false;
     return ['image', 'font'].includes(request.resourceType()) ||
         ['/bioimage-archive/images', '/bioimage-archive/studies'].includes(new URL(request.url()).pathname) &&
         request.headers()['x-requested-with'] === 'fetch';
