@@ -9,7 +9,7 @@ const rawDataLink = accessionID.startsWith("S-BIAD")
     ? `https://ftp.ebi.ac.uk/pub/databases/biostudies/S-BIAD/${biostudiesShard}/${accessionID}/Files/`
     : `https://ftp.ebi.ac.uk/empiar/world_availability/${accessionNumber}/data/`;
 ---
-<article class="vf-card vf-card--brand vf-card--bordered custom-card" style="max-width:400px">
+<article data-volume-id={image.uuid} class="vf-card vf-card--brand vf-card--bordered custom-card" style="max-width:400px">
     <div class="vf-card__content | vf-stack vf-stack--400">
         <h3 class="vf-card__heading title-container">
             <span class="title-text"><a href={"/bioimage-archive/study/" + image.submitted_in_study_accession} style="text-decoration: none;color: #333;">{ image.label }</a></span>
