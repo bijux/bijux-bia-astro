@@ -49,6 +49,7 @@ export default defineConfig({
     integrations: [mdx()],
     env: { schema: {
         PUBLIC_SEARCH_API: envField.string({ access: 'public', context: 'client', default: ${JSON.stringify(apiURL)} }),
+        PUBLIC_MONGO_API: envField.string({ access: 'public', context: 'client', default: ${JSON.stringify(apiURL)} }),
         PUBLIC_GTAG: envField.string({ access: 'public', context: 'client', default: '' }),
         PUBLIC_WEBSITE_STATE: envField.string({ access: 'public', context: 'client', default: 'DEV' })
     } }
@@ -63,7 +64,7 @@ import CodeDialog from '../features/projects/spora/CodeDialog.astro';
 import FileListTable from '../features/studies/FileListTable.astro';
 import VolumeEMImageCard from '../features/galleries/volume-em/VolumeEMImageCard.astro';
 import ViewableImageTable from '../features/studies/ViewableImageTable.astro';
-import SOTables from '../features/galleries/spatialomics/SOTables.astro';
+import TranscriptFiles from '../features/galleries/spatialomics/TranscriptFiles.astro';
 import BenchmarkingTable from '../features/galleries/ai/benchmarking/BenchmarkingTable.astro';
 import ModelPredictionTable from '../features/galleries/ai/benchmarking/ModelPredictionTable.astro';
 import InputImagesTable from '../features/images/relationships/InputImagesTable.astro';
@@ -87,7 +88,7 @@ const tableRows = [{ study: study.accession_id, dataset_uuid: study.dataset[0].u
     <section id="gallery-fixture"><VolumeEMImageCard image={{ ...image, uuid }} /></section>
     <section id="table-fixture">
       <ViewableImageTable hasSpecimenTracks={false} study={study} images={[image]} />
-      <SOTables datasetUUIDsAndFileStats={[]} />
+      <TranscriptFiles datasets={[]} />
       <BenchmarkingTable datasetUUIDNameMap={new Map(study.dataset.map(dataset => [dataset.uuid, dataset.title]))} tableRows={tableRows} studyOrModelPageMode="model" />
       <ModelPredictionTable datasetUUIDNameMap={new Map(study.dataset.map(dataset => [dataset.uuid, dataset.title]))} tableRows={tableRows} studyOrModelPageMode="model" />
       <InputImagesTable images={[capturedImage]} />

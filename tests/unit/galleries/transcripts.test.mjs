@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { studyHasTranscripts } from '../../../src/features/galleries/spatialomics/transcripts.mjs';
+import { studyHasTranscripts } from '../../../src/features/galleries/spatialomics/load-transcripts.mjs';
 
 test('transcript detection retains early exit and rejects unavailable or malformed file metadata', async () => {
     const calls = [];

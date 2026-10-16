@@ -12,7 +12,7 @@ const repository = fileURLToPath(new URL('../../../', import.meta.url));
 const output = path.join(repository, 'artifacts/website-verification');
 export const buildRoot = path.join(output, 'application');
 const preload = pathToFileURL(path.join(buildRoot, 'tests/fixtures/website/preload.mjs')).href;
-export const env = { ...process.env, NETLIFY: 'false', NETLIFY_DEV: 'false', AWS_LAMBDA_FUNCTION_NAME: '', PUBLIC_SEARCH_API: 'https://alpha.bioimagearchive.org/search/v1', PUBLIC_MONGO_API: 'https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2', PUBLIC_GTAG: '', PUBLIC_WEBSITE_STATE: 'PROD', PUBLIC_ALLOW_LOCAL_VIEWERS: 'false', SITE_URL: 'http://localhost', NODE_OPTIONS: `--import=${preload}`, ASTRO_TELEMETRY_DISABLED: '1' };
+export const env = { ...process.env, NETLIFY: 'false', NETLIFY_DEV: 'false', AWS_LAMBDA_FUNCTION_NAME: '', PUBLIC_SEARCH_API: 'https://alpha.bioimagearchive.org/search/v1', PUBLIC_MONGO_API: 'https://metadata-fixture.example.org/api/v2/', PUBLIC_GTAG: '', PUBLIC_WEBSITE_STATE: 'PROD', PUBLIC_ALLOW_LOCAL_VIEWERS: 'false', SITE_URL: 'http://localhost', NODE_OPTIONS: `--import=${preload}`, ASTRO_TELEMETRY_DISABLED: '1' };
 delete env.CATALOGUE_SNAPSHOT;
 async function run(args) {
     const child = spawn(process.execPath, args, { cwd: buildRoot, env, stdio: 'inherit' });
@@ -29,6 +29,11 @@ export default async function prepareWebsite() {
     const catalogue = path.join(buildRoot, 'src/data/collections/spora-datasets.json');
     await writeFile(catalogue, JSON.stringify(withCategoryBoundaries(JSON.parse(await readFile(catalogue, 'utf8')))));
     const contract = JSON.parse(await readFile(path.join(repository, 'tests/fixtures/website/production-contract.json'), 'utf8'));
+    const spatialomics = path.join(buildRoot, 'src/data/collections/spatialomics.json');
+    const collection = JSON.parse(await readFile(spatialomics, 'utf8'));
+    assert(contract.spatialomicsStudies.every(id => collection.accession_ids.includes(id)), 'Representative studies must belong to the curated collection.');
+    collection.accession_ids = contract.spatialomicsStudies;
+    await writeFile(spatialomics, JSON.stringify(collection));
     const pages = contract.pageSources;
     await rm(path.join(buildRoot, 'src/pages'), { recursive: true });
     for (const page of pages) {

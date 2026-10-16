@@ -1,4 +1,4 @@
-# Search API fixtures
+# Public API fixtures
 
 These are complete public API responses shared by tests that need study/image
 metadata or browse aggregations. Capture dates are recorded in `provenance.json`.
@@ -27,3 +27,7 @@ Keep tests offline. To refresh a snapshot, replace it with a complete captured
 response, update its provenance and review the affected assertions. Keep small
 synthetic inputs for boundaries absent from these captures, such as malformed
 identifiers and escaping; identify them as synthetic in the owning test.
+
+Spatialomics captures for S-BIAD1093 include its complete study, images, track probe,
+BioStudies links and three dataset file inventories. Frozen-build captures have
+day-precision dates; the third inventory was captured separately.

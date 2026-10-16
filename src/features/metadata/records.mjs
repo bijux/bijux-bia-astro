@@ -3,18 +3,6 @@ export function getSimpleAttributeValue(obj, attrName) {
     return getMetadataValue(obj?.additional_metadata, attrName)?.[attrName] ?? null;
 }
 
-export function getDatasetStatsByUUID(study) {
-    return aggregateDatasetStats(study?.dataset || []);
-}
-
-function aggregateDatasetStats(datasets) {
-    const dataset_uuids = []
-    for (var dataset of datasets) {
-      dataset_uuids.push([dataset.uuid,dataset.file_reference_count,dataset.title])
-    }
-    return dataset_uuids
-}
-
 /** Combine supplied legacy categories and protocol terms as distinct display labels. */
 export function getAnnotationType(datasets) {
     const labels = new Set();

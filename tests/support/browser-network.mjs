@@ -17,7 +17,7 @@ export function expectedBrowserCancellation(request, browserName) {
 export async function routeBrowserRequest(route, { origin, fixtureResponse, unexpected }) {
     const request = route.request(), url = new URL(request.url());
     if (url.origin === origin) return route.continue();
-    if (url.origin === 'https://alpha.bioimagearchive.org' || url.origin === 'https://www.ebi.ac.uk' && url.pathname.startsWith('/ebisearch/ws/rest/')) {
+    if (['https://alpha.bioimagearchive.org', 'https://metadata-fixture.example.org'].includes(url.origin) || url.origin === 'https://www.ebi.ac.uk' && url.pathname.startsWith('/ebisearch/ws/rest/')) {
         let json;
         try { json = fixtureResponse(url.href); }
         catch (error) { unexpected.push(error instanceof Error ? error.message : String(error)); return route.abort(); }

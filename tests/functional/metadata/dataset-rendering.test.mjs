@@ -18,7 +18,8 @@ const escapedText = value => String(value).replace(/[&<>"']/g, character => ({
 before(async () => {
     const fixtures = new URL("../../fixtures/api/", import.meta.url);
     const provenance = JSON.parse(await readFile(new URL("provenance.json", fixtures), "utf8"));
-    captures = await Promise.all(provenance.responses.map(async entry => {
+    const metadataCaptures = provenance.responses.filter(entry => /\/website\/(study|image)$/.test(new URL(entry.url).pathname));
+    captures = await Promise.all(metadataCaptures.map(async entry => {
         const bytes = await readFile(new URL(entry.file, fixtures));
         return { ...entry, response: JSON.parse(bytes) };
     }));

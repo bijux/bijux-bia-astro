@@ -1,3 +1,4 @@
+import { spatialomicsResponse } from './spatialomics.mjs';
 import { relationshipImage, relationshipImages } from '../scenarios/image-relationships.mjs';
 import { readFileSync } from 'node:fs';
 import { cursorSearchResponse } from '../scenarios/search-pagination.mjs';
@@ -13,6 +14,8 @@ const image = saved('image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39').hits.hits[0]._
 /** Complete captured metadata with deliberately small, synthetic browse/pagination results. */
 export function fixtureResponse(value) {
     const url = new URL(value);
+    const spatialomics = spatialomicsResponse(url);
+    if (spatialomics !== undefined) return spatialomics;
     if (url.searchParams.get('query') === 'unavailable') throw new Error('Controlled API failure.');
     if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/biostudies/api/v1/studies/S-BIAD3335/info') return { httpLink: 'https://www.ebi.ac.uk/biostudies/files/S-BIAD3335/' };
     // Synthetic optional enrichment exercises unit text absent from the saved study captures.

@@ -26,7 +26,7 @@ async function route(url, type = 'script', fixtureResponse = () => ({ captured: 
 
 test('only the exact local origin passes through and unknown scripts cannot access live services', async () => {
     assert.deepEqual((await route('http://local/app.js')).actions, [['continue']]);
-    for (const url of ['http://local.evil/app.js', 'https://unknown.example/app.js', 'http://assets.emblstatic.net/app.js']) {
+    for (const url of ['http://local.evil/app.js', 'https://unknown.example/app.js', 'http://assets.emblstatic.net/app.js', 'https://metadata-fixture.example.org.evil/api/v2']) {
         assert.deepEqual(await route(url), { actions: [['abort']], unexpected: [url] });
     }
     assert.deepEqual((await route('https://unknown.example/image.png', 'image')).actions, [['fulfill', { status: 204 }]]);
@@ -35,6 +35,8 @@ test('only the exact local origin passes through and unknown scripts cannot acce
 test('captured API responses and declared chrome are fulfilled while unrecorded API calls fail', async () => {
     assert.deepEqual(await route('https://alpha.bioimagearchive.org/search/v1/website/image'), { actions: [['fulfill', { json: { captured: true } }]], unexpected: [] });
     assert.deepEqual(await route('https://alpha.bioimagearchive.org/unrecorded', 'fetch', () => { throw new Error('Unrecorded API'); }), { actions: [['abort']], unexpected: ['Unrecorded API'] });
+    assert.deepEqual(await route('https://metadata-fixture.example.org/api/v2/dataset/example/file_reference?page_size=1000'), { actions: [['fulfill', { json: { captured: true } }]], unexpected: [] });
+    assert.deepEqual(await route('https://metadata-fixture.example.org/unrecorded', 'fetch', () => { throw new Error('Unrecorded file API'); }), { actions: [['abort']], unexpected: ['Unrecorded file API'] });
     const chrome = await route('https://assets.emblstatic.net/script.js');
     assert.deepEqual(chrome, { actions: [['fulfill', { body: '', contentType: 'text/javascript' }]], unexpected: [] });
 });

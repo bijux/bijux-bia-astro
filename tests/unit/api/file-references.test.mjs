@@ -28,11 +28,11 @@ test('invalid API roots and path identifiers fail before any request', async () 
 });
 
 test('file responses retain optional metadata while malformed and over-limit results identify the dataset', async () => {
-    const accepted = [{ additional_metadata: null }, { uuid: null, file_path: null, uri: null }, {}];
+    const accepted = [{ additional_metadata: null, submission_dataset_uuid: 'dataset' }, { uuid: null, file_path: null, uri: null }, {}];
     assert.equal(await getFileReferences('https://example.org', 'dataset', { request: async () => accepted }), accepted);
     assert.equal((await getFileReferences('https://example.org', 'dataset', { request: async () => Array(1000).fill({}) })).length, 1000);
     for (const value of [null, {}, [null], [[]], [{ additional_metadata: {} }], [{ additional_metadata: [null] }],
-        [{ uuid: 1 }], [{ file_path: {} }], [{ uri: [] }], Array(1001).fill({})]) {
+        [{ uuid: 1 }], [{ file_path: {} }], [{ uri: [] }], [{ submission_dataset_uuid: 'another-dataset' }], Array(1001).fill({})]) {
         await assert.rejects(getFileReferences('https://example.org', 'example-id', { request: async () => value }),
             { name: 'TypeError', message: 'Invalid file references for dataset example-id.' });
     }

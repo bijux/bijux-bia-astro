@@ -5,7 +5,7 @@ import test from 'node:test';
 
 const fixtures = new URL('../../fixtures/api/', import.meta.url);
 
-test("shared API captures retain complete response envelopes and recorded hashes", async () => {
+test("shared API captures retain endpoint-specific response envelopes and recorded hashes", async () => {
     const provenance = JSON.parse(await readFile(new URL('provenance.json', fixtures), 'utf8'));
     const captures = await Promise.all(provenance.responses.map(async entry => {
         const bytes = await readFile(new URL(entry.file, fixtures));
@@ -22,8 +22,15 @@ test("shared API captures retain complete response envelopes and recorded hashes
         assert.equal(capture.actualHash, capture.sha256, capture.file);
         assert.equal(new URL(capture.url).protocol, "https:");
         assert(capture.capturedAt);
-        assert(Array.isArray(capture.response.hits.hits));
-        assert("facets" in capture.response && "pagination" in capture.response);
+        const pathname = new URL(capture.url).pathname;
+        if (pathname.startsWith('/search/v1/website/')) {
+            assert(Array.isArray(capture.response.hits.hits), capture.file);
+            assert("facets" in capture.response && "pagination" in capture.response, capture.file);
+        } else if (/^\/bioimage-archive\/api\/v2\/dataset\/[^/]+\/file_reference$/.test(pathname)) {
+            assert(Array.isArray(capture.response), capture.file);
+        } else if (/^\/biostudies\/api\/v1\/studies\/[^/]+\/info$/.test(pathname)) {
+            assert.equal(typeof capture.response.httpLink, 'string', capture.file);
+        } else assert.fail(`Unrecognised capture endpoint: ${capture.file}`);
     }
 });
 
