@@ -24,6 +24,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
       import { copyWithFeedback } from "../../../components/ui/clipboard.mjs";
       import { escapeHtml } from "../../../security/html.mjs";
       import { fetchJSON, boundedMap } from "../../../api/http.mjs";
+      import { transcriptFiles } from "./transcript-records.mjs";
 
       document.addEventListener("DOMContentLoaded", function () {
         const dropdown = document.getElementById("sotables_dataset_selector") as HTMLSelectElement; // Get the dropdown element
@@ -46,18 +47,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
             fetchJSON(apiUrl)
                 .then((fileData) => {
                     if (request !== tableRequest) return;
-                    if (!Array.isArray(fileData) || fileData.length > 1000) throw new TypeError("Invalid file response.");
-                    const filteredFiles = fileData.filter(file => {
-                        const additional_metadata = file.additional_metadata || [];
-                        return additional_metadata.some(attr =>
-                            attr.name === 'attributes_from_biostudies.File' && (
-                                attr.value?.attributes?.Data_Type === 'transcripts' ||
-                                attr.value?.attributes?.Data_Type === 'Transcript_Coordinates' ||
-                                attr.value?.attributes?.Description?.includes('Feature barcode') ||
-                                attr.value?.attributes?.Description?.includes('feature matrix')
-                            )
-                        );
-                    });
+                    const filteredFiles = transcriptFiles(fileData, datasetUuid);
                     // Initialize the DataTable
                     $('#sotables_file_references_table').DataTable({
                         data: filteredFiles,
@@ -90,17 +80,7 @@ const { datasetUUIDsAndFileStats } = Astro.props;
             const pageSize = 1000; // Fetch up to 1000 file references to get the attributes
             const apiUrl = `https://wwwdev.ebi.ac.uk/bioimage-archive/api/v2/dataset/${encodeURIComponent(datasetUuid)}/file_reference?page_size=${pageSize}`;
             const fileData = await fetchJSON(apiUrl);
-            if (!Array.isArray(fileData) || fileData.length > 1000) throw new TypeError("Invalid file response.");
-            const additional_metadata = fileData.flatMap(file => file.additional_metadata || []);
-            const dataTypeAttr = additional_metadata.find(attr =>
-                attr.name === 'attributes_from_biostudies.File' && (
-                    attr.value?.attributes?.Data_Type === 'transcripts' ||
-                    attr.value?.attributes?.Data_Type === 'Transcript_Coordinates' ||
-                    attr.value?.attributes?.Description?.includes('Feature barcode') ||
-                    attr.value?.attributes?.Description?.includes('feature matrix')
-                )
-            );
-            return dataTypeAttr ? true : false;
+            return transcriptFiles(fileData, datasetUuid).length > 0;
         };
 
 
