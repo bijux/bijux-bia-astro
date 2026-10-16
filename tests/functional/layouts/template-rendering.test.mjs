@@ -12,7 +12,7 @@ let application;
 let html;
 let logoHtml;
 let css;
-const validator = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/quality/htmlvalidate.markup.json'), 'utf8')));
+const validator = new HtmlValidate(JSON.parse(await readFile(path.join(repository, 'configs/audits/markup/htmlvalidate.json'), 'utf8')));
 after(async () => { if (application) await rm(application, { recursive: true, force: true }); });
 before(async () => {
     const output = path.join(repository, 'artifacts/markup-rendering');

@@ -2,7 +2,7 @@
 // Reference API profile: ESLint 9; eslint-plugin-astro 1.3.1; typescript-eslint 8.
 import astro from 'eslint-plugin-astro';
 import tseslint from 'typescript-eslint';
-import markup from '../../scripts/markup/explicit-closing-tags.mjs';
+import markup from '../../../scripts/audits/markup/explicit-closing-tags.mjs';
 
 export default [
   { ignores: ['.astro', '**/node_modules/**', '**/.git/**', '.astro/**', 'dist/**', '.netlify/**', 'artifacts/**', 'coverage/**'] },

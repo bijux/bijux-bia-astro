@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { eslintFindings, knipFindings, renderFindings, reportExitCode, sortFindings, verifyEslintSourceCoverage } from './report.mjs';
-import { run } from '../audit/execution.mjs';
+import { run } from '../execution.mjs';
 
 const args = new Set(process.argv.slice(2));
 const allowed = new Set(['--report-only', '--with-astro-check']);
@@ -71,8 +71,8 @@ function packageInfo(name) {
   return { folder: path.dirname(file), data: JSON.parse(inputBytes(file, name).toString('utf8')) };
 }
 const requiredInputs = [
-  'package-lock.json', 'configs/quality/eslint.config.mjs', 'configs/quality/knip.json',
-  'configs/quality/tsconfig.dead-code.json',
+  'package-lock.json', 'configs/audits/dead-code/eslint.config.mjs', 'configs/audits/dead-code/knip.json',
+  'configs/audits/dead-code/tsconfig.json',
 ];
 async function captureProvenance(name) {
   const begin = Date.now();
@@ -132,7 +132,7 @@ async function runTool(name, parameters, parse = null) {
   try {
     let result;
     if (name === 'astro-probe') {
-      result = await execute(process.execPath, ['scripts/dead-code/verify-tools.mjs']);
+      result = await execute(process.execPath, ['scripts/audits/dead-code/verify-tools.mjs']);
     } else {
       const packageName = name === 'astro-check' ? 'astro' : name;
       const info = packageInfo(packageName);
@@ -188,10 +188,10 @@ for (const name of ['eslint', 'eslint-plugin-astro', 'typescript-eslint', 'knip'
 }
 
 await runTool('astro-probe', []);
-await runTool('eslint', ['--config', 'configs/quality/eslint.config.mjs', '--format', 'json', '.'], eslintFindings);
-await runTool('knip', ['--config', 'configs/quality/knip.json', '--reporter', 'json'], knipFindings);
+await runTool('eslint', ['--config', 'configs/audits/dead-code/eslint.config.mjs', '--format', 'json', '.'], eslintFindings);
+await runTool('knip', ['--config', 'configs/audits/dead-code/knip.json', '--reporter', 'json'], knipFindings);
 if (args.has('--with-astro-check')) {
-  await runTool('astro-check', ['check', '--tsconfig', 'configs/quality/tsconfig.dead-code.json']);
+  await runTool('astro-check', ['check', '--tsconfig', 'configs/audits/dead-code/tsconfig.json']);
 } else {
   notes.push('Optional Astro/type-check stage not run. Use --with-astro-check after checking installed CLI support.');
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Bound analyzer execution outside the worker so synchronous parser stalls can be stopped.
-import { run } from '../audit/execution.mjs';
+import { run } from '../execution.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

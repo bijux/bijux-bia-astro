@@ -52,7 +52,7 @@ try {
     report.versions[name] = metadata.version;
   }
   const { ESLint } = await import(pathToFileURL(eslintEntry).href);
-  const eslint = new ESLint({ cwd: root, overrideConfigFile: resolve(root, 'configs/security/eslint.config.mjs'),
+  const eslint = new ESLint({ cwd: root, overrideConfigFile: resolve(root, 'configs/audits/security/eslint.config.mjs'),
     allowInlineConfig: false, cache: false, fix: false });
   for (const [name, extension, source, rule] of probes) {
     const results = await eslint.lintText(source, { filePath: resolve(root, `src/__security_probe_${name}${extension}`) });

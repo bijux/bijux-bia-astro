@@ -5,7 +5,7 @@ import { ESLint } from 'eslint';
 
 const eslint = new ESLint({
   cwd: process.cwd(),
-  overrideConfigFile: path.resolve('configs/quality/eslint.config.mjs'),
+  overrideConfigFile: path.resolve('configs/audits/dead-code/eslint.config.mjs'),
   fix: false,
 });
 

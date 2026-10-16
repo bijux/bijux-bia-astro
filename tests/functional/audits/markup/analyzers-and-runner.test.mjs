@@ -7,12 +7,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
 import { HtmlValidate } from 'html-validate';
-import { probeAstro, probeHtml } from "../../../../scripts/markup/probes.mjs";
-import { captureProvenance, inputsChanged, MAX_INPUT_BYTES } from "../../../../scripts/markup/provenance.mjs";
-import { normalizeMessages } from "../../../../scripts/markup/report.mjs";
+import { probeAstro, probeHtml } from "../../../../scripts/audits/markup/probes.mjs";
+import { captureProvenance, inputsChanged, MAX_INPUT_BYTES } from "../../../../scripts/audits/markup/provenance.mjs";
+import { normalizeMessages } from "../../../../scripts/audits/markup/report.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
-const runner = path.join(root, 'scripts/markup/audit.mjs');
+const runner = path.join(root, 'scripts/audits/markup/audit.mjs');
 
 async function checkout(action) {
   const parent = path.join(root, 'artifacts/markup-tests');
@@ -21,11 +21,11 @@ async function checkout(action) {
   try {
     await mkdir(path.join(dir, 'src/nested'), { recursive: true });
     await mkdir(path.join(dir, 'public'));
-    await mkdir(path.join(dir, 'configs/quality'), { recursive: true });
-    await cp(path.join(root, 'scripts/markup'), path.join(dir, 'scripts/markup'), { recursive: true });
-    await cp(path.join(root, 'scripts/audit'), path.join(dir, 'scripts/audit'), { recursive: true });
-    for (const name of ['eslint.markup.config.mjs', 'htmlvalidate.markup.json']) {
-      await cp(path.join(root, 'configs/quality', name), path.join(dir, 'configs/quality', name));
+    await mkdir(path.join(dir, 'configs/audits/markup'), { recursive: true });
+    await cp(path.join(root, 'scripts/audits/markup'), path.join(dir, 'scripts/audits/markup'), { recursive: true });
+    await cp(path.join(root, 'scripts/audits/execution.mjs'), path.join(dir, 'scripts/audits/execution.mjs'));
+    for (const name of ['eslint.config.mjs', 'htmlvalidate.json']) {
+      await cp(path.join(root, 'configs/audits/markup', name), path.join(dir, 'configs/audits/markup', name));
     }
     await writeFile(path.join(dir, 'package.json'), '{"type":"module"}\n');
     await writeFile(path.join(dir, 'package-lock.json'), '{}\n');
@@ -62,13 +62,13 @@ async function server(action, handler) {
 }
 
 test('installed Astro analyzer passes all valid and invalid source probes', async () => {
-  const eslint = new ESLint({ cwd: root, overrideConfigFile: path.join(root, 'configs/quality/eslint.markup.config.mjs'), fix: false, allowInlineConfig: false });
+  const eslint = new ESLint({ cwd: root, overrideConfigFile: path.join(root, 'configs/audits/markup/eslint.config.mjs'), fix: false, allowInlineConfig: false });
   const results = await probeAstro(eslint, path.join(root, 'src/markup-probe.astro'));
   assert.equal(results.length, 30);
   assert.deepEqual(results.filter(result => !result.passed), []);
 });
 test('installed HTML analyzer validates raw text, including browser-repairable errors', async () => {
-  const config = JSON.parse(await readFile(path.join(root, 'configs/quality/htmlvalidate.markup.json'), 'utf8'));
+  const config = JSON.parse(await readFile(path.join(root, 'configs/audits/markup/htmlvalidate.json'), 'utf8'));
   const results = await probeHtml(new HtmlValidate(config));
   assert.equal(results.length, 14);
   assert.deepEqual(results.filter(result => !result.passed), []);
@@ -270,13 +270,13 @@ test('malformed worker reports become incomplete instead of crashing the parent'
   for (const report of [[], {}, { exitCode: 0, findings: [{}], failures: [], coverage: {}, versions: {} },
     { exitCode: 0, findings: [], failures: [], coverage: { sourceAstro: 2, sourceHtml: 0, generatedHtml: 0, httpResponses: 0 }, versions: { node: 'fixture' } },
     { exitCode: 0, findings: [], failures: ['failed analysis'], coverage: { sourceAstro: 0, sourceHtml: 0, generatedHtml: 0, httpResponses: 0 }, versions: { node: 'fixture' } }]) {
-    await writeFile(path.join(dir, 'scripts/markup/worker.mjs'), `import {writeFile} from 'node:fs/promises';
+    await writeFile(path.join(dir, 'scripts/audits/markup/worker.mjs'), `import {writeFile} from 'node:fs/promises';
 import path from 'node:path';
 const report = ${JSON.stringify(report)};
 Object.assign(report, { timestamp: new Date().toISOString(), evidenceDir: path.relative(process.cwd(), process.env.BIJUX_MARKUP_EVIDENCE_DIR) });
 await writeFile(path.join(process.env.BIJUX_MARKUP_EVIDENCE_DIR, 'report.json'), JSON.stringify(report));
 `);
-    const result = await run(dir, [], path.join(dir, 'scripts/markup/audit.mjs'));
+    const result = await run(dir, [], path.join(dir, 'scripts/audits/markup/audit.mjs'));
     assert.equal(result.status, 2, result.output);
     assert.match(result.report.failures.join('\n'), /Malformed worker report/);
     assert.ok((await readFile(path.join(dir, result.report.evidenceDir, 'invalid-worker-report.txt'), 'utf8')).length);

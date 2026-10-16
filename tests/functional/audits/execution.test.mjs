@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { run } from '../../../scripts/audit/execution.mjs';
+import { run } from '../../../scripts/audits/execution.mjs';
 
 test('subprocess captures unsuccessful stdout/stderr and exit', async () => {
   const x = await run(process.execPath, ['-e', 'console.log("evidence");console.error("diagnostic");process.exit(7)']);

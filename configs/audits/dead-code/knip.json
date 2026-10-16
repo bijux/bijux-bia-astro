@@ -8,9 +8,9 @@
     "configs/**/*.{js,mjs,cjs,ts,mts,cts}"
   ],
   "entry": [
-    "scripts/dead-code/audit.mjs",
-    "scripts/dead-code/verify-tools.mjs",
-    "scripts/markup/worker.*js",
+    "scripts/audits/dead-code/audit.mjs",
+    "scripts/audits/dead-code/verify-tools.mjs",
+    "scripts/audits/markup/worker.*js",
     "tests/functional/audits/dead-code/*.test.mjs",
     "tests/fixtures/metadata/dataset-metadata.*js",
     "src/features/studies/viewable-images.js",
@@ -33,10 +33,10 @@
   ],
   "eslint": {
     "config": [
-      "configs/quality/eslint.config.mjs",
-      "configs/quality/eslint.markup.config.*js",
+      "configs/audits/dead-code/eslint.config.mjs",
+      "configs/audits/markup/eslint.config.*js",
       "eslint.config.{js,mjs,cjs,ts}",
-      "configs/security/eslint.config.mjs"
+      "configs/audits/security/eslint.config.mjs"
     ]
   },
   "playwright": {

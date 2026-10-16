@@ -4,9 +4,9 @@ import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import plugin, { inspectElement, tagName } from "../../../../scripts/markup/explicit-closing-tags.mjs";
-import { normalizeMessages, auditExitCode, renderLog, sha256, isWorkerReport } from "../../../../scripts/markup/report.mjs";
-import { astroFixtures, htmlFixtures } from "../../../../scripts/markup/probes.mjs";
+import plugin, { inspectElement, tagName } from "../../../../scripts/audits/markup/explicit-closing-tags.mjs";
+import { normalizeMessages, auditExitCode, renderLog, sha256, isWorkerReport } from "../../../../scripts/audits/markup/report.mjs";
+import { astroFixtures, htmlFixtures } from "../../../../scripts/audits/markup/probes.mjs";
 
 const id = name => ({ type: 'JSXIdentifier', name });
 function element(name, open, close = null, syntheticSelfClosing = false) {
@@ -119,7 +119,7 @@ test('missing analyzers still write a failure report and return 2', async () => 
     await mkdir(path.join(dir, 'src'));
     await writeFile(path.join(dir, 'package.json'), '{"type":"module"}');
     await writeFile(path.join(dir, 'src', 'A.astro'), '<div></div>');
-    const runner = fileURLToPath(new URL("../../../../scripts/markup/audit.mjs", import.meta.url));
+    const runner = fileURLToPath(new URL("../../../../scripts/audits/markup/audit.mjs", import.meta.url));
     const run = spawnSync(process.execPath, [runner], { cwd: dir, timeout: 15000, encoding: 'utf8' });
     assert.equal(run.status, 2, run.stderr);
     const log = await readFile(path.join(dir, 'artifacts', 'markup-issues.log'), 'utf8');

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { parse } from '@astrojs/compiler';
-import { eslintFindings, knipFindings, renderFindings, reportExitCode } from "../../../../scripts/dead-code/report.mjs";
+import { eslintFindings, knipFindings, renderFindings, reportExitCode } from "../../../../scripts/audits/dead-code/report.mjs";
 
 const root = '/work/BIA-astro';
 const eslintData = [{
@@ -56,7 +56,7 @@ test('Knip preserves scripts loaded by live study and search components', async 
   const packageFile = require.resolve('knip/package.json');
   const info = JSON.parse(readFileSync(packageFile, 'utf8'));
   const executable = path.join(path.dirname(packageFile), info.bin.knip);
-  const run = spawnSync(process.execPath, [executable, '--config', 'configs/quality/knip.json', '--reporter', 'json'], {
+  const run = spawnSync(process.execPath, [executable, '--config', 'configs/audits/dead-code/knip.json', '--reporter', 'json'], {
     cwd: process.cwd(), encoding: 'utf8', timeout: 30_000,
   });
   assert(!run.error && !run.signal, run.error?.message ?? run.signal);
@@ -219,7 +219,7 @@ test('Exit codes distinguish findings from a failed audit, even in report-only m
 
 
 test('Source coverage rejects omitted, duplicate and ignored selected files', async () => {
-  const { verifyEslintSourceCoverage } = await import("../../../../scripts/dead-code/report.mjs");
+  const { verifyEslintSourceCoverage } = await import("../../../../scripts/audits/dead-code/report.mjs");
   const root = '/repository';
   const input = { 'src/a.ts': 'hash', 'src/b.astro': 'hash' };
   const a = { filePath: '/repository/src/a.ts', messages: [] };

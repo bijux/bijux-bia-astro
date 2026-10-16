@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm, symlink, cp, readdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {inventory,fileHashes,inputBytes} from "../../../../scripts/security/inventory.mjs";
-import {run} from "../../../../scripts/audit/execution.mjs";
-import {interpretAudit} from "../../../../scripts/security/dependencies.mjs";
-import {normalizeLint,exitFor,renderReport,safeText} from "../../../../scripts/security/reporting.mjs";
+import {inventory,fileHashes,inputBytes} from "../../../../scripts/audits/security/inventory.mjs";
+import {run} from "../../../../scripts/audits/execution.mjs";
+import {interpretAudit} from "../../../../scripts/audits/security/dependencies.mjs";
+import {normalizeLint,exitFor,renderReport,safeText} from "../../../../scripts/audits/security/reporting.mjs";
 
 const kit = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 async function temporary(callback) {
@@ -96,7 +96,7 @@ test('report distinguishes unexecuted coverage and incomplete stages', () => {
   assert.match(text, /NOT RUN/); assert.match(text, /ANALYSIS_ERROR missing tool/); assert.match(text, /not proof/);
 });
 async function runnerCopy(root) {
-  for (const file of ['scripts/security/audit.mjs', 'scripts/security/inventory.mjs', 'scripts/audit/execution.mjs', 'scripts/security/dependencies.mjs', 'scripts/security/reporting.mjs', 'scripts/security/scan-code.mjs','scripts/security/evidence.mjs','scripts/security/provenance.mjs']) {
+  for (const file of ['scripts/audits/security/audit.mjs', 'scripts/audits/security/inventory.mjs', 'scripts/audits/execution.mjs', 'scripts/audits/security/dependencies.mjs', 'scripts/audits/security/reporting.mjs', 'scripts/audits/security/scan-code.mjs','scripts/audits/security/evidence.mjs','scripts/audits/security/provenance.mjs']) {
     await mkdir(dirname(resolve(root, file)), { recursive: true }); await cp(resolve(kit, file), resolve(root, file));
   }
   await put(root, 'src/a.js', 'const safe = 1;');
@@ -108,46 +108,46 @@ async function runnerCopy(root) {
   await put(root,'.gitignore','/artifacts/\n');
   await put(root,'package.json',JSON.stringify({name:'security-fixture',version:'1.0.0',type:'module'}));
   await put(root,'package-lock.json',JSON.stringify({name:'security-fixture',version:'1.0.0',lockfileVersion:3,packages:{'':{name:'security-fixture',version:'1.0.0'}}}));
-  await cp(resolve(kit,'configs/security/eslint.config.mjs'),resolve(root,'eslint-fixture.mjs'));
-  await put(root,'configs/security/eslint.config.mjs',await readFile(resolve(root,'eslint-fixture.mjs'),'utf8'));
+  await cp(resolve(kit,'configs/audits/security/eslint.config.mjs'),resolve(root,'eslint-fixture.mjs'));
+  await put(root,'configs/audits/security/eslint.config.mjs',await readFile(resolve(root,'eslint-fixture.mjs'),'utf8'));
 }
 test('real runner with missing analyzers preserves a code report and returns 2', () => temporary(async root => {
   await runnerCopy(root);
-  const x = await run(process.execPath, ['scripts/security/audit.mjs', 'code'], { cwd: root });
+  const x = await run(process.execPath, ['scripts/audits/security/audit.mjs', 'code'], { cwd: root });
   assert.equal(x.code, 2); assert.match(await readFile(resolve(root, 'artifacts/security/code.log'), 'utf8'), /INCOMPLETE/);
   const directories = await readdir(resolve(root, 'artifacts/security/runs'));
   const report = JSON.parse(await readFile(resolve(root, 'artifacts/security/runs', directories[0], 'code.json'), 'utf8'));
   assert.equal(report.incomplete, true); assert.ok(report.errors.length);
 }));
 test('real runner refuses unlocked dependency audit without invoking the registry', () => temporary(async root => {
-  await runnerCopy(root); await rm(resolve(root,'package-lock.json')); const x = await run(process.execPath, ['scripts/security/audit.mjs', 'deps'], { cwd: root });
+  await runnerCopy(root); await rm(resolve(root,'package-lock.json')); const x = await run(process.execPath, ['scripts/audits/security/audit.mjs', 'deps'], { cwd: root });
   assert.equal(x.code, 2); assert.match(await readFile(resolve(root, 'artifacts/security/deps.log'), 'utf8'), /No unlocked audit fallback/);
 }));
 test('combined run records both unavailable stages rather than stopping at the first', () => temporary(async root => {
-  await runnerCopy(root); await rm(resolve(root,'package-lock.json')); const x = await run(process.execPath, ['scripts/security/audit.mjs', 'all'], { cwd: root });
+  await runnerCopy(root); await rm(resolve(root,'package-lock.json')); const x = await run(process.execPath, ['scripts/audits/security/audit.mjs', 'all'], { cwd: root });
   assert.equal(x.code, 2); const text = await readFile(resolve(root, 'artifacts/security/security.log'), 'utf8');
   assert.match(text, /STAGE code: INCOMPLETE/); assert.match(text, /STAGE dependencies: INCOMPLETE/);
 }));
 test('code-only run never overwrites a combined report', () => temporary(async root => {
   await runnerCopy(root); await put(root, 'artifacts/security/security.log', 'old combined evidence');
-  await run(process.execPath, ['scripts/security/audit.mjs', 'code'], { cwd: root });
+  await run(process.execPath, ['scripts/audits/security/audit.mjs', 'code'], { cwd: root });
   assert.equal(await readFile(resolve(root, 'artifacts/security/security.log'), 'utf8'), 'old combined evidence');
 }));
 test('runner refuses a skip argument', () => temporary(async root => {
-  await runnerCopy(root); const x = await run(process.execPath, ['scripts/security/audit.mjs', 'all', '--skip'], { cwd: root }); assert.equal(x.code, 2); assert.match(x.stderr, /No skip/);
+  await runnerCopy(root); const x = await run(process.execPath, ['scripts/audits/security/audit.mjs', 'all', '--skip'], { cwd: root }); assert.equal(x.code, 2); assert.match(x.stderr, /No skip/);
 }));
 test('test fixture leaves no source code inside artifact reports', () => temporary(async root => {
-  await runnerCopy(root); await run(process.execPath, ['scripts/security/audit.mjs', 'all'], { cwd: root });
+  await runnerCopy(root); await run(process.execPath, ['scripts/audits/security/audit.mjs', 'all'], { cwd: root });
   const files = await readdir(resolve(root, 'artifacts/security'), { recursive: true });
   assert.equal(files.some(name => /\.(astro|js|mjs|ts)$/.test(name)), false);
 }));
 
 test('runner cannot pass a worker failure disguised by an empty findings report', () => temporary(async root => {
   await runnerCopy(root);
-  await put(root, 'scripts/security/scan-code.mjs', `import {writeFile} from 'node:fs/promises';
+  await put(root, 'scripts/audits/security/scan-code.mjs', `import {writeFile} from 'node:fs/promises';
     await writeFile(process.argv[2], JSON.stringify({stage:'code',incomplete:false,findings:[],errors:[]}));
     process.exitCode=1;`);
-  const x = await run(process.execPath, ['scripts/security/audit.mjs','code'], {cwd:root});
+  const x = await run(process.execPath, ['scripts/audits/security/audit.mjs','code'], {cwd:root});
   assert.equal(x.code,2);
   assert.match(await readFile(resolve(root,'artifacts/security/code.log'),'utf8'),/exit\/report mismatch/);
 }));
@@ -176,7 +176,7 @@ test('dependency aliases require a reachable advisory, including through cycles'
 
 test('source changes after lint cannot pass merely because Git status remains dirty', () => temporary(async root => {
   await runnerCopy(root);
-  await put(root, 'scripts/security/scan-code.mjs', `
+  await put(root, 'scripts/audits/security/scan-code.mjs', `
     import {writeFile} from 'node:fs/promises';
     import {resolve} from 'node:path';
     import {inventory,fileHashes} from './inventory.mjs';
@@ -188,7 +188,7 @@ test('source changes after lint cannot pass merely because Git status remains di
     await writeFile(process.argv[2],JSON.stringify(report));
     await writeFile('src/a.js','const changedAfterLint = true;');
   `);
-  const result = await run(process.execPath, ['scripts/security/audit.mjs', 'code'], {cwd:root});
+  const result = await run(process.execPath, ['scripts/audits/security/audit.mjs', 'code'], {cwd:root});
   assert.equal(result.code, 2);
   assert.match(await readFile(resolve(root, 'artifacts/security/code.log'), 'utf8'), /Source inputs changed before the audit completed/);
 }));
@@ -208,14 +208,14 @@ test('root configs and source paths named dist are inventoried; pipes are reject
 }));
 test('a Git-free fixture cannot inherit its parent checkout provenance', () => temporary(async root => {
   await runnerCopy(root); await rm(resolve(root,'.git'),{recursive:true});
-  const result=await run(process.execPath,['scripts/security/audit.mjs','code'],{cwd:root});
+  const result=await run(process.execPath,['scripts/audits/security/audit.mjs','code'],{cwd:root});
   assert.equal(result.code,2);
   assert.match(await readFile(resolve(root,'artifacts/security/code.log'),'utf8'),/different repository root/);
 }));
 test('an evidence-directory symlink cannot redirect scanner writes outside its owned folder', () => temporary(async root => {
   await runnerCopy(root); await mkdir(resolve(root,'protected'));
   await mkdir(resolve(root,'artifacts')); await symlink(resolve(root,'protected'),resolve(root,'artifacts/security'));
-  const result=await run(process.execPath,['scripts/security/audit.mjs','code'],{cwd:root});
+  const result=await run(process.execPath,['scripts/audits/security/audit.mjs','code'],{cwd:root});
   assert.equal(result.code,2); assert.match(result.stderr,/unsafe or unavailable/);
   assert.deepEqual(await readdir(resolve(root,'protected')),[]);
 }));
@@ -223,8 +223,8 @@ test('an evidence-directory symlink cannot redirect scanner writes outside its o
 test('a blocked evidence filename exits incomplete before launching an analyzer', () => temporary(async root => {
   await runnerCopy(root);
   await mkdir(resolve(root,'artifacts/security/code.log'),{recursive:true});
-  await put(root,'scripts/security/scan-code.mjs',`import {writeFile} from 'node:fs/promises'; await writeFile('analyzer-launched','unexpected');`);
-  const result=await run(process.execPath,['scripts/security/audit.mjs','code'],{cwd:root});
+  await put(root,'scripts/audits/security/scan-code.mjs',`import {writeFile} from 'node:fs/promises'; await writeFile('analyzer-launched','unexpected');`);
+  const result=await run(process.execPath,['scripts/audits/security/audit.mjs','code'],{cwd:root});
   assert.equal(result.code,2); assert.match(result.stderr,/INCOMPLETE/);
   assert.equal((await readdir(root)).includes('analyzer-launched'),false);
 }));

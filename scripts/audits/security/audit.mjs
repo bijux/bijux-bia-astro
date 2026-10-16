@@ -4,13 +4,13 @@ import { ownedDirectory, saveEvidence } from './evidence.mjs';
 import { gitProvenance } from './provenance.mjs';
 import { resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {run} from '../audit/execution.mjs';
+import {run} from '../execution.mjs';
 import {sha256,inputBytes,inventory,fileHashes} from './inventory.mjs';
 import {exitFor,renderReport,normalizeLint} from './reporting.mjs';
 
 const args = process.argv.slice(2), profile = args[0] ?? 'all';
 if (args.length > 1 || !['all', 'code', 'deps'].includes(profile)) {
-  console.error('Usage: node scripts/security/audit.mjs [all|code|deps]. No skip/fix/suppression flags.');
+  console.error('Usage: node scripts/audits/security/audit.mjs [all|code|deps]. No skip/fix/suppression flags.');
   process.exitCode = 2;
 } else {
   try {
@@ -36,7 +36,7 @@ if (args.length > 1 || !['all', 'code', 'deps'].includes(profile)) {
     report.gitStatus = before.status;
     await save('provenance-before.json', JSON.stringify(before, null, 2) + '\n');
     report.hashes = {};
-    for (const name of ['package.json', 'package-lock.json', 'configs/security/eslint.config.mjs']) {
+    for (const name of ['package.json', 'package-lock.json', 'configs/audits/security/eslint.config.mjs']) {
       try { report.hashes[name] = sha256(await inputBytes(root, name)); }
       catch { report.hashes[name] = null; }
     }
@@ -45,8 +45,8 @@ if (args.length > 1 || !['all', 'code', 'deps'].includes(profile)) {
     const lock = JSON.parse((await inputBytes(root, 'package-lock.json')).toString('utf8'));
     if (lock.lockfileVersion !== 3 || !lock.packages?.[''] || ['dependencies','devDependencies','optionalDependencies'].some(field => JSON.stringify(Object.entries(manifest[field] ?? {}).sort()) !== JSON.stringify(Object.entries(lock.packages[''][field] ?? {}).sort()))) throw new Error('Manifest and locked dependency declarations disagree.');
     const files = ['audit.mjs','scan-code.mjs','inventory.mjs','dependencies.mjs','reporting.mjs','evidence.mjs','provenance.mjs'];
-    for (const name of files) report.hashes[`scripts/security/${name}`] = sha256(await inputBytes(root, `scripts/security/${name}`));
-    report.hashes['scripts/audit/execution.mjs'] = sha256(await inputBytes(root, 'scripts/audit/execution.mjs'));
+    for (const name of files) report.hashes[`scripts/audits/security/${name}`] = sha256(await inputBytes(root, `scripts/audits/security/${name}`));
+    report.hashes['scripts/audits/execution.mjs'] = sha256(await inputBytes(root, 'scripts/audits/execution.mjs'));
     if (profile !== 'deps') {
       const worker = fileURLToPath(new URL('./scan-code.mjs', import.meta.url));
       const result = await run(process.execPath, [worker, resolve(dir, 'code.json')], { cwd: root });

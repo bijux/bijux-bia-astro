@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { run } from "../../../../scripts/audit/execution.mjs";
+import { run } from "../../../../scripts/audits/execution.mjs";
 
 const repository = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -13,7 +13,7 @@ test("installed security analyzers cover Astro and browser scripts without hidin
     const root = await mkdtemp(path.join(output, "run-"));
     try {
         const result = await run(process.execPath,
-            [path.join(repository, "scripts/security/scan-code.mjs"), path.join(root, "code.json")],
+            [path.join(repository, "scripts/audits/security/scan-code.mjs"), path.join(root, "code.json")],
             { cwd: repository, timeout: 60000 });
         assert.equal(result.failure, null);
         assert.equal(result.signal, null);
@@ -24,7 +24,7 @@ test("installed security analyzers cover Astro and browser scripts without hidin
         assert.equal(report.probes.length, 15);
         assert.deepEqual(report.probes.filter(probe => !probe.passed), []);
         assert(report.inventory.code.includes("src/features/search/results/HighlightedText.astro"));
-        assert(report.inventory.code.includes("scripts/security/audit.mjs"));
+        assert(report.inventory.code.includes("scripts/audits/security/audit.mjs"));
         assert.equal(report.probes.find(probe => probe.name === "malformed-js").expectedRule, "PARSE_ERROR");
         assert.equal(report.probes.find(probe => probe.name === "astro-inline-client").expectedRule, "no-unsanitized/property");
     } finally {

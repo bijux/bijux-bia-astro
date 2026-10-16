@@ -24,5 +24,4 @@ fail. Browser checks exclude external viewers/chrome, images, fonts and analytic
 they verify application behaviour and destinations, not those services.
 
 Builds, caches, browser traces and reports go under `artifacts/`. CLI ownership
-stays in `scripts/build`, `catalogue`, `deployment`, `verification` and the audit
-directories. `makes/*.mk` is included by the root Makefile.
+stays in `scripts/build`, `catalogue`, `deployment`, `verification` and `audits`. `makes/*.mk` is included by the root Makefile.

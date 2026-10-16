@@ -5,7 +5,7 @@ import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, s
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const executable = fileURLToPath(new URL("../../../../scripts/dead-code/audit.mjs", import.meta.url));
+const executable = fileURLToPath(new URL("../../../../scripts/audits/dead-code/audit.mjs", import.meta.url));
 const output = path.resolve('artifacts/dead-code-tests');
 mkdirSync(output, { recursive: true });
 const suiteRoot = mkdtempSync(path.join(output, 'audit-suite-'));
@@ -24,16 +24,16 @@ function git(fixture, args) {
 
 function fixture({ knip = { files: [], issues: [] }, eslint, knipExit = 0, duringScan = '' } = {}) {
   const root = mkdtempSync(path.join(suiteRoot, 'audit-contract-'));
-  for (const folder of ['src', 'scripts/dead-code', 'configs/quality', 'bin', 'disabled-hooks']) {
+  for (const folder of ['src', 'scripts/audits/dead-code', 'configs/audits/dead-code', 'bin', 'disabled-hooks']) {
     mkdirSync(path.join(root, folder), { recursive: true });
   }
   writeFileSync(path.join(root, '.gitignore'), '/node_modules/\n/artifacts/\n/bin/\n/disabled-hooks/\n');
   writeFileSync(path.join(root, 'package.json'), '{"name":"bijux-audit-fixture","private":true}');
   writeFileSync(path.join(root, 'package-lock.json'), '{}');
   writeFileSync(path.join(root, 'src/a.ts'), 'export const unchanged = 1;\n');
-  writeFileSync(path.join(root, 'scripts/dead-code/verify-tools.mjs'), 'console.log("controlled probe");');
-  for (const name of ['eslint.config.mjs', 'knip.json', 'tsconfig.dead-code.json']) {
-    writeFileSync(path.join(root, 'configs/quality', name), '{}');
+  writeFileSync(path.join(root, 'scripts/audits/dead-code/verify-tools.mjs'), 'console.log("controlled probe");');
+  for (const name of ['eslint.config.mjs', 'knip.json', 'tsconfig.json']) {
+    writeFileSync(path.join(root, 'configs/audits/dead-code', name), '{}');
   }
   // Controlled analyzers isolate the wrapper contract; the real-tool probe is tested separately.
   for (const [name, output, exit] of [
@@ -148,7 +148,7 @@ test('Unreadable source inputs and missing required configuration are incomplete
     assert.match(result.log, /provenance-before: FAILED/);
     assert.equal(result.report.inputHashesBefore, null);
   }
-  const root = fixture({ duringScan: "require('node:fs').unlinkSync('configs/quality/knip.json');" });
+  const root = fixture({ duringScan: "require('node:fs').unlinkSync('configs/audits/dead-code/knip.json');" });
   const result = run(root, ['--report-only']);
   assert.equal(result.status, 2);
   assert.match(result.log, /provenance-after: FAILED/);
@@ -266,7 +266,7 @@ test('Rejected source symlinks launch no analyzers and copy no external bytes in
       const cli = path.join(root, 'node_modules', name, 'cli.cjs');
       writeFileSync(cli, marker + readFileSync(cli, 'utf8'));
     }
-    const probe = path.join(root, 'scripts/dead-code/verify-tools.mjs');
+    const probe = path.join(root, 'scripts/audits/dead-code/verify-tools.mjs');
     writeFileSync(probe, "import { writeFileSync } from 'node:fs'; writeFileSync('artifacts/probe-launched', 'yes');");
     writeFileSync(path.join(root, 'node_modules/eslint/cli.cjs'), marker +
       `console.log(JSON.stringify([{filePath: 'src/external.ts', source: ${JSON.stringify(privateContent)}, messages: [{ruleId:'@typescript-eslint/no-unused-vars', message:'unused', line:1, column:7}]}]));`);
