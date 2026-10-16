@@ -11,8 +11,9 @@ CI runs the same gate: source checking, all Node unit/functional suites, then a
 representative production build, configured HTML validation, exact served-HTML
 checks against the deployment manifest, and desktop/mobile Chromium journeys.
 Before sealing a Node deployment, builds check image/media/script `src`, video
-`poster`, stylesheet/icon/preload links and fragments in generated documents. External resources,
-server-only routes and runtime-created markup remain separate browser contracts.
+`poster`, stylesheet/icon/preload links and fragments in generated documents; external resources are excluded.
+The fixture gate also validates raw HTML from declared on-demand routes before browser parsing.
+Runtime-created markup remains covered by owned functional/browser checks.
 Browser journeys serve the container's shared runtime package after an independent
 offline `npm ci --omit=dev --ignore-scripts`; module hooks reject ancestor dependency
 fallback. The controlled fixture transport is the only external code exception.

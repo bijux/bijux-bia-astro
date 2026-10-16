@@ -24,28 +24,29 @@ const step = 1;
 
 
 ---
-<div class="facet-section" id={`facet-section-${id}`}>
-  <div class="facet-title">
-    <div class="facet-title-and-warning">
-      <legend
-        class="facet-legend | vf-form__helper" 
+<fieldset class="facet-section" id={`facet-section-${id}`}>
+  <legend class="facet-heading">
+    <span class="facet-title">
+      <button
+        class="facet-legend | vf-form__helper"
+        type="button"
+        id={`facet-toggle-${id}`}
         data-facet-toggle={id}
-        tabindex="0" 
-        role="button"
+        aria-expanded="true"
+        aria-controls={`facet-option-${id}`}
+        disabled
       >
         <span class="facet-arrow" aria-hidden="true"></span>
-        <div class="facet-title-text-and-warning">
+        <span class="facet-title-text-and-warning">
           {facetTitle(title)}
           {showWarning && (
-            <div class="facet-warning">
-              <span class="warning-label">Top 10</span>
-            </div>
+            <span class="facet-warning"><span class="warning-label">Top 10</span></span>
           )}
-        </div>
-      </legend>
-    </div>
-    <div class="facet-count">{totalCounts}</div>
-  </div>
+        </span>
+      </button>
+      <span class="facet-count">{totalCounts}</span>
+    </span>
+  </legend>
   <div class="facet-options" id={`facet-option-${id}`}>
     {facet.kind === "terms" && options.map(({ value: key, count }, index) => (
       <div class="facet-option">
@@ -58,10 +59,10 @@ const step = 1;
               checked={selectedValue ? selectedValue.includes(key) : false}
             />
           <label for={`${id}-${index}`} class="facet-label">
-              <div class="facet-label-inner">
-                <div>{title !=="Image Format" && title !== "File Type"? formatFieldName(facet.title, facetTitle(key.replaceAll("_", " "))) : key}</div>
-                {count !== null && <div class="facet-count">{count}</div>}
-              </div>
+              <span class="facet-label-inner">
+                <span>{title !=="Image Format" && title !== "File Type"? formatFieldName(facet.title, facetTitle(key.replaceAll("_", " "))) : key}</span>
+                {count !== null && <span class="facet-count">{count}</span>}
+              </span>
             </label>
           </div>
       </div>
@@ -145,7 +146,7 @@ const step = 1;
 
 
   </div>
-</div>
+</fieldset>
 
 <style>
   .slider-facet .slider-value{
@@ -153,18 +154,38 @@ const step = 1;
     margin: 0.25rem 0 0.75rem;
   }
   .facet-section {
+    min-width: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
     border-bottom: 1px solid #ccc;
     margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
   }
 
+  .facet-heading {
+    padding: 0;
+    width: 100%;
+  }
+
   .facet-legend {
+    appearance: none;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
     padding: 0 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     position: relative;
+  }
+
+  .facet-legend:focus-visible {
+    outline: 2px solid #3b6fb6;
+    outline-offset: 2px;
   }
 
   .facet-arrow::before {
@@ -193,6 +214,7 @@ const step = 1;
   }
 
   .facet-title {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -223,6 +245,7 @@ const step = 1;
   }
 
   .facet-warning {
+    display: block;
     font-size: 0.6rem;
     line-height: 1;
     color: #888;
@@ -235,7 +258,7 @@ const step = 1;
   }
 </style>
 
-<style is:inline>
+<style>
   .slider-slider{
     position: relative;
     height: 44px; /* gives room for big thumbs */

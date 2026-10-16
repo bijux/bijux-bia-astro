@@ -1,7 +1,7 @@
 import { cleanHistoryURL, historyRequestURL } from '../pagination/history.mjs';
 import { formSearchURL } from '../query.mjs';
 import { createSearchNavigation } from './navigation.mjs';
-import { bindFacetControls, submitFacetsForm } from '../facets/controls.js';
+import { bindFacetControls, setFacetExpanded, submitFacetsForm } from '../facets/controls.js';
 import { bindToolbar } from './toolbar.js';
 import { renderCursorPagination, syncPaginatedResults } from '../pagination/controls.js';
 const SHELL_ID = 'search-results-shell';
@@ -107,11 +107,7 @@ function mountSearch() {
         if (facetToggle) {
             const id = facetToggle.getAttribute("data-facet-toggle");
             const section = document.getElementById(`facet-section-${id}`);
-            const options = document.getElementById(`facet-option-${id}`);
-            if (section && options) {
-                const isCollapsed = section.classList.toggle("collapsed");
-                options.style.display = isCollapsed ? "none" : "block";
-            }
+            setFacetExpanded(section, facetToggle.getAttribute('aria-expanded') !== 'true');
             return;
         }
         const link = target.closest(".facet-remove-btn, .vf-pagination a");
@@ -134,16 +130,6 @@ function mountSearch() {
                     ? { cursorPage: Number(link.dataset.cursorPage) }
                     : {},
         });
-    }, { signal });
-    document.addEventListener("keydown", (event) => {
-        const target = event.target;
-        if (!(target instanceof Element))
-            return;
-        const facetToggle = target.closest("[data-facet-toggle]");
-        if (!facetToggle || (event.key !== "Enter" && event.key !== " "))
-            return;
-        event.preventDefault();
-        facetToggle.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     }, { signal });
     window.addEventListener("popstate", (event) => {
         navigateSearch(historyRequestURL(window.location.href, event.state), { push: false, state: event.state || {} });

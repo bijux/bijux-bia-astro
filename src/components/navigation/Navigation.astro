@@ -195,6 +195,10 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
       margin-bottom: 0.3em;
     }
 
+    .navbar:not([data-navigation-ready]) {
+      position: static;
+    }
+
     .nav-brand,
     .navbar[data-navigation-ready] .nav-toggle {
       display: inline-flex;
