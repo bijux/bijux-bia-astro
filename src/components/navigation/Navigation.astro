@@ -73,11 +73,12 @@ const nav = projectNavItems ?? [
    },
 ];
 
-const pathname = Astro.url.pathname;
+const canonicalPath = (value: string) => value.replace(/\/+$/, "") || "/";
+const pathname = canonicalPath(Astro.url.pathname);
 const basePath = pathname.split("/")[2] ?? "";
 const isExternalHref = (href) => /^https?:\/\//.test(href);
 const isCurrent = (href) =>
-  href.replace(/\/+$/, "") === pathname;
+  canonicalPath(href) === pathname;
 
 const hasActiveChild = (item) =>
   item.children?.some((child) => isCurrent(child.href));
@@ -249,14 +250,14 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
 
 </style>
 
-<nav class="vf-navigation vf-navigation--main navbar vf-u-fullbleed">
+<nav aria-label={hasProjectNav ? `${brandLabel} primary` : "Primary"} class="vf-navigation vf-navigation--main navbar vf-u-fullbleed">
   <a class="nav-brand" href={brandHref}>{brandLabel}</a>
   <button class="nav-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation">
     <span aria-hidden="true">&#9776;</span>
   </button>
   <ul class="vf-navigation__list vf-list nav-list">
     {nav.map((item) => {
-      const sectionActive = basePath === item.key;
+      const sectionActive = basePath === item.key || isCurrent(item.href);
       const childActive = hasActiveChild(item);
 
       return (
@@ -267,6 +268,7 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
         >
           <a
             href={item.href}
+            aria-current={isCurrent(item.href) && !childActive ? "page" : undefined}
             class={`vf-navigation__link ${
               sectionActive || childActive ? "is-current" : ""
             }`}
@@ -282,6 +284,7 @@ const brandHref = homeItem?.href ?? "/bioimage-archive/";
                 <li class="nav-dropdown__item">
                   <a
                     href={child.href}
+                    aria-current={isCurrent(child.href) ? "page" : undefined}
                     class={`nav-dropdown__link ${
                       isCurrent(child.href) ? "is-current" : ""
                     }`}
