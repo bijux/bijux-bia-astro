@@ -54,7 +54,8 @@
     "redirect_index.html",
     "study/EMPIAR-12104/index.html",
     "study/S-BIAD3335/index.html",
-    "galleries/spatialomics/study/S-BIAD1093/index.html"
+    "galleries/spatialomics/study/S-BIAD1093/index.html",
+    "study/S-BIAD546/index.html"
   ],
   "serverRoutes": [
     "/images?size_t=1",

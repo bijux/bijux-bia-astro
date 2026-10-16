@@ -29,6 +29,7 @@ export async function loadStudyPage(accessionID, client, relatedEntries = loadRe
   const study = await client.getStudyFromApiByAccession(accessionID);
   if (!study) throw new Error(`Study ${accessionID} is unavailable.`);
   if (!study.licence_details) throw new TypeError(`Study ${accessionID} has no licence metadata.`);
+  if (study.dataset.length === 0) delete tableOfContents['Datasets'];
   const images = study?.image ?? []
   const hasSpecimenTracks = images.length > 0 ? await client.studyHasSpecimenTracks(accessionID) : false;
   const isEMPIAR = accessionID.includes("EMPIAR");

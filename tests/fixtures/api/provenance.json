@@ -90,6 +90,18 @@
       "capturedAt": "2026-10-16T06:33:07.309197+00:00",
       "sha256": "e15a7edd283231b6465fd101c93f91a3b0fb495bf8bdf4ee94ae845e64f4b7bd",
       "file": "training-on-demand-response.json"
+    },
+    {
+      "file": "file-links-s-biad546-response.json",
+      "url": "https://www.ebi.ac.uk/biostudies/api/v1/studies/S-BIAD546/info",
+      "capturedAt": "2026-10-15",
+      "sha256": "3a0cd5d234149e78b8c9083e6d05aefe5186b06910851a13ce00b898bf87d932"
+    },
+    {
+      "file": "study-s-biad546-response.json",
+      "url": "https://alpha.bioimagearchive.org/search/v1/website/study?facet.accession_id=S-BIAD546",
+      "capturedAt": "2026-10-15",
+      "sha256": "52e9b3505a424b44ec9ceab5373657c2a6a407388b15ab4070801e679db21fc5"
     }
   ]
 }

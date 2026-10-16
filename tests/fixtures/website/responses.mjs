@@ -9,7 +9,7 @@ import { uncuratedImage, curatedImage, recommendedImage } from '../scenarios/ima
 import { imageWithFileMetadata, imageWithoutViewer } from '../scenarios/image-file-metadata.mjs';
 
 const saved = name => JSON.parse(readFileSync(new URL(`../api/${name}-response.json`, import.meta.url)));
-const studies = ['study-s-biad3335', 'study-empiar12104'].map(name => saved(name).hits.hits[0]._source);
+const studies = ['study-s-biad3335', 'study-empiar12104', 'study-s-biad546'].map(name => saved(name).hits.hits[0]._source);
 const image = saved('image-001b8ef2-7a5e-4b94-b91c-d93f5095ee39').hits.hits[0]._source;
 
 /** Complete captured metadata with deliberately small, synthetic browse/pagination results. */
@@ -21,6 +21,7 @@ export function fixtureResponse(value) {
     if (spatialomics !== undefined) return spatialomics;
     if (url.searchParams.get('query') === 'unavailable') throw new Error('Controlled API failure.');
     if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/biostudies/api/v1/studies/S-BIAD3335/info') return { httpLink: 'https://www.ebi.ac.uk/biostudies/files/S-BIAD3335/' };
+    if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/biostudies/api/v1/studies/S-BIAD546/info') return saved('file-links-s-biad546');
     // Synthetic optional enrichment exercises unit text absent from the saved study captures.
     if (url.origin === 'https://www.ebi.ac.uk' && url.pathname === '/emdb/api/entry/EMD-1234') return {
         structure_determination_list: { structure_determination: { image_processing: {

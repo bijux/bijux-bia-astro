@@ -34,3 +34,5 @@ day-precision dates; the third inventory was captured separately.
 
 Training captures retain the complete live-event (empty) and on-demand responses.
 Successful live cards are covered by explicit synthetic records.
+
+S-BIAD546 and its file-service response cover legacy studies without datasets.
