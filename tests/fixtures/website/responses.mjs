@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { cursorSearchResponse } from '../scenarios/search-pagination.mjs';
 import { benchmarkStudies } from '../scenarios/benchmark-datasets.mjs';
 import { annotationStudy, sourceImage, annotationImages } from '../scenarios/annotations.mjs';
-import { uncuratedImage, curatedImage } from '../scenarios/image-representations.mjs';
+import { uncuratedImage, curatedImage, recommendedImage } from '../scenarios/image-representations.mjs';
 import { imageWithFileMetadata, imageWithoutViewer } from '../scenarios/image-file-metadata.mjs';
 
 const saved = name => JSON.parse(readFileSync(new URL(`../api/${name}-response.json`, import.meta.url)));
@@ -32,7 +32,7 @@ export function fixtureResponse(value) {
                 ? [{ _source: relationshipImage }] : [] } };
         }
     }
-    const representationImage = [uncuratedImage, curatedImage, imageWithFileMetadata, imageWithoutViewer].find(image => image.uuid === url.searchParams.get('query'));
+    const representationImage = [uncuratedImage, curatedImage, recommendedImage, imageWithFileMetadata, imageWithoutViewer].find(image => image.uuid === url.searchParams.get('query'));
     if (url.pathname === '/search/v1/website/image' && representationImage) {
         return { hits: { hits: [{ _source: representationImage }] } };
     }

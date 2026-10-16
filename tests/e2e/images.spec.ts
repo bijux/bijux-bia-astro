@@ -1,5 +1,5 @@
 import { test, expect } from '../support/browser';
-import { uncuratedImage, curatedImage } from '../fixtures/scenarios/image-representations.mjs';
+import { uncuratedImage, curatedImage, recommendedImage } from '../fixtures/scenarios/image-representations.mjs';
 import { imageWithFileMetadata, imageWithoutViewer } from '../fixtures/scenarios/image-file-metadata.mjs';
 
 test('images without a viewer retain their supplied file paths and user metadata', { tag: '@preservation' }, async ({ page }) => {
@@ -79,4 +79,19 @@ test('search recommendations and curated image overrides retain the selected rep
     expect(new URL(source!).searchParams.get('source')).toBe('https://example.org/curated.ome.zarr');
     await page.locator('#CopyURLButton').click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('https://example.org/curated.ome.zarr');
+});
+
+test('image and spatialomics actions copy the supplied OME-Zarr URI through the native clipboard', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
+    const uri = 'https://example.org/curated.ome.zarr';
+    for (const prefix of ['/image/', '/galleries/spatialomics/image/']) {
+        await page.goto(`/bioimage-archive${prefix}${recommendedImage.uuid}`);
+        const copy = page.locator('#CopyURLButton');
+        await expect(copy).toHaveAccessibleName('Copy OME-Zarr URI');
+        await copy.focus();
+        await page.keyboard.press('Enter');
+        await expect.poll(() => nativeClipboardWrites.at(-1)).toBe(uri);
+        await expect(copy).toHaveText('URI Copied');
+        if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(uri);
+    }
+    expect(nativeClipboardWrites).toEqual([uri, uri]);
 });

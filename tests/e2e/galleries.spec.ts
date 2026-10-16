@@ -24,18 +24,22 @@ test('image and spatialomics routes preserve metadata and study destinations', a
     }
 });
 
-test('annotation changes stay in their dataset and retain viewer/copy destinations', async ({ page }) => {
+test('annotation changes stay in their dataset and retain viewer/copy destinations', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
     await page.goto('/bioimage-archive/galleries/ai/image/00000000-0000-4000-8000-000000000001');
     const first = page.locator('[data-annotation-dataset="annotation-dataset-2"]');
     const second = page.locator('[data-annotation-dataset="annotation-dataset-3"]');
     await expect(first.locator('[data-annotation-method]')).toHaveText('Independent method 2');
+    await page.locator('#CopyAnnotationButton').click();
+    await expect.poll(() => nativeClipboardWrites.at(-1)).toBe('https://example.org/annotation-2.ome.zarr');
     await page.locator('.slider-right-button').click();
     await expect(page.locator('#AnnotatedImageLength')).toHaveText('2');
     await expect(first.locator('[data-annotation-method]')).toHaveText('Independent method 2');
     await expect(second.locator('[data-annotation-method]')).toHaveText('Independent method 3');
     await expect(page.locator('#OpenAnnotationInVizarr')).toHaveAttribute('href', /annotation-3/);
     await page.locator('#CopyAnnotationButton').click();
-    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('https://example.org/annotation-3.ome.zarr');
+    await expect.poll(() => nativeClipboardWrites.at(-1)).toBe('https://example.org/annotation-3.ome.zarr');
+    expect(nativeClipboardWrites).toEqual(['https://example.org/annotation-2.ome.zarr', 'https://example.org/annotation-3.ome.zarr']);
+    if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('https://example.org/annotation-3.ome.zarr');
     const ids = await page.locator('[id]').evaluateAll(nodes => nodes.map(node => node.id));
     expect(new Set(ids).size).toBe(ids.length);
 });
@@ -47,9 +51,11 @@ test('AI model tables retain their model navigation and initialise', async ({ pa
     await expect(page.getByRole('link', { name: 'Link to model', exact: true })).toHaveAttribute('href', /^https:/);
 });
 
-test('volume-EM download dialogs expose their title and return focus after native dismissal', { tag: '@preservation' }, async ({ page }) => {
+test('volume-EM dialogs retain named, native copy and dismissal behaviour', { tag: '@preservation' }, async ({ page, browserName, nativeClipboardWrites }) => {
     await page.goto('/bioimage-archive/galleries/volumeem');
-    const opener = page.locator('#card-view').getByRole('button', { name: 'Copy OME-Zarr URI', exact: true }).first();
+    const uri = 'https://bioimaging-01-pub.livingobjects.ebi.ac.uk/phase1test/EMPIAR-10311-IM1.zarr';
+    const command = "aws s3 cp --no-sign-request --endpoint-url 'https://livingobjects.ebi.ac.uk' 's3://bioimaging-01-pub/phase1test/EMPIAR-10311-IM1.zarr' './EMPIAR-10311-IM1.zarr' --recursive";
+    const opener = page.locator(`#card-view button[data-uri="${uri}"]`);
     await opener.focus();
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'OME-Zarr S3 Location', exact: true });
@@ -60,6 +66,30 @@ test('volume-EM download dialogs expose their title and return focus after nativ
     await expect(opener).toBeFocused();
     await page.keyboard.press('Enter');
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+    for (const [label, value] of [['Copy S3 URI', uri], ['Copy AWS Command', command]]) {
+        await page.keyboard.press('Enter');
+        await expect(dialog.locator('pre')).toHaveText(command);
+        await dialog.getByRole('button', { name: label, exact: true }).click();
+        await expect.poll(() => nativeClipboardWrites.at(-1)).toBe(value);
+        if (browserName === 'chromium') await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(value);
+        await expect(dialog).toHaveCount(0);
+        await expect(opener).toBeFocused();
+    }
+    expect(nativeClipboardWrites).toEqual([uri, command]);
+    await page.evaluate(() => Object.defineProperty(navigator.clipboard, 'writeText', {
+        configurable: true, value: async () => { throw new DOMException('Denied for this check', 'NotAllowedError'); },
+    }));
+    await page.keyboard.press('Enter');
+    const copy = dialog.getByRole('button', { name: /^(Copy S3 URI|Copy unavailable)$/ });
+    await copy.click();
+    await expect(copy).toHaveText('Copy unavailable');
+    await expect(copy).toBeEnabled();
+    await expect(dialog).toBeVisible();
+    await page.evaluate(() => Reflect.deleteProperty(navigator.clipboard, 'writeText'));
+    await copy.click();
+    await expect.poll(() => nativeClipboardWrites).toEqual([uri, command, uri]);
     await expect(dialog).toHaveCount(0);
     await expect(opener).toBeFocused();
 });
