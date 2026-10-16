@@ -70,3 +70,18 @@ test('physical filter labels preserve zero and very small values without changin
     await expect(page.locator('#pageSize')).toHaveValue('30');
     expect(new URL(page.url()).searchParams.getAll('total_physical_size_x')).toEqual(values);
 });
+
+
+test('query headings retain reserved characters when followed on either search endpoint', async ({ page }) => {
+    const query = 'ATP & RNA+DNA #1';
+    for (const scope of ['images', 'studies']) {
+        await page.goto(`/bioimage-archive/${scope}?${new URLSearchParams({ query })}`);
+        const link = page.getByRole('heading').getByRole('link', { name: query, exact: true });
+        const destination = new URL((await link.getAttribute('href'))!, page.url());
+        expect([...destination.searchParams]).toEqual([['query', query]]);
+        expect(destination.hash).toBe('');
+        await link.click();
+        await expect(page.locator('#searchitem')).toHaveValue(query);
+        expect(new URL(page.url()).searchParams.get('query')).toBe(query);
+    }
+});
