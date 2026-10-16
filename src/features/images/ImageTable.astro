@@ -18,7 +18,7 @@ const { images, imagePageRoot } = Astro.props;
         images.map((image) => (
           <tr>
               <td>
-                <a href={imagePageRoot ? `/bioimage-archive/${imagePageRoot}/${image.uuid}` : `/bioimage-archive/image/${image.uuid}`}><img class="vf-figure__image" style="max-height: 150px;" src={getThumbnail(image)}/></a>
+                <a aria-label={`View image ${image.uuid}`} href={imagePageRoot ? `/bioimage-archive/${imagePageRoot}/${image.uuid}` : `/bioimage-archive/image/${image.uuid}`}><img alt="" class="vf-figure__image" style="max-height: 150px;" src={getThumbnail(image)}/></a>
               </td>
               <td>{image.uuid}</td>
           </tr>

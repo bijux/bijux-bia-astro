@@ -1,12 +1,11 @@
 ---
 import SpecimenTrackTableRow from "./SpecimenTrackTableRow.astro";
+import { isRootImage } from './relationships/position.mjs';
 
 const { images } = Astro.props;
-
-const isRoot = (image) => image.upstream_image_uuids?.length === 0;
 const sortedImages = images
   .filter((image) => image != null)
-  .sort((a, b) => (isRoot(a) === isRoot(b) ? 0 : isRoot(a) ? 1 : -1));
+  .sort((a, b) => (isRootImage(a) === isRootImage(b) ? 0 : isRootImage(a) ? 1 : -1));
 ---
 <div class="specimen-track-table bia-table-controls">
   <table id="specimen_track_table" class="vf-table">
