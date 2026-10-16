@@ -1,0 +1,11 @@
+.specimen-track-table .vf-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.specimen-track-table .vf-table :is(th, td) {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #d2d2d2;
+  font-size: 14px;
+}
