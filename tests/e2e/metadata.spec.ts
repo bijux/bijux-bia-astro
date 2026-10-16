@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test, expect } from '../support/browser';
 import contract from '../fixtures/website/production-contract.json' with { type: 'json' };
 
-test('metadata preserves production behaviour', async ({ page }) => {
+test('metadata preserves production behaviour', { tag: '@preservation' }, async ({ page }) => {
         assert((await page.goto(`/bioimage-archive${contract.study.path}`)).ok());
         const datasets = page.locator('.dataset-metadata');
         await expect(datasets.locator('.dataset-metadata__title')).toHaveText(contract.study.datasets.map(dataset => dataset.title));

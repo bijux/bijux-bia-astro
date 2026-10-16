@@ -1,15 +1,16 @@
 # Verification
 
-Use Node 22 and install locked dependencies with `npm ci`. Install the browser once:
+Use Node 22 and install locked dependencies with `npm ci`. Install the browsers once:
 
 ```sh
-PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium
+PLAYWRIGHT_BROWSERS_PATH=artifacts/browsers npx playwright install --only-shell chromium firefox webkit
 make verify
 ```
 
 CI runs the same gate: source checking, all Node unit/functional suites, then a
 representative production build, configured HTML validation, exact served-HTML
 checks against the deployment manifest, and desktop/mobile Chromium journeys.
+The tagged preservation journeys also run in desktop Firefox and WebKit.
 Linux CI also installs browser OS dependencies. Tests reject
 unexpected API calls; captured responses and their provenance remain unchanged.
 Synthetic cases cover missing metadata, failed requests and other boundaries.

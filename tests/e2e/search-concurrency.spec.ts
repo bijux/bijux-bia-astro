@@ -2,7 +2,7 @@ import { test, expect } from '../support/browser';
 import { requestCancellationErrors } from '../support/browser-network.mjs';
 
 test.use({ expectedHTTPFailures: ['pagination.page_size=30'] });
-test('a superseded request is cancelled and cannot replace newer search results', async ({ page, browserName }) => {
+test('a superseded request is cancelled and cannot replace newer search results', { tag: '@preservation' }, async ({ page, browserName }) => {
     await page.goto('/bioimage-archive/images?size_t=1');
     let release = () => {}, markStarted = () => {}, markFinished = () => {};
     const held = new Promise<void>(resolve => { release = resolve; });

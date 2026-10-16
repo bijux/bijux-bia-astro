@@ -3,7 +3,7 @@ import { test, expect } from '../support/browser';
 import studies from '../fixtures/api/browse-study-response.json' with { type: 'json' };
 import images from '../fixtures/api/browse-image-response.json' with { type: 'json' };
 
-test('search preserves production behaviour', async ({ page }) => {
+test('search preserves production behaviour', { tag: '@preservation' }, async ({ page }) => {
 assert((await page.goto('/bioimage-archive/images?size_t=1')).ok());
         assert(await page.locator('input[name="size_t"][value="1"]').isChecked());
         await page.locator('#pageSize').selectOption('30');
@@ -72,7 +72,7 @@ test('physical filter labels preserve zero and very small values without changin
 });
 
 
-test('query headings retain reserved characters when followed on either search endpoint', async ({ page }) => {
+test('query headings retain reserved characters when followed on either search endpoint', { tag: '@preservation' }, async ({ page }) => {
     const query = 'ATP & RNA+DNA #1';
     for (const scope of ['images', 'studies']) {
         await page.goto(`/bioimage-archive/${scope}?${new URLSearchParams({ query })}`);
@@ -103,7 +103,7 @@ test('match details omit empty fields and retain escaped highlighted text in bot
     }
 });
 
-test('match details are described by named result links and can be dismissed with the keyboard', async ({ page }) => {
+test('match details are described by named result links and can be dismissed with the keyboard', { tag: '@preservation' }, async ({ page }) => {
     for (const scope of ['images', 'studies']) {
         await page.goto(`/bioimage-archive/${scope}?query=match-example`);
         for (const view of ['#card-view', '#grid-view']) {
