@@ -2,7 +2,7 @@ import { test, expect } from '../support/browser';
 import { uncuratedImage, curatedImage } from '../fixtures/scenarios/image-representations.mjs';
 import { imageWithFileMetadata, imageWithoutViewer } from '../fixtures/scenarios/image-file-metadata.mjs';
 
-test('images without a viewer retain their supplied file paths and user metadata', async ({ page }) => {
+test('images without a viewer retain their supplied file paths and user metadata', { tag: '@preservation' }, async ({ page }) => {
     await page.goto(`/bioimage-archive/image/${imageWithoutViewer.uuid}`);
     await expect(page.locator('iframe[name="vizarr"]')).toHaveCount(0);
     await expect(page.locator('#CopyURLButton')).toHaveCount(0);
@@ -16,7 +16,7 @@ test('images without a viewer retain their supplied file paths and user metadata
 
 test.describe('image metadata without JavaScript', () => {
     test.use({ javaScriptEnabled: false });
-    test('all supplied metadata and file paths remain readable', async ({ page }) => {
+    test('all supplied metadata and file paths remain readable', { tag: '@preservation' }, async ({ page }) => {
         await page.goto(`/bioimage-archive/image/${imageWithoutViewer.uuid}`);
         await expect(page.locator('#file-path-extra')).toBeVisible();
         await expect(page.locator('#file-path-extra')).toContainText('sample/d.tif');

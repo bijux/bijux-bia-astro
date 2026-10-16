@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from '../support/browser';
 
-test('tables preserves production behaviour', async ({ page }) => {
+test('tables preserves production behaviour', { tag: '@preservation' }, async ({ page }) => {
 assert((await page.goto('/bioimage-archive/study/EMPIAR-12104')).ok());
         await page.waitForFunction(() => window.jQuery?.fn.dataTable?.isDataTable('#viewable_images_table') && window.jQuery('#viewable_images_table').DataTable().rows().data().length > 0);
         assert.deepEqual(await page.locator('[data-bia-dependency]').evaluateAll(nodes => nodes.map(node => node.dataset.biaDependency)), ['jquery', 'datatables']);
