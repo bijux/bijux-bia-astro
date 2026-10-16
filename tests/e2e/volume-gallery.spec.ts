@@ -92,3 +92,45 @@ test('one gallery filter preserves matching identities across cards, grid and ta
     await tableSearch.fill('');
     await expect.poll(() => page.locator('#table-view tbody tr[data-volume-id]').count()).toBeGreaterThan(0);
 });
+
+
+test('native gallery controls retain keyboard focus, selected view and grid information panels', { tag: '@preservation' }, async ({ page }) => {
+    await page.goto('/bioimage-archive/galleries/volumeem');
+    await expect(page.getByRole('searchbox', { name: 'Filter images', exact: true })).toBeEnabled();
+    const view = page.getByRole('radiogroup', { name: 'Gallery view', exact: true });
+    await view.getByRole('radio', { name: 'Cards', exact: true }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(view.getByRole('radio', { name: 'Table', exact: true })).toBeFocused();
+    await expect(view.getByRole('radio', { name: 'Table', exact: true })).toBeChecked();
+    await expect(page.locator('#table-view')).toBeVisible();
+    await expect(page.locator('#card-view')).toBeHidden();
+    await expect(page.locator('#grid-view')).toBeHidden();
+    await expect(view.locator('label:focus-within span')).toHaveCSS('outline-style', 'solid');
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#grid-view')).toBeVisible();
+    await expect(page.locator('#table-view')).toBeHidden();
+    const density = page.getByRole('radiogroup', { name: 'Grid columns', exact: true });
+    await density.getByRole('radio', { name: '5 Columns', exact: true }).check();
+    await expect(page.locator('#grid-view .size-bar').first()).toBeHidden();
+    await expect(page.locator('#grid-view .cube-wrapper').first()).toBeHidden();
+    await density.getByRole('radio', { name: '3 Columns', exact: true }).check();
+    await expect(page.locator('#grid-view .size-bar').first()).toBeVisible();
+    await expect(page.locator('#grid-view .cube-wrapper').first()).toBeVisible();
+});
+
+test.describe('volume gallery without JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('all curated card destinations remain available and inactive controls are explained', { tag: '@preservation' }, async ({ page }) => {
+        await page.goto('/bioimage-archive/galleries/volumeem');
+        await expect(page.locator('#card-view article')).toHaveCount(Object.keys(images).length);
+        await expect(page.locator('#totalCount')).toHaveText(String(Object.keys(images).length));
+        await expect(page.getByRole('searchbox', { name: 'Filter images', exact: true })).toBeDisabled();
+        for (const radio of await page.locator('input[name="view"], input[name="columns"]').all()) await expect(radio).toBeDisabled();
+        await expect(page.locator('noscript p')).toHaveText('Filtering and switching views require JavaScript; all images remain available as cards.');
+        const destinations = await page.locator('#card-view article').evaluateAll(cards => cards.map(card => ({
+            uuid: card.dataset.volumeId,
+            href: [...card.querySelectorAll('a')].find(link => link.textContent === 'Experiment metadata')?.getAttribute('href'),
+        })));
+        expect(destinations).toEqual(Object.keys(images).map(uuid => ({ uuid, href: `/bioimage-archive/image/${uuid}` })));
+    });
+});

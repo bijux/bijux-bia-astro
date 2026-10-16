@@ -13,84 +13,9 @@ import { copyURI } from "./download-dialog.mjs";
 declare global { interface Window { copyURI: typeof copyURI; } }
 window.copyURI = copyURI;
 </script>
-<script is:inline>
-// Initialize grid columns function
-window.setGridColumns = function(columns) {
-    const gridInner = document.querySelector('.grid-inner');
-    if (gridInner) {
-        gridInner.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-
-        // Get all size bars and cube wrappers
-        const sizeBars = document.querySelectorAll('.size-bar');
-        const cubeWrappers = document.querySelectorAll('.cube-wrapper');
-
-        // Show/hide based on column count
-        const display = columns === 5 ? 'none' : '';
-        sizeBars.forEach(bar => bar.style.display = display);
-        cubeWrappers.forEach(wrapper => wrapper.style.display = display);
-    }
-}
-
-    let dataTable;
-
-    function toggleView(viewId) {
-        const views = ['card-view', 'table-view', 'grid-view'];
-        views.forEach(id => {
-            document.getElementById(id).style.display = id === viewId ? 'block' : 'none';
-        });
-
-        if (viewId === 'table-view') {
-            dataTable?.columns.adjust();
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchBox = document.getElementById('searchBox');
-
-        const cards = [...document.querySelectorAll('#card-view .vf-card')];
-        const items = cards.map(card => ({
-            id: card.dataset.volumeId,
-            title: card.querySelector('.title-text')?.textContent.toLowerCase() || '',
-            subtitle: card.querySelector('.subtitle-text')?.textContent.toLowerCase() || '',
-        }));
-        let matchingIds = new Set(items.map(item => item.id));
-        document.getElementById('totalCount').textContent = items.length;
-
-        document.querySelectorAll('input[name="view"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.checked) toggleView(e.target.value);
-            });
-        });
-
-        function filterImages() {
-            const query = searchBox.value.toLowerCase();
-            matchingIds = new Set(items.filter(item => item.title.includes(query) || item.subtitle.includes(query))
-                .map(item => item.id));
-            document.querySelectorAll('#card-view .vf-card, #grid-view .compact-card').forEach(card => {
-                card.style.display = matchingIds.has(card.dataset.volumeId) ? '' : 'none';
-            });
-            document.getElementById('visibleCount').textContent = query ? matchingIds.size : 'all';
-            dataTable.draw();
-        }
-        searchBox.addEventListener('input', filterImages);
-        dataTable = new DataTable('.vf-table', {
-            pageLength: 25,
-            order: [[1, 'asc']], // Sort by Label column by default
-            columnDefs: [
-                { orderable: false, targets: [4, 5, 6] } // Disable sorting for dimensions, physical size, and voxel size columns
-            ]
-        });
-
-
-        // Keep the gallery filter independent of DataTables' native table search.
-        dataTable.search.fixed('volume-gallery', (_text, _row, index) =>
-            matchingIds.has(dataTable.row(index).node().dataset.volumeId));
-        filterImages();
-        setGridColumns(4);
-    });
-</script>
+<script src="./gallery-controls.js"></script>
 <EMPIARLayout pageTitle="Volume EM Gallery">
-  <Fragment>
+  <div data-volume-gallery>
     <section class="vf-intro | embl-grid embl-grid--has-centered-content">
         <div></div>
         <div>
@@ -100,21 +25,21 @@ window.setGridColumns = function(columns) {
         </div>
         <div class="controls-container">
             <div class="controls-inner">
-                <input type="text" id="searchBox" placeholder="Filter (e.g. title,organism)" class="search-input">
-                <div class="counter-display">
-                    Showing <span id="visibleCount">all</span> of <span id="totalCount">0</span> images
+                <input type="search" id="searchBox" aria-label="Filter images" placeholder="Filter (e.g. title,organism)" class="search-input" disabled>
+                <div class="counter-display" role="status" aria-atomic="true">
+                    Showing <span id="visibleCount">all</span> of <span id="totalCount">{Object.keys(vemImages).length}</span> images
                 </div>
-                <div class="toggle-switch">
+                <div class="toggle-switch" role="radiogroup" aria-label="Gallery view">
                     <label class="toggle-option">
-                        <input type="radio" name="view" value="card-view" checked>
+                        <input type="radio" name="view" value="card-view" disabled checked>
                         <span class="toggle-label">Cards</span>
                     </label>
                     <label class="toggle-option">
-                        <input type="radio" name="view" value="table-view">
+                        <input type="radio" name="view" value="table-view" disabled>
                         <span class="toggle-label">Table</span>
                     </label>
                     <label class="toggle-option">
-                        <input type="radio" name="view" value="grid-view">
+                        <input type="radio" name="view" value="grid-view" disabled>
                         <span class="toggle-label">Grid</span>
                     </label>
                 </div>
@@ -122,6 +47,7 @@ window.setGridColumns = function(columns) {
             </div>
     </section>
 
+    <noscript><p>Filtering and switching views require JavaScript; all images remain available as cards.</p></noscript>
     <div id="card-view">
         <section class="vf-card-container vf-card-container__col-4 | vf-u-background-color-ui--white vf-u-fullbleed" style="--vf-card__image--aspect-ratio: 16 / 9; --vf-card-container__inner--grid-gap: 0.5rem;">
             <div class="vf-card-container__inner">
@@ -138,17 +64,17 @@ window.setGridColumns = function(columns) {
 
     <div id="grid-view" style="display: none;">
         <div class="column-toggle-container">
-            <div class="column-toggle">
+            <div class="column-toggle" role="radiogroup" aria-label="Grid columns">
                 <label class="column-option">
-                    <input type="radio" name="columns" value="3" onchange="setGridColumns(3)">
+                    <input type="radio" name="columns" value="3" disabled>
                     <span class="column-label">3 Columns</span>
                 </label>
                 <label class="column-option">
-                    <input type="radio" name="columns" value="4" checked onchange="setGridColumns(4)">
+                    <input type="radio" name="columns" value="4" checked disabled>
                     <span class="column-label">4 Columns</span>
                 </label>
                 <label class="column-option">
-                    <input type="radio" name="columns" value="5" onchange="setGridColumns(5)">
+                    <input type="radio" name="columns" value="5" disabled>
                     <span class="column-label">5 Columns</span>
                 </label>
             </div>
@@ -173,7 +99,6 @@ window.setGridColumns = function(columns) {
             background: white;
             padding: 1em;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            height: 8em;
         }
         .controls-inner {
             display: flex;
@@ -209,6 +134,11 @@ window.setGridColumns = function(columns) {
         .toggle-option input:checked + .toggle-label {
             background: #3b6fb6;
             color: white;
+        }
+        .toggle-option:focus-within .toggle-label,
+        .column-option:focus-within .column-label {
+            outline: 2px solid #3b6fb6;
+            outline-offset: 2px;
         }
         .toggle-option:hover input:not(:checked) + .toggle-label {
             background: #e0e0e0;
@@ -292,5 +222,5 @@ window.setGridColumns = function(columns) {
             text-align: center;
         }
     </style>
-  </Fragment>
+  </div>
 </EMPIARLayout>
