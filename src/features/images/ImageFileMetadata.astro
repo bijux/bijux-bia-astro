@@ -1,0 +1,43 @@
+---
+interface Props {
+    filePaths?: string[] | null;
+    attributes?: Record<string, unknown> | null;
+}
+const { filePaths, attributes } = Astro.props;
+const fields = Object.entries(attributes ?? {});
+---
+
+{filePaths && filePaths.length > 0 && (
+    <div id="file-path-wrap">
+        <b>File Path:</b>
+        <span id="file-path-visible">{filePaths.slice(0, 2).join(', ')}</span>
+        {filePaths.length > 2 && (
+            <>
+                <span id="file-path-extra">{', ' + filePaths.slice(2).join(', ')}</span>
+                <br />
+                <button id="file-path-toggle" class="vf-button vf-button--primary vf-button--sm bia-button"
+                    type="button" aria-expanded="false" aria-controls="file-path-extra" style="margin-top:12px;" hidden>See more</button>
+            </>
+        )}
+    </div>
+)}
+{fields.length > 0 && (
+    <div>
+        <br />
+        <h4>Additional user metadata</h4>
+        <div id="meta-wrap" data-collapsed="false" style="overflow-wrap:anywhere;">
+            <div id="meta-content">
+                {fields.map(([key, value]) => <div><b>{key}:</b> {String(value)}</div>)}
+            </div>
+            <button id="meta-toggle" class="vf-button vf-button--primary vf-button--sm bia-button" type="button"
+                aria-expanded="false" aria-controls="meta-content" style="margin-top:12px;" hidden>See more</button>
+        </div>
+    </div>
+)}
+
+<style>
+    #meta-wrap[data-collapsed="true"] #meta-content { overflow: hidden; }
+</style>
+<script>
+    import './file-metadata-controls.js';
+</script>

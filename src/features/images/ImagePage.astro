@@ -2,6 +2,7 @@
 import { navigationURL, resourceURL } from "../../security/urls.mjs";
 
 
+import ImageActions from "./ImageActions.astro";
 import BaseLayoutWithBreadcrumbs from '../../layouts/BaseLayoutWithBreadcrumbs.astro';
 import DatasetDetail from '../metadata/DatasetDetail.astro';
 import empiarLogo from "../../assets/bioimage-archive/EMPIAR_logo.png";
@@ -9,6 +10,7 @@ import Specimen from './Specimen.astro';
 import SpecimenTrackTable from './SpecimenTrackTable.astro';
 import DisplayImageTable from './DisplayImageTable.astro';
 import ImageTable from './ImageTable.astro';
+import ImageFileMetadata from './ImageFileMetadata.astro';
 
 import fieldMap from "../metadata/field-labels.json";
 import fallbackImage from "../../assets/bioimage-archive/image_fallback.png"
@@ -41,7 +43,6 @@ const viewerSourceURI = getPublicVisualisationURI(interactiveImageRepresentation
 const vizarrIFrameSource = interactiveImageRepresentation ? buildVizarrViewerURL(viewerSourceURI) : null
 const itkRepUuid = getSimpleAttributeValue(image, "recommended_itk_representation");
 const itkLink = itkRepUuid ? buildITKViewerURL(viewerSourceURI) : null
-const file_path = image?.file_path;
 
 const pref_ng_image_rep_uuid = getSimpleAttributeValue(image, "preferred_neuroglancer_image_representation_uuid")
 const pref_ng_image_rep = image.representation.find((rep) => rep.uuid === pref_ng_image_rep_uuid)
@@ -86,52 +87,10 @@ const breadcrumbs = [
                             <b>Pixel image size: </b> {formatPixelDimensions(interactiveImageRepresentation)}<br />
                             {interactiveImageRepresentation.size_c && (<div><b>Number of channels:</b> {interactiveImageRepresentation.size_c}</div>)}
                             {interactiveImageRepresentation.size_t && (<div><b>Number of timesteps:</b> {interactiveImageRepresentation.size_t}</div>)}
-                            {file_path && (
-                                <div id="file-path-wrap">
-                                    <b>File Path:</b>
-                                    <span id="file-path-visible">
-                                    {file_path.slice(0, 2).join(", ")}
-                                    </span>
-
-                                    {file_path.length > 2 && (
-                                    <>
-                                        <span id="file-path-extra" hidden>
-                                        {", " + file_path.slice(2).join(", ")}
-                                        </span>
-
-                                        <br />
-
-                                        <button
-                                        id="file-path-toggle"
-                                        class="vf-button vf-button--primary vf-button--sm bia-button"
-                                        type="button"
-                                        aria-expanded="false"
-                                        style="margin-top:12px;"
-                                        >
-                                        See more
-                                        </button>
-                                    </>
-                                    )}
-                                </div>
-                            )}
-                            {userProvidedAttribute && (
-                                <div >
-                                    <br/>
-                                    <h4>Additional user metadata</h4>
-                                    <div id="meta-wrap" data-collapsed="false" style="overflow-wrap:anywhere;">
-                                        <div id="meta-content">
-                                            {Object.entries(userProvidedAttribute).map(([k, v]) => (
-                                            <div><b>{k}:</b> {String(v)}</div>
-                                            ))}
-                                        </div>
-                                        <button id="meta-toggle" class="vf-button vf-button--primary vf-button--sm bia-button" type="button" aria-expanded="false" style="margin-top:12px;" hidden>See more</button>
-                                        </div>
-                                </div>
-                            )}
                         </span>
                     )
                 }
-
+                <ImageFileMetadata filePaths={image.file_path} attributes={userProvidedAttribute} />
             </div>
             <div style="display: flex; justify-content: center;">
                 {vizarrIFrameSource ? (
@@ -155,38 +114,9 @@ const breadcrumbs = [
                 <br/>
                 <a href={"/bioimage-archive/help/downloading-data#aws_client_download"}>How to download this image</a><br/>
                 <br/>
-                {
-                    interactiveImageRepresentation && (
-                        <button class="vf-button vf-button--primary vf-button--sm bia-button" id="CopyURLButton" data-url={viewerSourceURI ?? interactiveImageRepresentation.file_uri?.[0]}>Copy OME-Zarr URI</button>
-                    )
-                }
-                {
-                    ( vizarrIFrameSource || itkLink || ng_link ) && (
-                        <h3>Visualise</h3>
-                    )
-                }
-                {
-                    vizarrIFrameSource && (
-                        <a href={vizarrIFrameSource} target="_blank" class="vf-button vf-button--primary vf-button--sm bia-button">Open in Vizarr viewer</a>
-                    )
-                }
-                {
-                    itkLink && (
-                        <a href={itkLink} target="_blank" class="vf-button vf-button--primary vf-button--sm bia-button">Open in ITK viewer</a>
-                    )
-                }
-                {
-                    ng_link && (
-                        <a href={navigationURL(ng_link) ?? undefined} target="_blank" class="vf-button vf-button--primary vf-button--sm bia-button">Open in neuroglancer</a>
-                    )
-                }
-                <script>
-                    import { copyWithFeedback } from "../../components/ui/clipboard.mjs";
-                    const copyUrlButton = document.getElementById("CopyURLButton");
-                    if (copyUrlButton) {
-                        copyUrlButton.onclick = () => copyWithFeedback(copyUrlButton, copyUrlButton.dataset.url);
-                    }
-                </script>
+                <ImageActions showCopy={Boolean(interactiveImageRepresentation)}
+                    copyURI={viewerSourceURI ?? interactiveImageRepresentation?.file_uri?.[0]}
+                    vizarrURL={vizarrIFrameSource} itkURL={itkLink} neuroglancerLink={ng_link} />
             </div>
         </section>
 
@@ -351,97 +281,4 @@ const breadcrumbs = [
 </BaseLayoutWithBreadcrumbs>
 <style>
   .metadata-fields { padding-left: 20px; }
-  #meta-wrap[data-collapsed="true"] #meta-content { overflow: hidden; }
 </style>
-
-<script is:inline>
-  function initMetaCollapse() {
-    const wrap = document.getElementById("meta-wrap");
-    const content = document.getElementById("meta-content");
-    const btn = document.getElementById("meta-toggle");
-
-    const MAX = 250; // your limit (or 500 to match iframe)
-
-    if (!wrap || !content || !btn) return;
-
-    const overflow = content.scrollHeight > MAX;
-
-    // ✅ remove button entirely if not needed
-    if (!overflow) {
-      btn.remove();
-      return;
-    }
-
-    // collapse initially
-    wrap.dataset.collapsed = "true";
-    content.style.maxHeight = `${MAX}px`;
-    content.style.overflow = "hidden";
-
-    btn.onclick = () => {
-      const open = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", String(!open));
-      btn.innerText = open ? "See more" : "See less";
-      wrap.dataset.collapsed = String(open);
-      content.style.maxHeight = open ? `${MAX}px` : "";
-    };
-  }
-
-  document.addEventListener("astro:page-load", initMetaCollapse);
-  document.addEventListener("DOMContentLoaded", initMetaCollapse);
-</script>
-
-<script is:inline>
-  function initMetaCollapse() {
-    const wrap = document.getElementById("meta-wrap");
-    const content = document.getElementById("meta-content");
-    const btn = document.getElementById("meta-toggle");
-
-    const MAX = 250;
-
-    if (!wrap || !content || !btn) return;
-
-    const overflow = content.scrollHeight > MAX;
-
-    if (!overflow) {
-      btn.remove();
-      return;
-    }
-
-    wrap.dataset.collapsed = "true";
-    content.style.maxHeight = `${MAX}px`;
-    content.style.overflow = "hidden";
-
-    btn.onclick = () => {
-      const open = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", String(!open));
-      btn.innerText = open ? "See more" : "See less";
-      wrap.dataset.collapsed = String(open);
-      content.style.maxHeight = open ? `${MAX}px` : "";
-    };
-  }
-
-  function initFilePathCollapse() {
-    const extra = document.getElementById("file-path-extra");
-    const btn = document.getElementById("file-path-toggle");
-
-    if (!extra || !btn) return;
-
-    btn.onclick = () => {
-      const open = btn.getAttribute("aria-expanded") === "true";
-
-      btn.setAttribute("aria-expanded", String(!open));
-      btn.innerText = open ? "See more" : "See less";
-      extra.hidden = open;
-    };
-  }
-
-  document.addEventListener("astro:page-load", () => {
-    initMetaCollapse();
-    initFilePathCollapse();
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    initMetaCollapse();
-    initFilePathCollapse();
-  });
-</script>

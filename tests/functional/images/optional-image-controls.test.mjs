@@ -11,7 +11,7 @@ const tableScript = ts.transpileModule(tableSource, { compilerOptions: { target:
 function runTable(context) {
     vm.runInNewContext(tableScript, { ...context, exports: {}, require: name => { assert.equal(name, '../../security/urls.mjs'); return { resourceURL }; } });
 }
-const imageSource = await readFile(new URL("../../../src/features/images/ImagePage.astro", import.meta.url), 'utf8');
+const imageSource = await readFile(new URL("../../../src/features/images/ImageActions.astro", import.meta.url), 'utf8');
 const { ast } = await parse(imageSource);
 function findScripts(node) {
     return [
@@ -20,7 +20,7 @@ function findScripts(node) {
     ];
 }
 const copyScripts = findScripts(ast).map(node => node.children.map(child => child.value || '').join(''))
-    .filter(script => script.includes('"CopyURLButton"'));
+    .filter(script => script.includes('CopyURLButton'));
 assert.equal(copyScripts.length, 1);
 const copyScript = ts.transpileModule(copyScripts[0], {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },

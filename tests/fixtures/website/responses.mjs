@@ -3,6 +3,7 @@ import { cursorSearchResponse } from '../scenarios/search-pagination.mjs';
 import { benchmarkStudies } from '../scenarios/benchmark-datasets.mjs';
 import { annotationStudy, sourceImage, annotationImages } from '../scenarios/annotations.mjs';
 import { uncuratedImage, curatedImage } from '../scenarios/image-representations.mjs';
+import { imageWithFileMetadata, imageWithoutViewer } from '../scenarios/image-file-metadata.mjs';
 
 const saved = name => JSON.parse(readFileSync(new URL(`../api/${name}-response.json`, import.meta.url)));
 const studies = ['study-s-biad3335', 'study-empiar12104'].map(name => saved(name).hits.hits[0]._source);
@@ -21,7 +22,7 @@ export function fixtureResponse(value) {
     };
     if (url.origin === 'https://www.ebi.ac.uk' && ['/ebisearch/ws/rest/ebiweb_training_events', '/ebisearch/ws/rest/ebiweb_training_online'].includes(url.pathname)) return { entries: [] };
     if (url.origin !== 'https://alpha.bioimagearchive.org') throw new Error(`Unrecorded fixture origin: ${url.origin}`);
-    const representationImage = [uncuratedImage, curatedImage].find(image => image.uuid === url.searchParams.get('query'));
+    const representationImage = [uncuratedImage, curatedImage, imageWithFileMetadata, imageWithoutViewer].find(image => image.uuid === url.searchParams.get('query'));
     if (url.pathname === '/search/v1/website/image' && representationImage) {
         return { hits: { hits: [{ _source: representationImage }] } };
     }
