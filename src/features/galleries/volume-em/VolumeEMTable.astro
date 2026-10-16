@@ -35,8 +35,8 @@ interface Image {
         </tr>
     </thead>
     <tbody>
-        {Object.entries(images).map(([, image]: [string, Image]) => (
-            <tr>
+        {Object.entries(images).map(([uuid, image]: [string, Image]) => (
+            <tr data-volume-id={uuid}>
                 <td style="width: 100px;">
                     <img src={resourceURL(image.thumbnail_src) ?? undefined} alt="" style="width: 100px; height: 100px; object-fit: cover;" loading="lazy"/>
                 </td>

@@ -3,7 +3,7 @@ import { navigationURL, resourceURL } from "../../../security/urls.mjs";
 const { image } = Astro.props;
 const displaySrc = image.static_display_src || image.thumbnail_src;
 ---
-<article class="compact-card custom-card">
+<article data-volume-id={image.uuid} class="compact-card custom-card">
     <div class="image-container">
         <img src={resourceURL(displaySrc) ?? undefined} alt="" loading="lazy">
         <div class="icon-container">

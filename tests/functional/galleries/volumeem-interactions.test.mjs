@@ -14,7 +14,7 @@ const script = scripts[0].children.map(node => node.type === 'text' ? node.value
 function loadGallery() {
     const events = new Map();
     const views = new Map(['card-view', 'table-view', 'grid-view'].map(id => [id, { style: {} }]));
-    const search = { addEventListener: (name, handler) => events.set(`search:${name}`, handler) };
+    const search = { value: '', addEventListener: (name, handler) => events.set(`search:${name}`, handler) };
     const counts = { totalCount: {}, visibleCount: {} };
     const radioHandlers = [];
     const radios = ['card-view', 'table-view', 'grid-view'].map(() => ({
@@ -45,6 +45,8 @@ function loadGallery() {
             constructor(selector, options) {
                 tableCalls.push({ selector, options });
                 this.columns = { adjust: () => { adjustments++; } };
+                this.search = { fixed() {} };
+                this.draw = () => {};
             }
         },
     };

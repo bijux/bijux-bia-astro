@@ -47,40 +47,32 @@ window.setGridColumns = function(columns) {
     document.addEventListener('DOMContentLoaded', () => {
         const searchBox = document.getElementById('searchBox');
 
-        const totalCount = document.querySelectorAll('.vf-card').length;
-        document.getElementById('totalCount').textContent = totalCount;
+        const cards = [...document.querySelectorAll('#card-view .vf-card')];
+        const items = cards.map(card => ({
+            id: card.dataset.volumeId,
+            title: card.querySelector('.title-text')?.textContent.toLowerCase() || '',
+            subtitle: card.querySelector('.subtitle-text')?.textContent.toLowerCase() || '',
+        }));
+        let matchingIds = new Set(items.map(item => item.id));
+        document.getElementById('totalCount').textContent = items.length;
 
-        // Add event listeners for view toggles
         document.querySelectorAll('input[name="view"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    toggleView(e.target.value);
-                }
+                if (e.target.checked) toggleView(e.target.value);
             });
         });
 
-        searchBox.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const allCards = document.querySelectorAll('.vf-card, .compact-card');
-            let visibleCount = 0;
-
-            allCards.forEach(card => {
-                let title, organism;
-                if (card.classList.contains('vf-card')) {
-                    title = card.querySelector('.title-text')?.textContent.toLowerCase() || '';
-                    organism = card.querySelector('.subtitle-text')?.textContent.toLowerCase() || '';
-                } else {
-                    title = card.querySelector('.compact-title')?.textContent.toLowerCase() || '';
-                    organism = card.querySelector('.compact-subtitle')?.textContent.toLowerCase() || '';
-                }
-
-                const isVisible = title.includes(searchTerm) || organism.includes(searchTerm);
-                card.style.display = isVisible ? '' : 'none';
-                if (isVisible) visibleCount++;
+        function filterImages() {
+            const query = searchBox.value.toLowerCase();
+            matchingIds = new Set(items.filter(item => item.title.includes(query) || item.subtitle.includes(query))
+                .map(item => item.id));
+            document.querySelectorAll('#card-view .vf-card, #grid-view .compact-card').forEach(card => {
+                card.style.display = matchingIds.has(card.dataset.volumeId) ? '' : 'none';
             });
-
-            document.getElementById('visibleCount').textContent = searchTerm ? visibleCount : 'all';
-        });
+            document.getElementById('visibleCount').textContent = query ? matchingIds.size : 'all';
+            dataTable.draw();
+        }
+        searchBox.addEventListener('input', filterImages);
         dataTable = new DataTable('.vf-table', {
             pageLength: 25,
             order: [[1, 'asc']], // Sort by Label column by default
@@ -90,7 +82,10 @@ window.setGridColumns = function(columns) {
         });
 
 
-        // Set initial grid columns
+        // Keep the gallery filter independent of DataTables' native table search.
+        dataTable.search.fixed('volume-gallery', (_text, _row, index) =>
+            matchingIds.has(dataTable.row(index).node().dataset.volumeId));
+        filterImages();
         setGridColumns(4);
     });
 </script>
