@@ -85,3 +85,20 @@ test('query headings retain reserved characters when followed on either search e
         expect(new URL(page.url()).searchParams.get('query')).toBe(query);
     }
 });
+
+
+test('match details omit empty fields and retain escaped highlighted text in both result layouts', async ({ page }) => {
+    for (const scope of ['images', 'studies']) {
+        await page.goto(`/bioimage-archive/${scope}?query=empty-additional-highlights`);
+        await expect(page.locator('.tooltip')).toHaveCount(0);
+        await page.goto(`/bioimage-archive/${scope}?query=match-example`);
+        for (const view of ['#card-view', '#grid-view']) {
+            const fields = page.locator(`${view} .tooltip .highlight`);
+            await expect(fields).toHaveCount(2);
+            await expect(fields.nth(0)).toContainText('Cell & nucleus');
+            await expect(fields.nth(1)).toContainText('<script>literal text</script>');
+            await expect(fields.locator('script')).toHaveCount(0);
+            await expect(fields.locator('mark')).toHaveText('Cell');
+        }
+    }
+});

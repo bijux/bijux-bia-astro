@@ -2,7 +2,7 @@
 import HighlightedFields from "./HighlightedFields.astro";
 const { result, resultType, highlight } = Astro.props;
 import imageFallback from "../../../assets/bioimage-archive/image_fallback.png"
-import { getHighlightTextString } from "./highlights.mjs";
+import { additionalHighlightFields } from "./highlights.mjs";
 import { getStudyImage } from "../../images/study-image.mjs";
 import { getThumbnail } from "../../images/thumbnails.mjs";
 import { formatPhysicalDimensions } from "../../../formatting/physical-dimensions.js";
@@ -33,16 +33,16 @@ const hasPixel =
   isNonZeroNumber(interactiveImageRepresentation?.size_y) ||
   isNonZeroNumber(interactiveImageRepresentation?.size_z);
 
-const highlightedTextString = getHighlightTextString(highlight);
+const highlightFields = additionalHighlightFields(highlight);
 const showSizeBar = hasPhysical || hasPixel;
 ---
 <article class="compact-card custom-card" style={`overflow: hidden;aspect-ratio: ${aspectRatio};`}>
     <div class="image-container">
-        {highlightedTextString && (
+        {highlightFields.length > 0 && (
             <div class="tooltip">
                 <span class="tooltiptext">
                     <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
-                    <HighlightedFields highlights={highlight} />
+                    <HighlightedFields fields={highlightFields} />
                 </span>
             </div>
         )}

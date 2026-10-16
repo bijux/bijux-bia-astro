@@ -2,7 +2,7 @@
 import { navigationURL, resourceURL } from "../../../security/urls.mjs";
 import HighlightedTaxa from "./HighlightedTaxa.astro";
 import HighlightedFields from "./HighlightedFields.astro";
-import { getHighlightTextString, highlightOrganism, applyHighlight, highlightLinks, formatHighlightedList } from "./highlights.mjs";
+import { additionalHighlightFields, highlightOrganism, applyHighlight, highlightLinks, formatHighlightedList } from "./highlights.mjs";
 import { formatListItem } from "../../../formatting/lists.mjs";
 import { getThumbnail } from "../../images/thumbnails.mjs";
 import { selectInteractiveRepresentation } from "../../images/representations.mjs";
@@ -15,7 +15,7 @@ import  HighlightedText  from "./HighlightedText.astro";
 import imageFallback from "../../../assets/bioimage-archive/image_fallback.png"
 
 const { image, imagePageRoot, taglist, annotationType, highlight, query} = Astro.props;
-const highlightedTextString = getHighlightTextString(highlight);
+const highlightFields = additionalHighlightFields(highlight);
 const interactiveImageRepresentation = selectInteractiveRepresentation(image);
 
 const organism = highlightOrganism(image, query);
@@ -102,11 +102,11 @@ const highlightedImageLink = highlightLinks(base, highlight, query);
 
         </div>
     </div>
-    {highlightedTextString && (
+    {highlightFields.length > 0 && (
             <div class="tooltip">
                 <span class="tooltiptext" style="margin-top: -0.25em;">
                     <button type="button" class="tooltip-close" data-tooltip-close aria-label="Close match tooltip">&times;</button>
-                    <HighlightedFields highlights={highlight} />
+                    <HighlightedFields fields={highlightFields} />
                 </span>
             </div>
         )}

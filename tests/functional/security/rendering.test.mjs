@@ -40,6 +40,7 @@ import Layout from '../layouts/${layout}.astro';
 import HighlightedText from '../features/search/results/HighlightedText.astro';
 import HighlightedTaxa from '../features/search/results/HighlightedTaxa.astro';
 import HighlightedFields from '../features/search/results/HighlightedFields.astro';
+import { additionalHighlightFields } from '../features/search/results/highlights.mjs';
 import DatasetDetail from '../features/metadata/DatasetDetail.astro';
 import { scriptData } from '../security/html.mjs';
 const payload = ${JSON.stringify(payload)};
@@ -48,7 +49,7 @@ const markup = ${JSON.stringify(markup)};
 <Layout pageTitle="Security rendering" projectTitle="Security rendering">
     <section id="highlight"><HighlightedText text={'__HIT__' + markup + '__/HIT__'} /></section>
     <section id="taxa"><HighlightedTaxa query="Mus" record={{ organism_classification: [{ scientific_name: 'Mus ' + markup, common_name: 'Mouse' }] }} /></section>
-    <section id="fields"><HighlightedFields highlights={{ description: markup, title: 'Excluded title' }} /></section>
+    <section id="fields"><HighlightedFields fields={additionalHighlightFields({ description: markup, title: 'Excluded title' })} /></section>
     <section id="metadata"><DatasetDetail data={{ title: 'Repeated record', default_open: false, description: markup }} fieldMap={{ description: 'Description' }} /></section>
     <script type="application/json" id="security-json" set:html={scriptData({ payload })} />
 </Layout>
