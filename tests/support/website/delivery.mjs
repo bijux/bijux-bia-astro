@@ -53,7 +53,8 @@ export async function verifyDelivery({ application, reportPath, baseURL }) {
 
 // Playwright starts the configured production server before this global setup.
 export default async function verifyProductionServer(config) {
-    const { root } = await import('./application.mjs');
-    await verifyDelivery({ application: root, reportPath: path.join(path.dirname(root), 'report.json'),
+    const { runtimeRoot } = await import('./runtime.mjs');
+    const { buildRoot } = await import('./application.mjs');
+    await verifyDelivery({ application: runtimeRoot, reportPath: path.join(path.dirname(buildRoot), 'report.json'),
         baseURL: config.projects[0].use.baseURL });
 }

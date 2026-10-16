@@ -10,6 +10,9 @@ make verify
 CI runs the same gate: source checking, all Node unit/functional suites, then a
 representative production build, configured HTML validation, exact served-HTML
 checks against the deployment manifest, and desktop/mobile Chromium journeys.
+Browser journeys serve the container's shared runtime package after an independent
+offline `npm ci --omit=dev --ignore-scripts`; module hooks reject ancestor dependency
+fallback. The controlled fixture transport is the only external code exception.
 The tagged preservation journeys also run in desktop Firefox and WebKit.
 Linux CI also installs browser OS dependencies. Tests reject
 unexpected API calls; captured responses and their provenance remain unchanged.

@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { buildConfiguration } from "../../../src/server/configuration.mjs";
 import { verifyDeployment } from "../../../scripts/deployment/manifest.mjs";
+import { packageDeployment, deploymentPackagePath } from '../../../scripts/deployment/package.mjs';
 import { deploymentConfiguration } from "../../../src/server/deployment.mjs";
 
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
@@ -90,6 +91,25 @@ export async function GET({url}){
     const reports = path.join(root, 'artifacts/catalogue/builds');
     const builds = await Promise.all((await readdir(reports)).map(async name => JSON.parse(await readFile(path.join(reports, name, 'report.json'), 'utf8'))));
     assert(builds.some(report => report.mode === 'replay' && report.network === 0));
+    const foreign = await mkdtemp(path.join(output, 'foreign-package-'));
+    t.after(() => rm(foreign, { recursive: true, force: true }));
+    await writeFile(path.join(foreign, 'sentinel'), 'retained');
+    const packaged = deploymentPackagePath(root);
+    await symlink(foreign, packaged, 'dir');
+    await assert.rejects(packageDeployment(root), /real directory|symbolic link/);
+    assert.equal(await readFile(path.join(foreign, 'sentinel'), 'utf8'), 'retained');
+    await rm(packaged);
+    const headers = path.join(root, 'src/security/headers.mjs');
+    const savedHeaders = await readFile(headers);
+    await rm(headers);
+    await symlink(path.join(foreign, 'sentinel'), headers);
+    await assert.rejects(packageDeployment(root), /Runtime source/);
+    await rm(headers);
+    await writeFile(headers, savedHeaders);
+    await packageDeployment(root);
+    await symlink(path.join(repository, 'node_modules'), path.join(packaged, 'node_modules'), 'dir');
+    await assert.rejects(readFile(path.join(packaged, 'astro.config.mjs')), { code: 'ENOENT' });
+    await assert.rejects(readFile(path.join(packaged, 'src/pages/index.astro')), { code: 'ENOENT' });
     // Serving does not require source templates or an Astro configuration.
     const configSource = await readFile(path.join(root, 'astro.config.mjs'));
     const indexSource = await readFile(path.join(root, 'src/pages/index.astro'));
@@ -101,8 +121,8 @@ export async function GET({url}){
     await new Promise(resolve => reservation.listen(0, '127.0.0.1', resolve));
     const port = reservation.address().port;
     await new Promise(resolve => reservation.close(resolve));
-    const child = spawn(process.execPath, ['--import', './deny-fetch.mjs', 'src/server/host.mjs'], {
-        cwd: root, env: { ...env, HOST: '127.0.0.1', PORT: String(port), DEPLOYMENT_MANIFEST: manifestFile }, stdio: ['ignore', 'pipe', 'pipe'],
+    const child = spawn(process.execPath, ['--import', path.join(root, 'deny-fetch.mjs'), 'src/server/host.mjs'], {
+        cwd: packaged, env: { ...env, HOST: '127.0.0.1', PORT: String(port), DEPLOYMENT_MANIFEST: path.join(packaged, 'artifacts/deployment/manifest.json') }, stdio: ['ignore', 'pipe', 'pipe'],
     });
     t.after(async () => { if (child.exitCode === null && child.signalCode === null) { child.kill('SIGTERM'); await once(child, 'exit'); } });
     let diagnostics = '';
