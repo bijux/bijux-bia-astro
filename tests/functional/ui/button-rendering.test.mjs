@@ -66,8 +66,8 @@ import ViewableImageTable from '../features/studies/ViewableImageTable.astro';
 import SOTables from '../features/galleries/spatialomics/SOTables.astro';
 import BenchmarkingTable from '../features/galleries/ai/benchmarking/BenchmarkingTable.astro';
 import ModelPredictionTable from '../features/galleries/ai/benchmarking/ModelPredictionTable.astro';
-import ImageTable from '../features/images/ImageTable.astro';
-import SpecimenTrackTable from '../features/images/SpecimenTrackTable.astro';
+import InputImagesTable from '../features/images/relationships/InputImagesTable.astro';
+import SpecimenTrackTable from '../features/images/relationships/SpecimenTrackTable.astro';
 import volumeImages from '../data/collections/vem_image_summaries.json';
 const [uuid, image] = Object.entries(volumeImages)[0];
 const study = JSON.parse(${JSON.stringify(responses.get("study"))}).hits.hits[0]._source;
@@ -90,7 +90,7 @@ const tableRows = [{ study: study.accession_id, dataset_uuid: study.dataset[0].u
       <SOTables datasetUUIDsAndFileStats={[]} />
       <BenchmarkingTable datasetUUIDNameMap={new Map(study.dataset.map(dataset => [dataset.uuid, dataset.title]))} tableRows={tableRows} studyOrModelPageMode="model" />
       <ModelPredictionTable datasetUUIDNameMap={new Map(study.dataset.map(dataset => [dataset.uuid, dataset.title]))} tableRows={tableRows} studyOrModelPageMode="model" />
-      <ImageTable images={[capturedImage]} />
+      <InputImagesTable images={[capturedImage]} />
       <SpecimenTrackTable images={[capturedImage]} />
     </section>
   </section>

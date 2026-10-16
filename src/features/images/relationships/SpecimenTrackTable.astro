@@ -1,6 +1,6 @@
 ---
-import SpecimenTrackTableRow from "./SpecimenTrackTableRow.astro";
-import { isRootImage } from './relationships/position.mjs';
+import RelationshipRow from "./RelationshipRow.astro";
+import { isRootImage } from './position.mjs';
 
 const { images } = Astro.props;
 const sortedImages = images
@@ -22,7 +22,7 @@ const sortedImages = images
       </tr>
     </thead>
     <tbody>
-      {sortedImages.map((image) => <SpecimenTrackTableRow image={image} />)}
+      {sortedImages.map((image) => <RelationshipRow image={image} />)}
     </tbody>
   </table>
 </div>

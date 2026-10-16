@@ -1,5 +1,5 @@
 ---
-import SpecimenTrackTableRow from "./SpecimenTrackTableRow.astro";
+import RelationshipRow from "./RelationshipRow.astro";
 
 const { images } = Astro.props;
 const validImages = images.filter((image) => image != null);
@@ -15,7 +15,7 @@ const validImages = images.filter((image) => image != null);
       </tr>
     </thead>
     <tbody>
-      {validImages.map((image) => <SpecimenTrackTableRow image={image} />)}
+      {validImages.map((image) => <RelationshipRow image={image} />)}
     </tbody>
   </table>
 </div>
